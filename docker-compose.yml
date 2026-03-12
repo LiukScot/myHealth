@@ -1,0 +1,24 @@
+services:
+  myhealth:
+    build: .
+    image: myhealth:local
+    container_name: myhealth
+    network_mode: host
+    environment:
+      HOST: 0.0.0.0
+      PORT: 5555
+      DB_PATH: /app/data/myhealth.sqlite
+      REDIS_URL: ${REDIS_URL}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5555,http://127.0.0.1:5555,http://localhost:5173,http://127.0.0.1:5173}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    develop:
+      watch:
+        - path: ./backend/src
+          action: sync+restart
+          target: /app/backend/src
+        - path: ./backend/package.json
+          action: rebuild
+        - path: ./frontend
+          action: rebuild

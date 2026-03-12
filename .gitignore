@@ -1,0 +1,42 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Database & data
+data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Sessions
+sessions/
+
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Frontend build
+frontend/dist/
+frontend/dist-ssr/
+
+# Test output
+test-results/
+playwright-report/
+
+# Editor & IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.cursor/
+*.suo
+*.sw?
+.DS_Store
+
+# Claude AI config
+.claude/
+
+# Legacy / archives
+.legacy_extract/
+rollback/legacy-runtime.tar.gz
