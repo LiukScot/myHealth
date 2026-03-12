@@ -1,55 +1,65 @@
-# myHealth (Bun + React)
+# myHealth
 
-Standalone myHealth project running on port `8000`.
+A personal health tracking app for logging daily mood, pain, and habits — with an AI assistant powered by Mistral.
 
-## Stack
+**Features:**
 
-- Backend: Bun + TypeScript + SQLite + Redis sessions
-- Frontend: React + TypeScript + Vite
-- Auth: cookie sessions (`MYHEALTH_SESSID`) with Redis key prefix `myhealth:sess:`
+- Mood diary (mood, depression, anxiety levels + free text)
+- Pain journal (pain area, symptoms, activities, medicines, habits, and more)
+- Graphs and history over time
+- AI chat that reads your health data and answers questions about it
+- Backup and restore your data
 
-## Quick start
+---
 
-1. Install deps:
-   - `npm install`
-   - `npm --prefix backend install`
-   - `npm --prefix frontend install`
-2. Set env (minimum):
-   - `REDIS_URL=redis://127.0.0.1:6379`
-3. Run migrations:
-   - `npm run migrate`
-4. Create first user:
-   - `npm run user -- create --email=you@example.com --password='StrongPass123' --name='You'`
-5. Run backend and frontend (separate terminals):
-   - `npm run dev:backend`
-   - `npm run dev:frontend`
+## Running with Docker (recommended)
 
-## Legacy migration from old myTools DB
+The easiest way to run myHealth is with Docker.
 
-- Source DB default: `./data/mytools.sqlite`
-- Target DB default: `./data/myhealth.sqlite`
+**Prerequisites:** [Docker](https://docs.docker.com/get-docker/) and a running Redis instance.
 
-Run:
+1. Copy the example env file and fill in your values:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   The only required value is `REDIS_URL` (e.g. `redis://127.0.0.1:6379`).
+
+2. Start the app:
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+3. Create your user account:
+
+   ```bash
+   docker exec myhealth bun --cwd backend src/user-cli.ts create \
+     --email=you@example.com \
+     --password=YourPassword \
+     --name=YourName
+   ```
+
+4. Open [http://localhost:5555](http://localhost:5555) and log in.
+
+---
+
+## Data & backup
+
+Your data is stored in `data/myhealth.sqlite`. The app runs migrations automatically on startup — no manual steps needed.
+
+To back up or restore your data:
 
 ```bash
-MIGRATION_PRIMARY_EMAIL=you@example.com npm run migrate:legacy -- --fresh
+npm run backup          # creates a backup of the DB
+npm run restore         # restores from a backup file
 ```
 
-This writes a migration report to `data/myhealth-migration-report.json`.
+You can also export and import data as JSON or Excel from within the app itself (Settings → Backup).
 
-## Data operations
+---
 
-- Backup DB: `npm run backup`
-- Restore DB: `npm run restore -- --file=/absolute/path/to/backup.sqlite`
+## AI assistant
 
-## Docker
-
-- Build/run:
-  - `docker compose up --build -d`
-- Required env:
-  - `REDIS_URL` (external Redis)
-
-## Rollback helpers
-
-- `rollback/legacy-runtime.tar.gz` stores pre-migration runtime snapshot.
-- `scripts/rollback-runtime.sh` restores legacy files from that archive.
+The AI chat uses the [Mistral API](https://mistral.ai). To enable it, add your Mistral API key in the app under **Settings → AI**.
