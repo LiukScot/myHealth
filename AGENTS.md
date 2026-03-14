@@ -16,7 +16,7 @@
 
   
 
-- Do not mark Linear issues as Done until the user has tested and explicitly says it's ok.
+- Do not mark github issues as Done until the user has tested and explicitly says it's ok.
 
 - Revert any fixes or code changes that don't solve the problem and then explain why earlier attempts failed.
 
