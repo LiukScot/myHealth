@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,7 +7,7 @@ import { create } from "zustand";
 import { Chart as ChartJS, TimeScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
-import { apiEnvelopeSchema, apiFetch, splitDateTime, toLocalDateTimeValue } from "./lib";
+import { apiEnvelopeSchema, apiFetch, getErrorMessage, splitDateTime, toLocalDateTimeValue } from "./lib";
 
 ChartJS.register(TimeScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
@@ -192,6 +192,33 @@ type WellbeingSeries = {
   color: string;
   points: SeriesPoint[];
 };
+
+type InlineMessageTone = "error" | "success" | "warning" | "info";
+type InlineMessage = {
+  tone: InlineMessageTone;
+  text: string;
+};
+
+const BACKUP_JSON_EXPORT_OK: InlineMessage = { tone: "info", text: "JSON export started." };
+const BACKUP_JSON_IMPORT_OK: InlineMessage = { tone: "success", text: "JSON import completed." };
+const BACKUP_XLSX_EXPORT_OK: InlineMessage = { tone: "info", text: "Spreadsheet export started." };
+const BACKUP_XLSX_IMPORT_OK: InlineMessage = { tone: "success", text: "Spreadsheet import completed." };
+
+function InlineFeedback({ message, className }: { message: InlineMessage | null; className?: string }) {
+  if (!message) {
+    return null;
+  }
+
+  const toneClass = `is-${message.tone}`;
+  const classes = ["feedback-message", toneClass, className].filter(Boolean).join(" ");
+  const ariaLive = message.tone === "error" ? "assertive" : "polite";
+
+  return (
+    <p className={classes} role={message.tone === "error" ? "alert" : "status"} aria-live={ariaLive}>
+      {message.text}
+    </p>
+  );
+}
 
 function normalizeQuickRange(value: unknown): DashboardQuickRange {
   const str = String(value ?? "").trim();
@@ -402,6 +429,10 @@ function App() {
   const [activeQuickRange, setActiveQuickRange] = useState<DashboardQuickRange>("all");
   const [graphSelection, setGraphSelection] = useState<Record<WellbeingSeriesKey, boolean>>(defaultWellbeingSelection);
   const [dashboardPrefsBootstrapped, setDashboardPrefsBootstrapped] = useState(false);
+  const [passwordFeedback, setPasswordFeedback] = useState<InlineMessage | null>(null);
+  const [backupFeedback, setBackupFeedback] = useState<InlineMessage | null>(null);
+  const [purgeConfirmArmed, setPurgeConfirmArmed] = useState(false);
+  const [aiKeyFeedback, setAiKeyFeedback] = useState<InlineMessage | null>(null);
 
   const sessionQuery = useQuery({
     queryKey: ["session"],
@@ -451,6 +482,10 @@ function App() {
     setDashboardTo("");
     setActiveQuickRange("all");
     setGraphSelection(defaultWellbeingSelection);
+    setPasswordFeedback(null);
+    setBackupFeedback(null);
+    setPurgeConfirmArmed(false);
+    setAiKeyFeedback(null);
   }, [user?.id]);
 
   const painFieldOptions = painOptionsQuery.data ?? {
@@ -527,9 +562,12 @@ function App() {
         { method: "POST", body: JSON.stringify({ currentPassword: values.currentPassword, newPassword: values.newPassword }) },
         (raw) => apiEnvelopeSchema(z.object({ ok: z.boolean() })).parse(raw).data
       ),
+    onMutate: () => {
+      setPasswordFeedback(null);
+    },
     onSuccess: () => {
       changePasswordForm.reset();
-      alert("Password updated");
+      setPasswordFeedback({ tone: "success", text: "Password updated." });
     }
   });
 
@@ -651,8 +689,15 @@ function App() {
       apiFetch("/api/v1/ai/key", { method: "PUT", body: JSON.stringify({ key }) }, (raw) =>
         apiEnvelopeSchema(z.object({ hasKey: z.boolean() })).parse(raw).data
       ),
+    onMutate: () => {
+      setAiKeyFeedback(null);
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["ai-key"] });
+      setAiKeyFeedback({ tone: "success", text: "AI key saved." });
+    },
+    onError: (error) => {
+      setAiKeyFeedback({ tone: "error", text: getErrorMessage(error) });
     }
   });
 
@@ -661,8 +706,15 @@ function App() {
       apiFetch("/api/v1/ai/key", { method: "DELETE" }, (raw) =>
         apiEnvelopeSchema(z.object({ hasKey: z.boolean() })).parse(raw).data
       ),
+    onMutate: () => {
+      setAiKeyFeedback(null);
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["ai-key"] });
+      setAiKeyFeedback({ tone: "info", text: "Stored AI key cleared." });
+    },
+    onError: (error) => {
+      setAiKeyFeedback({ tone: "error", text: getErrorMessage(error) });
     }
   });
 
@@ -682,12 +734,30 @@ function App() {
         apiEnvelopeSchema(z.object({ ok: z.boolean() })).parse(raw).data
       ),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["diary"] });
-      await queryClient.invalidateQueries({ queryKey: ["pain"] });
-      await queryClient.invalidateQueries({ queryKey: ["prefs"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["diary"] }),
+        queryClient.invalidateQueries({ queryKey: ["pain"] }),
+        queryClient.invalidateQueries({ queryKey: ["prefs"] }),
+      ]);
+      setPurgeConfirmArmed(false);
       setNav("dashboard");
     }
   });
+
+  const clearPasswordStatus = useCallback(() => {
+    if (passwordFeedback) {
+      setPasswordFeedback(null);
+    }
+    if (changePasswordMutation.error) {
+      changePasswordMutation.reset();
+    }
+  }, [passwordFeedback, changePasswordMutation.error]);
+
+  const clearAiKeyStatus = useCallback(() => {
+    if (aiKeyFeedback) {
+      setAiKeyFeedback(null);
+    }
+  }, [aiKeyFeedback]);
 
   const savePrefsPatch = (
     patch: Partial<{ model: string; chatRange: string; lastRange: string; graphSelection: Record<string, unknown> }>
@@ -945,6 +1015,16 @@ function App() {
     await queryClient.invalidateQueries();
   };
 
+  const runBackupAction = async (action: () => Promise<void>, successMessage: InlineMessage) => {
+    setBackupFeedback(null);
+    try {
+      await action();
+      setBackupFeedback(successMessage);
+    } catch (error) {
+      setBackupFeedback({ tone: "error", text: getErrorMessage(error) });
+    }
+  };
+
   if (!user) {
     return (
       <main className="screen auth-screen">
@@ -980,7 +1060,11 @@ function App() {
         <div className="header-actions">
           <details>
             <summary>Account</summary>
-            <form className="stack" onSubmit={changePasswordForm.handleSubmit((v) => changePasswordMutation.mutate(v))}>
+            <form
+              className="stack"
+              onFocus={clearPasswordStatus}
+              onSubmit={changePasswordForm.handleSubmit((v) => changePasswordMutation.mutate(v))}
+            >
               <label>
                 Current password
                 <input type="password" {...changePasswordForm.register("currentPassword")} />
@@ -996,7 +1080,13 @@ function App() {
               <button type="submit" disabled={changePasswordMutation.isPending}>
                 Change password
               </button>
-              {changePasswordMutation.error && <p className="error">{String((changePasswordMutation.error as Error).message)}</p>}
+              <InlineFeedback
+                message={
+                  changePasswordMutation.error
+                    ? { tone: "error", text: getErrorMessage(changePasswordMutation.error) }
+                    : passwordFeedback
+                }
+              />
             </form>
             <button onClick={() => logoutMutation.mutate()} disabled={logoutMutation.isPending}>
               Log out
@@ -1252,7 +1342,6 @@ function App() {
                 options={painFieldOptions.area}
                 onChange={(next) => painForm.setValue("area", next, { shouldDirty: true })}
               />
-              <hr className="pain-tags-sep" />
               <MultiSelectField
                 label="Symptoms"
                 fieldKey="symptoms"
@@ -1260,7 +1349,6 @@ function App() {
                 options={painFieldOptions.symptoms}
                 onChange={(next) => painForm.setValue("symptoms", next, { shouldDirty: true })}
               />
-              <hr className="pain-tags-sep" />
               <MultiSelectField
                 label="Activities"
                 fieldKey="activities"
@@ -1268,7 +1356,6 @@ function App() {
                 options={painFieldOptions.activities}
                 onChange={(next) => painForm.setValue("activities", next, { shouldDirty: true })}
               />
-              <hr className="pain-tags-sep" />
               <MultiSelectField
                 label="Medicines"
                 fieldKey="medicines"
@@ -1276,7 +1363,6 @@ function App() {
                 options={painFieldOptions.medicines}
                 onChange={(next) => painForm.setValue("medicines", next, { shouldDirty: true })}
               />
-              <hr className="pain-tags-sep" />
               <MultiSelectField
                 label="Habits"
                 fieldKey="habits"
@@ -1284,7 +1370,6 @@ function App() {
                 options={painFieldOptions.habits}
                 onChange={(next) => painForm.setValue("habits", next, { shouldDirty: true })}
               />
-              <hr className="pain-tags-sep" />
               <MultiSelectField
                 label="Other"
                 fieldKey="other"
@@ -1423,8 +1508,23 @@ function App() {
               <h3>AI key</h3>
               <AiKeyEditor
                 hasKey={Boolean(aiKeyQuery.data?.hasKey)}
-                onSave={(key) => aiKeyMutation.mutate(key)}
-                onClear={() => clearAiKeyMutation.mutate()}
+                feedback={aiKeyFeedback}
+                isSaving={aiKeyMutation.isPending}
+                isClearing={clearAiKeyMutation.isPending}
+                onFeedbackClear={clearAiKeyStatus}
+                onSave={(key) => {
+                  const clean = key.trim();
+                  if (!clean) {
+                    setAiKeyFeedback({ tone: "error", text: "Enter a key before saving." });
+                    return false;
+                  }
+                  aiKeyMutation.mutate(clean);
+                  return true;
+                }}
+                onClear={() => {
+                  clearAiKeyStatus();
+                  clearAiKeyMutation.mutate();
+                }}
               />
             </article>
             <article>
@@ -1436,7 +1536,14 @@ function App() {
             </article>
             <article>
               <h3>Backup</h3>
-              <button onClick={doExportJson}>Export JSON</button>
+              <button
+                type="button"
+                onClick={() => {
+                  void runBackupAction(doExportJson, BACKUP_JSON_EXPORT_OK);
+                }}
+              >
+                Export JSON
+              </button>
               <label className="file-input">
                 Import JSON
                 <input
@@ -1445,12 +1552,20 @@ function App() {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      doImportJson(file).catch((err) => alert((err as Error).message));
+                      void runBackupAction(() => doImportJson(file), BACKUP_JSON_IMPORT_OK);
                     }
+                    e.target.value = "";
                   }}
                 />
               </label>
-              <button onClick={() => doExportXlsx().catch((err) => alert((err as Error).message))}>Export XLSX</button>
+              <button
+                type="button"
+                onClick={() => {
+                  void runBackupAction(doExportXlsx, BACKUP_XLSX_EXPORT_OK);
+                }}
+              >
+                Export XLSX
+              </button>
               <label className="file-input">
                 Import XLSX
                 <input
@@ -1459,24 +1574,65 @@ function App() {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      doImportXlsx(file).catch((err) => alert((err as Error).message));
+                      void runBackupAction(() => doImportXlsx(file), BACKUP_XLSX_IMPORT_OK);
                     }
+                    e.target.value = "";
                   }}
                 />
               </label>
+              <InlineFeedback message={backupFeedback} />
             </article>
             <article>
               <h3>Danger zone</h3>
-              <button
-                className="danger"
-                onClick={() => {
-                  if (confirm("Delete all myHealth data for this account?")) {
-                    purgeMutation.mutate();
-                  }
-                }}
-              >
-                Purge all data
-              </button>
+              {purgeConfirmArmed ? (
+                <div className="inline-confirmation" role="group" aria-label="Confirm purge all data">
+                  <InlineFeedback
+                    className="confirmation-copy"
+                    message={{
+                      tone: "warning",
+                      text: "This permanently deletes all diary, pain, and preference data for this account."
+                    }}
+                  />
+                  <div className="row-actions confirmation-actions">
+                    <button
+                      type="button"
+                      className="danger"
+                      onClick={() => purgeMutation.mutate()}
+                      disabled={purgeMutation.isPending}
+                    >
+                      {purgeMutation.isPending ? "Purging..." : "Confirm purge all data"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        purgeMutation.reset();
+                        setPurgeConfirmArmed(false);
+                      }}
+                      disabled={purgeMutation.isPending}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="danger"
+                  onClick={() => {
+                    purgeMutation.reset();
+                    setPurgeConfirmArmed(true);
+                  }}
+                >
+                  Purge all data
+                </button>
+              )}
+              <InlineFeedback
+                message={
+                  purgeMutation.error
+                    ? { tone: "error", text: getErrorMessage(purgeMutation.error) }
+                    : null
+                }
+              />
             </article>
           </div>
         </section>
@@ -1497,6 +1653,8 @@ function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSe
   const queryClient = useQueryClient();
   const selectedValues = useMemo(() => csvToList(value), [value]);
   const [hiddenSet, setHiddenSet] = useState<Set<string>>(() => new Set());
+  const [pendingRemovalKey, setPendingRemovalKey] = useState<string | null>(null);
+  const confirmRemoveRef = useRef<HTMLButtonElement | null>(null);
   const selectedSet = useMemo(() => new Set(selectedValues.map((entry) => entry.toLowerCase())), [selectedValues]);
   const allOptions = useMemo(() => {
     const merged = mergeOptions(options, selectedValues);
@@ -1516,6 +1674,18 @@ function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSe
     }
   }, [selectedValues.length]);
 
+  useEffect(() => {
+    if (pendingRemovalKey && !allOptions.some((option) => option.toLowerCase() === pendingRemovalKey)) {
+      setPendingRemovalKey(null);
+    }
+  }, [allOptions, pendingRemovalKey]);
+
+  useEffect(() => {
+    if (pendingRemovalKey) {
+      confirmRemoveRef.current?.focus();
+    }
+  }, [pendingRemovalKey]);
+
   const toggleOption = (option: string) => {
     const key = option.trim().toLowerCase();
     if (!key) return;
@@ -1532,6 +1702,7 @@ function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSe
     const key = option.trim().toLowerCase();
     if (!key) return;
 
+    setPendingRemovalKey(null);
     setHiddenSet((current) => {
       const next = new Set(current);
       next.add(key);
@@ -1557,6 +1728,7 @@ function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSe
   };
 
   const clearSelections = () => {
+    setPendingRemovalKey(null);
     onChange("");
   };
 
@@ -1565,27 +1737,52 @@ function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSe
       <span>{label}</span>
       <div className="multi-option-list" role="group" aria-label={label}>
         {allOptions.map((option) => {
-          const isSelected = selectedSet.has(option.toLowerCase());
+          const optionKey = option.toLowerCase();
+          const isSelected = selectedSet.has(optionKey);
+          const isConfirmingRemoval = pendingRemovalKey === optionKey;
+
+          if (isConfirmingRemoval) {
+            return (
+              <div key={option} className="multi-option-confirmation" role="group" aria-label={`Confirm removal of ${option}`}>
+                <span className="multi-option-confirm-label">Remove {option}?</span>
+                <div className="multi-option-confirm-actions">
+                  <button
+                    type="button"
+                    ref={confirmRemoveRef}
+                    className="danger multi-option-confirm-button"
+                    onClick={() => {
+                      void permanentlyRemoveOption(option);
+                    }}
+                  >
+                    Remove
+                  </button>
+                  <button type="button" className="multi-option-cancel" onClick={() => setPendingRemovalKey(null)}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
           return (
-            <button
-              type="button"
-              key={option}
-              className={isSelected ? "multi-option-chip active" : "multi-option-chip"}
-              onClick={() => toggleOption(option)}
-            >
-              <span className="multi-option-label">{option}</span>
-              <span
+            <div key={option} className="multi-option-item">
+              <button
+                type="button"
+                className={isSelected ? "multi-option-chip active" : "multi-option-chip"}
+                onClick={() => toggleOption(option)}
+                aria-pressed={isSelected}
+              >
+                <span className="multi-option-label">{option}</span>
+              </button>
+              <button
+                type="button"
                 className="multi-option-remove"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  if (!confirm(`Remove "${option}" from suggestions?`)) return;
-                  void permanentlyRemoveOption(option);
-                }}
-                aria-hidden="true"
+                aria-label={`Remove ${option} from suggestions`}
+                onClick={() => setPendingRemovalKey(optionKey)}
               >
                 ×
-              </span>
-            </button>
+              </button>
+            </div>
           );
         })}
       </div>
@@ -1611,6 +1808,7 @@ function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSe
               next.delete(key);
               return next;
             });
+            setPendingRemovalKey((current) => (current === clean.toLowerCase() ? null : current));
             void (async () => {
               try {
                 await apiFetch(
@@ -1640,30 +1838,47 @@ function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSe
 
 type AiKeyEditorProps = {
   hasKey: boolean;
-  onSave: (key: string) => void;
+  feedback: InlineMessage | null;
+  isSaving: boolean;
+  isClearing: boolean;
+  onFeedbackClear: () => void;
+  onSave: (key: string) => boolean;
   onClear: () => void;
 };
 
-function AiKeyEditor({ hasKey, onSave, onClear }: AiKeyEditorProps) {
+function AiKeyEditor({ hasKey, feedback, isSaving, isClearing, onFeedbackClear, onSave, onClear }: AiKeyEditorProps) {
   const [value, setValue] = useState("");
   return (
     <div className="stack">
-      <input type="password" placeholder={hasKey ? "Stored key exists" : "Paste key"} value={value} onChange={(e) => setValue(e.target.value)} />
+      <input
+        type="password"
+        placeholder={hasKey ? "Stored key exists" : "Paste key"}
+        value={value}
+        onChange={(e) => {
+          if (feedback) {
+            onFeedbackClear();
+          }
+          setValue(e.target.value);
+        }}
+      />
       <div className="row-actions">
         <button
+          type="button"
+          disabled={isSaving || isClearing}
           onClick={() => {
-            if (!value.trim()) {
-              alert("Enter a key");
-              return;
+            const submitted = onSave(value);
+            if (submitted) {
+              setValue("");
             }
-            onSave(value.trim());
-            setValue("");
           }}
         >
-          Save key
+          {isSaving ? "Saving..." : "Save key"}
         </button>
-        <button onClick={onClear}>Clear key</button>
+        <button type="button" onClick={onClear} disabled={isSaving || isClearing || !hasKey}>
+          {isClearing ? "Clearing..." : "Clear key"}
+        </button>
       </div>
+      <InlineFeedback message={feedback} />
     </div>
   );
 }
