@@ -9,8 +9,15 @@ import { z } from "zod";
 import { openDb, runMigrations, toNullableInt, toNullableNumber } from "./db.ts";
 import { callMistral, normalizeModel, normalizeRange } from "./mistral.ts";
 
-const PAIN_MULTI_FIELDS = ["area", "symptoms", "activities", "medicines", "habits", "other"] as const;
-type PainMultiField = (typeof PAIN_MULTI_FIELDS)[number];
+import { TAG_TYPES, type TagType, MOOD_TAG_FIELDS, type MoodTagField } from "./schema.ts";
+
+const PAIN_MULTI_FIELDS = TAG_TYPES;
+type PainMultiField = TagType;
+
+const MOOD_MULTI_FIELDS = MOOD_TAG_FIELDS;
+type MoodMultiField = MoodTagField;
+
+type MoodTagMap = Record<MoodMultiField, string[]>;
 
 type PainTagMap = Record<PainMultiField, string[]>;
 
@@ -68,6 +75,9 @@ const diarySchema = z.object({
   moodLevel: z.number().min(1).max(9).nullable().optional(),
   depressionLevel: z.number().min(1).max(9).nullable().optional(),
   anxietyLevel: z.number().min(1).max(9).nullable().optional(),
+  positiveMoods: z.string().optional().default(""),
+  negativeMoods: z.string().optional().default(""),
+  generalMoods: z.string().optional().default(""),
   description: z.string().optional().default(""),
   gratitude: z.string().optional().default(""),
   reflection: z.string().optional().default("")
@@ -312,16 +322,7 @@ function rowPainField(row: Record<string, unknown>, field: PainMultiField): stri
   return "";
 }
 
-function emptyPainOptions(): PainTagMap {
-  return {
-    area: [],
-    symptoms: [],
-    activities: [],
-    medicines: [],
-    habits: [],
-    other: []
-  };
-}
+const emptyPainOptions = emptyPainTags;
 
 function mergeOptions(current: string[], incoming: string[]): string[] {
   const out: string[] = [...current];
@@ -353,17 +354,39 @@ function loadPainOptionsForUser(userId: number): PainTagMap {
   return out;
 }
 
+function emptyMoodOptions(): MoodTagMap {
+  return { positive_moods: [], negative_moods: [], general_moods: [] };
+}
+
+function loadMoodOptionsForUser(userId: number): MoodTagMap {
+  const rows = db
+    .query<{ field: string; value: string }, [number]>(
+      `SELECT field, value FROM mood_options WHERE user_id = ? ORDER BY id ASC`
+    )
+    .all(userId);
+  const out = emptyMoodOptions();
+  for (const row of rows) {
+    if (MOOD_MULTI_FIELDS.includes(row.field as MoodMultiField)) {
+      out[row.field as MoodMultiField].push(row.value);
+    }
+  }
+  return out;
+}
+
 function rowsToHealthBackup(diaryRows: any[], painRows: any[]): { diary: any; pain: any } {
   const diary = {
     source: "myhealth-backend",
     imported_at: new Date().toISOString(),
-    headers: ["date", "hour", "mood level", "depression", "anxiety", "description", "gratitude", "reflection"],
+    headers: ["date", "hour", "mood level", "depression", "anxiety", "positive moods", "negative moods", "general moods", "description", "gratitude", "reflection"],
     rows: diaryRows.map((row) => ({
       date: row.entry_date,
       hour: row.entry_time,
       "mood level": row.mood_level ?? "",
       depression: row.depression_level ?? "",
       anxiety: row.anxiety_level ?? "",
+      "positive moods": row.positive_moods ?? "",
+      "negative moods": row.negative_moods ?? "",
+      "general moods": row.general_moods ?? "",
       description: row.description ?? "",
       gratitude: row.gratitude ?? "",
       reflection: row.reflection ?? ""
@@ -552,6 +575,9 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
         moodLevel: row.mood_level,
         depressionLevel: row.depression_level,
         anxietyLevel: row.anxiety_level,
+        positiveMoods: row.positive_moods ?? "",
+        negativeMoods: row.negative_moods ?? "",
+        generalMoods: row.general_moods ?? "",
         description: row.description ?? "",
         gratitude: row.gratitude ?? "",
         reflection: row.reflection ?? "",
@@ -567,8 +593,8 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
     const body = await parseJson(req, diarySchema);
     const result = db
       .query(
-        `INSERT INTO diary_entries (user_id, entry_date, entry_time, mood_level, depression_level, anxiety_level, description, gratitude, reflection)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO diary_entries (user_id, entry_date, entry_time, mood_level, depression_level, anxiety_level, positive_moods, negative_moods, general_moods, description, gratitude, reflection)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         userId,
@@ -577,6 +603,9 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
         toNullableNumber(body.moodLevel),
         toNullableNumber(body.depressionLevel),
         toNullableNumber(body.anxietyLevel),
+        body.positiveMoods ?? "",
+        body.negativeMoods ?? "",
+        body.generalMoods ?? "",
         body.description ?? "",
         body.gratitude ?? "",
         body.reflection ?? ""
@@ -591,7 +620,7 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
     const result = db
       .query(
         `UPDATE diary_entries
-         SET entry_date = ?, entry_time = ?, mood_level = ?, depression_level = ?, anxiety_level = ?, description = ?, gratitude = ?, reflection = ?, updated_at = CURRENT_TIMESTAMP
+         SET entry_date = ?, entry_time = ?, mood_level = ?, depression_level = ?, anxiety_level = ?, positive_moods = ?, negative_moods = ?, general_moods = ?, description = ?, gratitude = ?, reflection = ?, updated_at = CURRENT_TIMESTAMP
          WHERE id = ? AND user_id = ?`
       )
       .run(
@@ -600,6 +629,9 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
         toNullableNumber(body.moodLevel),
         toNullableNumber(body.depressionLevel),
         toNullableNumber(body.anxietyLevel),
+        body.positiveMoods ?? "",
+        body.negativeMoods ?? "",
+        body.generalMoods ?? "",
         body.description ?? "",
         body.gratitude ?? "",
         body.reflection ?? "",
@@ -668,6 +700,58 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
 
     db.query(
       `INSERT OR IGNORE INTO pain_options (user_id, field, value) VALUES (?, ?, ?)`
+    ).run(userId, field, normalizedValue);
+
+    return makeData({ ok: true }, 200, corsHeaders);
+  }
+
+  if (pathname === "/api/v1/mood/options" && method === "GET") {
+    return makeData(loadMoodOptionsForUser(userId), 200, corsHeaders);
+  }
+
+  if (pathname === "/api/v1/mood/options/remove" && method === "POST") {
+    const body = await parseJson(
+      req,
+      z.object({
+        field: z.string(),
+        value: z.string().min(1)
+      })
+    );
+    if (!MOOD_MULTI_FIELDS.includes(body.field as MoodMultiField)) {
+      return makeError("INVALID_FIELD", "Unknown mood field", 400, undefined, corsHeaders);
+    }
+    const field = body.field as MoodMultiField;
+    const normalizedValue = body.value.trim();
+    if (!normalizedValue) {
+      return makeError("INVALID_VALUE", "Value must not be empty", 400, undefined, corsHeaders);
+    }
+
+    db.query(
+      `DELETE FROM mood_options WHERE user_id = ? AND field = ? AND value = ?`
+    ).run(userId, field, normalizedValue);
+
+    return makeData({ ok: true }, 200, corsHeaders);
+  }
+
+  if (pathname === "/api/v1/mood/options/restore" && method === "POST") {
+    const body = await parseJson(
+      req,
+      z.object({
+        field: z.string(),
+        value: z.string().min(1)
+      })
+    );
+    if (!MOOD_MULTI_FIELDS.includes(body.field as MoodMultiField)) {
+      return makeError("INVALID_FIELD", "Unknown mood field", 400, undefined, corsHeaders);
+    }
+    const field = body.field as MoodMultiField;
+    const normalizedValue = body.value.trim();
+    if (!normalizedValue) {
+      return makeError("INVALID_VALUE", "Value must not be empty", 400, undefined, corsHeaders);
+    }
+
+    db.query(
+      `INSERT OR IGNORE INTO mood_options (user_id, field, value) VALUES (?, ?, ?)`
     ).run(userId, field, normalizedValue);
 
     return makeData({ ok: true }, 200, corsHeaders);
@@ -938,7 +1022,7 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
 
     return makeData(
       {
-        diary: backup.diary,
+        diary: { ...backup.diary, moodOptions: loadMoodOptionsForUser(userId) },
         pain: { ...backup.pain, options: { options: loadPainOptionsForUser(userId), removed: removedMap } },
         prefs: {
           model: prefs?.model ?? "mistral-small-latest",
@@ -961,8 +1045,8 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
 
       if (body.diary?.rows) {
         const insertDiary = db.query(
-          `INSERT INTO diary_entries (user_id, entry_date, entry_time, mood_level, depression_level, anxiety_level, description, gratitude, reflection)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO diary_entries (user_id, entry_date, entry_time, mood_level, depression_level, anxiety_level, positive_moods, negative_moods, general_moods, description, gratitude, reflection)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         );
         for (const row of body.diary.rows) {
           insertDiary.run(
@@ -972,6 +1056,9 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
             toNullableNumber(row["mood level"] ?? row.moodLevel),
             toNullableNumber(row.depression ?? row.depressionLevel),
             toNullableNumber(row.anxiety ?? row.anxietyLevel),
+            String(row["positive moods"] ?? row.positiveMoods ?? ""),
+            String(row["negative moods"] ?? row.negativeMoods ?? ""),
+            String(row["general moods"] ?? row.generalMoods ?? ""),
             String(row.description ?? ""),
             String(row.gratitude ?? ""),
             String(row.reflection ?? "")

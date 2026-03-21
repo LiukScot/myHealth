@@ -1,5 +1,5 @@
 import { Database } from "bun:sqlite";
-import { migrationStatements, SCHEMA_VERSION, TAG_TYPES } from "./schema.ts";
+import { migrationStatements, MOOD_TAG_FIELDS, SCHEMA_VERSION, TAG_TYPES } from "./schema.ts";
 
 export type SQLiteDB = Database;
 
@@ -22,6 +22,15 @@ function tableExists(db: SQLiteDB, tableName: string): boolean {
 function columnExists(db: SQLiteDB, tableName: string, columnName: string): boolean {
   const rows = db.query(`PRAGMA table_info(${tableName})`).all() as Array<{ name: string }>;
   return rows.some((row) => row.name === columnName);
+}
+
+function ensureMoodColumns(db: SQLiteDB): void {
+  for (const column of MOOD_TAG_FIELDS) {
+    if (columnExists(db, "diary_entries", column)) {
+      continue;
+    }
+    db.exec(`ALTER TABLE diary_entries ADD COLUMN ${column} TEXT NOT NULL DEFAULT ''`);
+  }
 }
 
 function ensurePainColumns(db: SQLiteDB): void {
@@ -82,6 +91,7 @@ export function runMigrations(db: SQLiteDB): void {
     }
 
     ensurePainColumns(db);
+    ensureMoodColumns(db);
     backfillPainColumnsFromLegacyTags(db);
     dropLegacyPainTables(db);
 

@@ -18,6 +18,9 @@ const useAuthStore = create<AuthState>((set) => ({ user: null, setUser: (user) =
 const painFieldKeys = ["area", "symptoms", "activities", "medicines", "habits", "other"] as const;
 type PainFieldKey = (typeof painFieldKeys)[number];
 
+const moodFieldKeys = ["positive_moods", "negative_moods", "general_moods"] as const;
+type MoodFieldKey = (typeof moodFieldKeys)[number];
+
 
 
 const sessionDataSchema = apiEnvelopeSchema(
@@ -52,6 +55,9 @@ const diaryEntrySchema = z.object({
   moodLevel: z.number().nullable(),
   depressionLevel: z.number().nullable(),
   anxietyLevel: z.number().nullable(),
+  positiveMoods: z.string(),
+  negativeMoods: z.string(),
+  generalMoods: z.string(),
   description: z.string(),
   gratitude: z.string(),
   reflection: z.string(),
@@ -106,6 +112,14 @@ const painOptionsSchema = apiEnvelopeSchema(
   })
 );
 
+const moodOptionsSchema = apiEnvelopeSchema(
+  z.object({
+    positive_moods: z.array(z.string()),
+    negative_moods: z.array(z.string()),
+    general_moods: z.array(z.string())
+  })
+);
+
 const nullableNumberField = (min: number, max: number) =>
   z.preprocess(
     (value) => {
@@ -121,6 +135,9 @@ const diaryFormSchema = z.object({
   moodLevel: nullableNumberField(1, 9),
   depressionLevel: nullableNumberField(1, 9),
   anxietyLevel: nullableNumberField(1, 9),
+  positiveMoods: z.string().default(""),
+  negativeMoods: z.string().default(""),
+  generalMoods: z.string().default(""),
   description: z.string().default(""),
   gratitude: z.string().default(""),
   reflection: z.string().default("")
@@ -492,6 +509,16 @@ function App() {
     area: [], symptoms: [], activities: [], medicines: [], habits: [], other: []
   };
 
+  const moodOptionsQuery = useQuery({
+    queryKey: ["mood-options"],
+    enabled: !!user,
+    queryFn: async () => apiFetch("/api/v1/mood/options", { method: "GET" }, (raw) => moodOptionsSchema.parse(raw).data)
+  });
+
+  const moodFieldOptions = moodOptionsQuery.data ?? {
+    positive_moods: [], negative_moods: [], general_moods: []
+  };
+
   const loginForm = useForm<z.infer<typeof loginSchema>>({ resolver: zodResolver(loginSchema) });
   const changePasswordForm = useForm<z.infer<typeof changePasswordSchema>>({
     resolver: zodResolver(changePasswordSchema)
@@ -503,6 +530,9 @@ function App() {
       moodLevel: null,
       depressionLevel: null,
       anxietyLevel: null,
+      positiveMoods: "",
+      negativeMoods: "",
+      generalMoods: "",
       description: "",
       gratitude: "",
       reflection: ""
@@ -581,6 +611,9 @@ function App() {
         moodLevel: parsedValues.moodLevel ?? null,
         depressionLevel: parsedValues.depressionLevel ?? null,
         anxietyLevel: parsedValues.anxietyLevel ?? null,
+        positiveMoods: parsedValues.positiveMoods,
+        negativeMoods: parsedValues.negativeMoods,
+        generalMoods: parsedValues.generalMoods,
         description: parsedValues.description,
         gratitude: parsedValues.gratitude,
         reflection: parsedValues.reflection
@@ -605,6 +638,9 @@ function App() {
         moodLevel: null,
         depressionLevel: null,
         anxietyLevel: null,
+        positiveMoods: "",
+        negativeMoods: "",
+        generalMoods: "",
         description: "",
         gratitude: "",
         reflection: ""
@@ -1222,6 +1258,32 @@ function App() {
               Anxiety (1-9)
               <input type="number" min={1} max={9} {...diaryForm.register("anxietyLevel", { valueAsNumber: true })} />
             </label>
+            <div className="mood-tags-grid">
+              <MultiSelectField
+                label="Positive"
+                fieldKey="positive_moods"
+                value={diaryForm.watch("positiveMoods")}
+                options={moodFieldOptions.positive_moods}
+                onChange={(next) => diaryForm.setValue("positiveMoods", next, { shouldDirty: true })}
+                domain="mood"
+              />
+              <MultiSelectField
+                label="Negative"
+                fieldKey="negative_moods"
+                value={diaryForm.watch("negativeMoods")}
+                options={moodFieldOptions.negative_moods}
+                onChange={(next) => diaryForm.setValue("negativeMoods", next, { shouldDirty: true })}
+                domain="mood"
+              />
+              <MultiSelectField
+                label="General"
+                fieldKey="general_moods"
+                value={diaryForm.watch("generalMoods")}
+                options={moodFieldOptions.general_moods}
+                onChange={(next) => diaryForm.setValue("generalMoods", next, { shouldDirty: true })}
+                domain="mood"
+              />
+            </div>
             <label>
               Description
               <textarea {...diaryForm.register("description")} />
@@ -1246,6 +1308,9 @@ function App() {
                       moodLevel: null,
                       depressionLevel: null,
                       anxietyLevel: null,
+                      positiveMoods: "",
+                      negativeMoods: "",
+                      generalMoods: "",
                       description: "",
                       gratitude: "",
                       reflection: ""
@@ -1267,6 +1332,9 @@ function App() {
                   <th>Mood</th>
                   <th>Dep</th>
                   <th>Anx</th>
+                  <th>Positive</th>
+                  <th>Negative</th>
+                  <th>General</th>
                   <th>Description</th>
                   <th>Gratitude</th>
                   <th>Reflection</th>
@@ -1281,6 +1349,9 @@ function App() {
                     <td>{entry.moodLevel ?? "-"}</td>
                     <td>{entry.depressionLevel ?? "-"}</td>
                     <td>{entry.anxietyLevel ?? "-"}</td>
+                    <td>{entry.positiveMoods || "-"}</td>
+                    <td>{entry.negativeMoods || "-"}</td>
+                    <td>{entry.generalMoods || "-"}</td>
                     <td>{entry.description || "-"}</td>
                     <td>{entry.gratitude || "-"}</td>
                     <td>{entry.reflection || "-"}</td>
@@ -1293,6 +1364,9 @@ function App() {
                             moodLevel: entry.moodLevel,
                             depressionLevel: entry.depressionLevel,
                             anxietyLevel: entry.anxietyLevel,
+                            positiveMoods: entry.positiveMoods,
+                            negativeMoods: entry.negativeMoods,
+                            generalMoods: entry.generalMoods,
                             description: entry.description,
                             gratitude: entry.gratitude,
                             reflection: entry.reflection
@@ -1641,15 +1715,24 @@ function App() {
   );
 }
 
+type MultiSelectDomain = "pain" | "mood";
+
+const domainConfig: Record<MultiSelectDomain, { apiBase: string; queryKey: string }> = {
+  pain: { apiBase: "/api/v1/pain/options", queryKey: "pain-options" },
+  mood: { apiBase: "/api/v1/mood/options", queryKey: "mood-options" }
+};
+
 type MultiSelectFieldProps = {
   label: string;
-  fieldKey: PainFieldKey;
+  fieldKey: PainFieldKey | MoodFieldKey;
   value: string;
   options: string[];
   onChange: (next: string) => void;
+  domain?: MultiSelectDomain;
 };
 
-function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSelectFieldProps) {
+function MultiSelectField({ label, fieldKey, value, options, onChange, domain = "pain" }: MultiSelectFieldProps) {
+  const { apiBase, queryKey: queryKeyName } = domainConfig[domain];
   const queryClient = useQueryClient();
   const selectedValues = useMemo(() => csvToList(value), [value]);
   const [hiddenSet, setHiddenSet] = useState<Set<string>>(() => new Set());
@@ -1714,14 +1797,14 @@ function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSe
 
     try {
       await apiFetch(
-        "/api/v1/pain/options/remove",
+        `${apiBase}/remove`,
         {
           method: "POST",
           body: JSON.stringify({ field: fieldKey, value: option })
         },
         (raw) => apiEnvelopeSchema(z.object({ ok: z.boolean() })).parse(raw).data
       );
-      await queryClient.invalidateQueries({ queryKey: ["pain-options"] });
+      await queryClient.invalidateQueries({ queryKey: [queryKeyName] });
     } catch {
       // if this fails, the option will still be hidden locally for this session
     }
@@ -1773,14 +1856,25 @@ function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSe
                 aria-pressed={isSelected}
               >
                 <span className="multi-option-label">{option}</span>
-              </button>
-              <button
-                type="button"
-                className="multi-option-remove"
-                aria-label={`Remove ${option} from suggestions`}
-                onClick={() => setPendingRemovalKey(optionKey)}
-              >
-                ×
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className="multi-option-remove"
+                  aria-label={`Remove ${option} from suggestions`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPendingRemovalKey(optionKey);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setPendingRemovalKey(optionKey);
+                    }
+                  }}
+                >
+                  ×
+                </span>
               </button>
             </div>
           );
@@ -1812,14 +1906,14 @@ function MultiSelectField({ label, fieldKey, value, options, onChange }: MultiSe
             void (async () => {
               try {
                 await apiFetch(
-                  "/api/v1/pain/options/restore",
+                  `${apiBase}/restore`,
                   {
                     method: "POST",
                     body: JSON.stringify({ field: fieldKey, value: clean })
                   },
                   (raw) => apiEnvelopeSchema(z.object({ ok: z.boolean() })).parse(raw).data
                 );
-                await queryClient.invalidateQueries({ queryKey: ["pain-options"] });
+                await queryClient.invalidateQueries({ queryKey: [queryKeyName] });
               } catch {
                 // ignore failures; option is already visible locally
               }

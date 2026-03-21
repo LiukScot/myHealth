@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export const migrationStatements: string[] = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -80,6 +80,46 @@ export const migrationStatements: string[] = [
     UNIQUE(user_id, field, value),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`,
+  `CREATE TABLE IF NOT EXISTS mood_options (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    field TEXT NOT NULL,
+    value TEXT NOT NULL,
+    UNIQUE(user_id, field, value),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
+  `CREATE TABLE IF NOT EXISTS mood_removed_options (
+    user_id INTEGER NOT NULL,
+    field TEXT NOT NULL,
+    value TEXT NOT NULL,
+    PRIMARY KEY (user_id, field, value),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
+  `INSERT OR IGNORE INTO mood_options (user_id, field, value)
+   SELECT u.id, v.field, v.value
+   FROM users u
+   CROSS JOIN (
+     SELECT 'positive_moods'  AS field, 'happy'       AS value UNION ALL
+     SELECT 'positive_moods',           'calm'                  UNION ALL
+     SELECT 'positive_moods',           'grateful'              UNION ALL
+     SELECT 'positive_moods',           'energetic'             UNION ALL
+     SELECT 'positive_moods',           'hopeful'               UNION ALL
+     SELECT 'positive_moods',           'relaxed'               UNION ALL
+     SELECT 'positive_moods',           'confident'             UNION ALL
+     SELECT 'negative_moods',           'sad'                   UNION ALL
+     SELECT 'negative_moods',           'angry'                 UNION ALL
+     SELECT 'negative_moods',           'frustrated'            UNION ALL
+     SELECT 'negative_moods',           'lonely'                UNION ALL
+     SELECT 'negative_moods',           'overwhelmed'           UNION ALL
+     SELECT 'negative_moods',           'irritable'             UNION ALL
+     SELECT 'negative_moods',           'hopeless'              UNION ALL
+     SELECT 'general_moods',            'tired'                 UNION ALL
+     SELECT 'general_moods',            'numb'                  UNION ALL
+     SELECT 'general_moods',            'distracted'            UNION ALL
+     SELECT 'general_moods',            'restless'              UNION ALL
+     SELECT 'general_moods',            'bored'                 UNION ALL
+     SELECT 'general_moods',            'indifferent'
+   ) AS v`,
   `INSERT OR IGNORE INTO pain_options (user_id, field, value)
    SELECT u.id, v.field, v.value
    FROM users u
@@ -133,3 +173,6 @@ export const migrationStatements: string[] = [
 
 export const TAG_TYPES = ["area", "symptoms", "activities", "medicines", "habits", "other"] as const;
 export type TagType = (typeof TAG_TYPES)[number];
+
+export const MOOD_TAG_FIELDS = ["positive_moods", "negative_moods", "general_moods"] as const;
+export type MoodTagField = (typeof MOOD_TAG_FIELDS)[number];
