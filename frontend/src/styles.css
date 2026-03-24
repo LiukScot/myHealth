@@ -162,6 +162,28 @@ button.active {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
+button.btn-check {
+  width: 38px;
+  min-width: 38px;
+  padding: 0;
+  border-color: #6fe1b0;
+  color: #6fe1b0;
+  background: rgba(111, 225, 176, 0.12);
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+button.btn-delete-confirm,
+button.btn-delete-confirm:focus-visible,
+button.btn-delete-confirm:hover {
+  border-color: #ff3333;
+  color: #ff3333;
+  background: rgba(255, 51, 51, 0.18);
+  box-shadow: 0 0 0 2px rgba(255, 51, 51, 0.4), var(--shadow-sm);
+  font-weight: 800;
+  transition: all 0.3s ease;
+}
+
 input[type="datetime-local"],
 input[type="date"],
 input[type="time"] {
@@ -717,25 +739,14 @@ tbody tr:hover {
     min-height: 34px;
     font-size: 13px;
   }
-  table { font-size: 12px; }
-  th, td { padding: 8px 6px; white-space: nowrap; }
+  table { font-size: 11px; }
+  th, td { padding: 6px 4px; white-space: nowrap; }
   .chat-output { font-size: 13px; }
 
-  /* Diary table: hide Time, Gratitude, Reflection */
-  .diary-table th:nth-child(2), .diary-table td:nth-child(2),
-  .diary-table th:nth-child(7), .diary-table td:nth-child(7),
-  .diary-table th:nth-child(8), .diary-table td:nth-child(8) { display: none; }
-  /* Truncate Description column */
-  .diary-table td:nth-child(6) { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
-
-  /* Pain table: hide Time, Coffee, Symptoms, Activities, Medicines, Habits, Other */
-  .pain-table th:nth-child(2), .pain-table td:nth-child(2),
-  .pain-table th:nth-child(5), .pain-table td:nth-child(5),
-  .pain-table th:nth-child(7), .pain-table td:nth-child(7),
-  .pain-table th:nth-child(8), .pain-table td:nth-child(8),
-  .pain-table th:nth-child(9), .pain-table td:nth-child(9),
-  .pain-table th:nth-child(10), .pain-table td:nth-child(10),
-  .pain-table th:nth-child(11), .pain-table td:nth-child(11) { display: none; }
-  /* Truncate Notes column (was col 12, now col 5 after hiding) */
-  .pain-table td:nth-child(12) { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+  /* Truncate long text columns on mobile */
+  .diary-table td:nth-child(6),
+  .diary-table td:nth-child(9),
+  .diary-table td:nth-child(10),
+  .diary-table td:nth-child(11) { max-width: 100px; overflow: hidden; text-overflow: ellipsis; }
+  .pain-table td:nth-child(12) { max-width: 100px; overflow: hidden; text-overflow: ellipsis; }
 }

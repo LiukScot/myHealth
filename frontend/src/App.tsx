@@ -441,6 +441,8 @@ function App() {
   const [chatStatus, setChatStatus] = useState<string>("");
   const [editingDiary, setEditingDiary] = useState<DiaryEntry | null>(null);
   const [editingPain, setEditingPain] = useState<PainEntry | null>(null);
+  const [confirmDeleteDiary, setConfirmDeleteDiary] = useState<number | null>(null);
+  const [confirmDeletePain, setConfirmDeletePain] = useState<number | null>(null);
   const [dashboardFrom, setDashboardFrom] = useState("");
   const [dashboardTo, setDashboardTo] = useState("");
   const [activeQuickRange, setActiveQuickRange] = useState<DashboardQuickRange>("all");
@@ -646,6 +648,7 @@ function App() {
         reflection: ""
       });
       await queryClient.invalidateQueries({ queryKey: ["diary"] });
+      setTimeout(() => diaryMutation.reset(), 3000);
     }
   });
 
@@ -697,6 +700,7 @@ function App() {
         note: ""
       });
       await queryClient.invalidateQueries({ queryKey: ["pain"] });
+      setTimeout(() => painMutation.reset(), 3000);
     }
   });
 
@@ -1297,7 +1301,7 @@ function App() {
               <textarea {...diaryForm.register("reflection")} />
             </label>
             <div className="row-actions">
-              <button type="submit">{editingDiary ? "Update entry" : "Add entry"}</button>
+              <button type="submit" className={diaryMutation.isSuccess ? "btn-check" : ""}>{diaryMutation.isSuccess ? "\u2713" : editingDiary ? "Update entry" : "Add entry"}</button>
               {editingDiary && (
                 <button
                   type="button"
@@ -1375,7 +1379,18 @@ function App() {
                       >
                         Edit
                       </button>
-                      <button onClick={() => diaryDeleteMutation.mutate(entry.id)}>Delete</button>
+                      <button
+                        className={confirmDeleteDiary === entry.id ? "btn-delete-confirm" : ""}
+                        onClick={() => {
+                          if (confirmDeleteDiary === entry.id) {
+                            diaryDeleteMutation.mutate(entry.id);
+                            setConfirmDeleteDiary(null);
+                          } else {
+                            setConfirmDeleteDiary(entry.id);
+                          }
+                        }}
+                        onBlur={() => setConfirmDeleteDiary(null)}
+                      >{confirmDeleteDiary === entry.id ? "Delete?" : "Delete"}</button>
                     </td>
                   </tr>
                 ))}
@@ -1459,7 +1474,7 @@ function App() {
             </label>
 
             <div className="row-actions">
-              <button type="submit">{editingPain ? "Update entry" : "Add entry"}</button>
+              <button type="submit" className={painMutation.isSuccess ? "btn-check" : ""}>{painMutation.isSuccess ? "\u2713" : editingPain ? "Update entry" : "Add entry"}</button>
               {editingPain && (
                 <button
                   type="button"
@@ -1541,7 +1556,18 @@ function App() {
                       >
                         Edit
                       </button>
-                      <button onClick={() => painDeleteMutation.mutate(entry.id)}>Delete</button>
+                      <button
+                        className={confirmDeletePain === entry.id ? "btn-delete-confirm" : ""}
+                        onClick={() => {
+                          if (confirmDeletePain === entry.id) {
+                            painDeleteMutation.mutate(entry.id);
+                            setConfirmDeletePain(null);
+                          } else {
+                            setConfirmDeletePain(entry.id);
+                          }
+                        }}
+                        onBlur={() => setConfirmDeletePain(null)}
+                      >{confirmDeletePain === entry.id ? "Delete?" : "Delete"}</button>
                     </td>
                   </tr>
                 ))}
