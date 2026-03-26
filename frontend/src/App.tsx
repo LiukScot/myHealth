@@ -556,6 +556,8 @@ function App() {
       note: ""
     }
   });
+  const [watchedArea, watchedSymptoms, watchedActivities, watchedMedicines, watchedHabits, watchedOther] =
+    painForm.watch(["area", "symptoms", "activities", "medicines", "habits", "other"]);
 
   const loginMutation = useMutation({
     mutationFn: async (values: z.infer<typeof loginSchema>) =>
@@ -1427,42 +1429,42 @@ function App() {
               <MultiSelectField
                 label="Area"
                 fieldKey="area"
-                value={painForm.watch("area")}
+                value={watchedArea}
                 options={painFieldOptions.area}
                 onChange={(next) => painForm.setValue("area", next, { shouldDirty: true })}
               />
               <MultiSelectField
                 label="Symptoms"
                 fieldKey="symptoms"
-                value={painForm.watch("symptoms")}
+                value={watchedSymptoms}
                 options={painFieldOptions.symptoms}
                 onChange={(next) => painForm.setValue("symptoms", next, { shouldDirty: true })}
               />
               <MultiSelectField
                 label="Activities"
                 fieldKey="activities"
-                value={painForm.watch("activities")}
+                value={watchedActivities}
                 options={painFieldOptions.activities}
                 onChange={(next) => painForm.setValue("activities", next, { shouldDirty: true })}
               />
               <MultiSelectField
                 label="Medicines"
                 fieldKey="medicines"
-                value={painForm.watch("medicines")}
+                value={watchedMedicines}
                 options={painFieldOptions.medicines}
                 onChange={(next) => painForm.setValue("medicines", next, { shouldDirty: true })}
               />
               <MultiSelectField
                 label="Habits"
                 fieldKey="habits"
-                value={painForm.watch("habits")}
+                value={watchedHabits}
                 options={painFieldOptions.habits}
                 onChange={(next) => painForm.setValue("habits", next, { shouldDirty: true })}
               />
               <MultiSelectField
                 label="Other"
                 fieldKey="other"
-                value={painForm.watch("other")}
+                value={watchedOther}
                 options={painFieldOptions.other}
                 onChange={(next) => painForm.setValue("other", next, { shouldDirty: true })}
               />
