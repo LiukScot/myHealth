@@ -327,7 +327,28 @@ label {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 10px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.settings-column {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  height: 100%;
+}
+
+.settings-column > article,
+.settings-grid > article {
+  padding: 14px;
+}
+
+.settings-grid > article {
+  border-left: 1px solid var(--border);
+}
+
+.settings-column > article.danger-zone {
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
 }
 
 .danger {
@@ -708,6 +729,23 @@ tbody tr:hover {
   }
   .settings-grid {
     grid-template-columns: 1fr;
+  }
+  .settings-column {
+    gap: 0;
+  }
+  .settings-column > article,
+  .settings-grid > article {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+  }
+  .settings-column > article:first-child {
+    border-top: none;
+    padding-top: 14px;
+  }
+  .settings-grid > article:first-child {
+    border-top: none;
+    padding-top: 14px;
   }
   .dashboard-filters {
     grid-template-columns: 1fr;

@@ -1602,29 +1602,83 @@ function App() {
         <section className="panel">
           <h2>Settings</h2>
           <div className="settings-grid">
-            <article>
-              <h3>AI key</h3>
-              <AiKeyEditor
-                hasKey={Boolean(aiKeyQuery.data?.hasKey)}
-                feedback={aiKeyFeedback}
-                isSaving={aiKeyMutation.isPending}
-                isClearing={clearAiKeyMutation.isPending}
-                onFeedbackClear={clearAiKeyStatus}
-                onSave={(key) => {
-                  const clean = key.trim();
-                  if (!clean) {
-                    setAiKeyFeedback({ tone: "error", text: "Enter a key before saving." });
-                    return false;
+            <div className="settings-column">
+              <article>
+                <h3>AI key</h3>
+                <AiKeyEditor
+                  hasKey={Boolean(aiKeyQuery.data?.hasKey)}
+                  feedback={aiKeyFeedback}
+                  isSaving={aiKeyMutation.isPending}
+                  isClearing={clearAiKeyMutation.isPending}
+                  onFeedbackClear={clearAiKeyStatus}
+                  onSave={(key) => {
+                    const clean = key.trim();
+                    if (!clean) {
+                      setAiKeyFeedback({ tone: "error", text: "Enter a key before saving." });
+                      return false;
+                    }
+                    aiKeyMutation.mutate(clean);
+                    return true;
+                  }}
+                  onClear={() => {
+                    clearAiKeyStatus();
+                    clearAiKeyMutation.mutate();
+                  }}
+                />
+              </article>
+              <article className="danger-zone">
+                <h3>Danger zone</h3>
+                {purgeConfirmArmed ? (
+                  <div className="inline-confirmation" role="group" aria-label="Confirm purge all data">
+                    <InlineFeedback
+                      className="confirmation-copy"
+                      message={{
+                        tone: "warning",
+                        text: "This permanently deletes all diary, pain, and preference data for this account."
+                      }}
+                    />
+                    <div className="row-actions confirmation-actions">
+                      <button
+                        type="button"
+                        className="danger"
+                        onClick={() => purgeMutation.mutate()}
+                        disabled={purgeMutation.isPending}
+                      >
+                        {purgeMutation.isPending ? "Purging..." : "Confirm purge all data"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          purgeMutation.reset();
+                          setPurgeConfirmArmed(false);
+                        }}
+                        disabled={purgeMutation.isPending}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="danger"
+                    onClick={() => {
+                      purgeMutation.reset();
+                      setPurgeConfirmArmed(true);
+                    }}
+                  >
+                    Purge all data
+                  </button>
+                )}
+                <InlineFeedback
+                  message={
+                    purgeMutation.error
+                      ? { tone: "error", text: getErrorMessage(purgeMutation.error) }
+                      : null
                   }
-                  aiKeyMutation.mutate(clean);
-                  return true;
-                }}
-                onClear={() => {
-                  clearAiKeyStatus();
-                  clearAiKeyMutation.mutate();
-                }}
-              />
-            </article>
+                />
+              </article>
+            </div>
             <article>
               <h3>Preferences</h3>
               <PreferencesEditor
@@ -1634,103 +1688,53 @@ function App() {
             </article>
             <article>
               <h3>Backup</h3>
-              <button
-                type="button"
-                onClick={() => {
-                  void runBackupAction(doExportJson, BACKUP_JSON_EXPORT_OK);
-                }}
-              >
-                Export JSON
-              </button>
-              <label className="file-input">
-                Import JSON
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      void runBackupAction(() => doImportJson(file), BACKUP_JSON_IMPORT_OK);
-                    }
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  void runBackupAction(doExportXlsx, BACKUP_XLSX_EXPORT_OK);
-                }}
-              >
-                Export XLSX
-              </button>
-              <label className="file-input">
-                Import XLSX
-                <input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      void runBackupAction(() => doImportXlsx(file), BACKUP_XLSX_IMPORT_OK);
-                    }
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-              <InlineFeedback message={backupFeedback} />
-            </article>
-            <article>
-              <h3>Danger zone</h3>
-              {purgeConfirmArmed ? (
-                <div className="inline-confirmation" role="group" aria-label="Confirm purge all data">
-                  <InlineFeedback
-                    className="confirmation-copy"
-                    message={{
-                      tone: "warning",
-                      text: "This permanently deletes all diary, pain, and preference data for this account."
-                    }}
-                  />
-                  <div className="row-actions confirmation-actions">
-                    <button
-                      type="button"
-                      className="danger"
-                      onClick={() => purgeMutation.mutate()}
-                      disabled={purgeMutation.isPending}
-                    >
-                      {purgeMutation.isPending ? "Purging..." : "Confirm purge all data"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        purgeMutation.reset();
-                        setPurgeConfirmArmed(false);
-                      }}
-                      disabled={purgeMutation.isPending}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
+              <div className="stack">
                 <button
                   type="button"
-                  className="danger"
                   onClick={() => {
-                    purgeMutation.reset();
-                    setPurgeConfirmArmed(true);
+                    void runBackupAction(doExportJson, BACKUP_JSON_EXPORT_OK);
                   }}
                 >
-                  Purge all data
+                  Export JSON
                 </button>
-              )}
-              <InlineFeedback
-                message={
-                  purgeMutation.error
-                    ? { tone: "error", text: getErrorMessage(purgeMutation.error) }
-                    : null
-                }
-              />
+                <label className="file-input">
+                  Import JSON
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        void runBackupAction(() => doImportJson(file), BACKUP_JSON_IMPORT_OK);
+                      }
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void runBackupAction(doExportXlsx, BACKUP_XLSX_EXPORT_OK);
+                  }}
+                >
+                  Export XLSX
+                </button>
+                <label className="file-input">
+                  Import XLSX
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        void runBackupAction(() => doImportXlsx(file), BACKUP_XLSX_IMPORT_OK);
+                      }
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <InlineFeedback message={backupFeedback} />
+              </div>
             </article>
           </div>
         </section>
