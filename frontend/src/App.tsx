@@ -1076,11 +1076,11 @@ function App() {
           <form onSubmit={loginForm.handleSubmit((values) => loginMutation.mutate(values))} className="stack">
             <label>
               Email
-              <input type="email" {...loginForm.register("email")} />
+              <input type="email" autoComplete="email" {...loginForm.register("email")} />
             </label>
             <label>
               Password
-              <input type="password" {...loginForm.register("password")} />
+              <input type="password" autoComplete="current-password" {...loginForm.register("password")} />
             </label>
             <button type="submit" disabled={loginMutation.isPending}>
               {loginMutation.isPending ? "Signing in..." : "Sign in"}
@@ -1109,15 +1109,15 @@ function App() {
             >
               <label>
                 Current password
-                <input type="password" {...changePasswordForm.register("currentPassword")} />
+                <input type="password" autoComplete="current-password" {...changePasswordForm.register("currentPassword")} />
               </label>
               <label>
                 New password
-                <input type="password" {...changePasswordForm.register("newPassword")} />
+                <input type="password" autoComplete="new-password" {...changePasswordForm.register("newPassword")} />
               </label>
               <label>
                 Confirm
-                <input type="password" {...changePasswordForm.register("confirmPassword")} />
+                <input type="password" autoComplete="new-password" {...changePasswordForm.register("confirmPassword")} />
               </label>
               <button type="submit" disabled={changePasswordMutation.isPending}>
                 Change password
@@ -1148,7 +1148,6 @@ function App() {
       {nav === "dashboard" && (
         <section className="panel">
           <h2>Dashboard</h2>
-          <p className="hint">Overview of diary and pain logs.</p>
 
           <div className="dashboard-filters">
             <label>
@@ -1582,7 +1581,6 @@ function App() {
       {nav === "chat" && (
         <section className="panel">
           <h2>Chatbot</h2>
-          <p className="hint">AI key {aiKeyQuery.data?.hasKey ? `configured (ending ${aiKeyQuery.data.last4 ?? ""})` : "not configured"}</p>
           <ChatComposer
             defaultModel={prefsQuery.data?.model ?? "mistral-small-latest"}
             defaultRange={prefsQuery.data?.chatRange ?? "all"}
@@ -1974,6 +1972,7 @@ function AiKeyEditor({ hasKey, feedback, isSaving, isClearing, onFeedbackClear, 
     <div className="stack">
       <input
         type="password"
+        autoComplete="off"
         placeholder={hasKey ? "Stored key exists" : "Paste key"}
         value={value}
         onChange={(e) => {
