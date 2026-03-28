@@ -981,9 +981,7 @@ function App() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: {
-            labels: { color: "#f5f5f7" }
-          }
+          legend: { display: false }
         },
         scales: {
           x: {
