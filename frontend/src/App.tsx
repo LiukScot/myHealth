@@ -21,6 +21,7 @@ import {
   formatNumber,
   getQuickRangeBounds,
   inDateRange,
+  listToCsv,
   loginSchema,
   moodOptionsSchema,
   navItems,
@@ -127,6 +128,23 @@ function App() {
     other: [],
   };
 
+  const createDefaultPainFormValues = useCallback(
+    () => ({
+      dateTime: toLocalDateTimeValue(),
+      painLevel: null,
+      fatigueLevel: null,
+      coffeeCount: null,
+      area: "",
+      symptoms: "",
+      activities: "",
+      medicines: listToCsv(painFieldOptions.medicines),
+      habits: "",
+      other: "",
+      note: "",
+    }),
+    [painFieldOptions.medicines],
+  );
+
   const moodOptionsQuery = useQuery({
     queryKey: ["mood-options"],
     enabled: !!user,
@@ -160,23 +178,18 @@ function App() {
   });
 
   const painForm = useForm<z.infer<typeof painFormSchema>>({
-    defaultValues: {
-      dateTime: toLocalDateTimeValue(),
-      painLevel: null,
-      fatigueLevel: null,
-      coffeeCount: null,
-      area: "",
-      symptoms: "",
-      activities: "",
-      medicines: "",
-      habits: "",
-      other: "",
-      note: "",
-    },
+    defaultValues: createDefaultPainFormValues(),
   });
 
   const [watchedArea, watchedSymptoms, watchedActivities, watchedMedicines, watchedHabits, watchedOther] =
     painForm.watch(["area", "symptoms", "activities", "medicines", "habits", "other"]);
+
+  useEffect(() => {
+    if (editingPain || painForm.formState.isDirty) {
+      return;
+    }
+    painForm.reset(createDefaultPainFormValues());
+  }, [createDefaultPainFormValues, editingPain, painForm, painForm.formState.isDirty]);
 
   const loginMutation = useMutation({
     mutationFn: async (values: z.infer<typeof loginSchema>) =>
@@ -299,19 +312,7 @@ function App() {
     },
     onSuccess: async () => {
       setEditingPain(null);
-      painForm.reset({
-        dateTime: toLocalDateTimeValue(),
-        painLevel: null,
-        fatigueLevel: null,
-        coffeeCount: null,
-        area: "",
-        symptoms: "",
-        activities: "",
-        medicines: "",
-        habits: "",
-        other: "",
-        note: "",
-      });
+      painForm.reset(createDefaultPainFormValues());
       await queryClient.invalidateQueries({ queryKey: ["pain"] });
       setTimeout(() => painMutation.reset(), 3000);
     },
@@ -675,19 +676,7 @@ function App() {
 
   const resetPainForm = () => {
     setEditingPain(null);
-    painForm.reset({
-      dateTime: toLocalDateTimeValue(),
-      painLevel: null,
-      fatigueLevel: null,
-      coffeeCount: null,
-      area: "",
-      symptoms: "",
-      activities: "",
-      medicines: "",
-      habits: "",
-      other: "",
-      note: "",
-    });
+    painForm.reset(createDefaultPainFormValues());
   };
 
   const startDiaryEdit = (entry: DiaryEntry) => {
