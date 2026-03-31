@@ -1,4 +1,4 @@
-# myHealth
+# Health
 
 A personal health tracking app for logging daily mood, pain, and habits — with an AI assistant powered by Mistral.
 
@@ -14,7 +14,7 @@ A personal health tracking app for logging daily mood, pain, and habits — with
 
 ## Running with Docker (recommended)
 
-The easiest way to run myHealth is with Docker.
+The easiest way to run Health is with Docker.
 
 **Prerequisites:** [Docker](https://docs.docker.com/get-docker/) and a running Redis instance.
 
@@ -35,7 +35,7 @@ The easiest way to run myHealth is with Docker.
 3. Create your user account:
 
    ```bash
-   docker exec myhealth bun --cwd backend src/user-cli.ts create \
+   docker exec health bun --cwd backend src/user-cli.ts create \
      --email=you@example.com \
      --password=YourPassword \
      --name=YourName
@@ -47,7 +47,7 @@ The easiest way to run myHealth is with Docker.
 
 ## Data & backup
 
-Your data is stored in `data/myhealth.sqlite`. The app runs migrations automatically on startup — no manual steps needed.
+Your data is stored in `data/health.sqlite`. The app runs migrations automatically on startup — no manual steps needed.
 
 To back up or restore your data:
 

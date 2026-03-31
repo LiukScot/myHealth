@@ -8,7 +8,7 @@ if (!fileArg) {
 }
 
 const source = fileArg.slice("--file=".length);
-const dbPath = process.env.DB_PATH || path.resolve(process.cwd(), "../data/myhealth.sqlite");
+const dbPath = process.env.DB_PATH || path.resolve(process.cwd(), "../data/health.sqlite");
 
 if (!fs.existsSync(source)) {
   console.error(`Backup file not found: ${source}`);

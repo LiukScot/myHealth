@@ -2,7 +2,7 @@ import path from "node:path";
 import { defineConfig } from "@playwright/test";
 
 const smokePort = Number(process.env.SMOKE_PORT || 4173);
-const smokeDbPath = path.resolve(__dirname, "backend/data/smoke-myhealth.sqlite");
+const smokeDbPath = path.resolve(__dirname, "backend/data/smoke-health.sqlite");
 const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 
 export default defineConfig({

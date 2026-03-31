@@ -9,6 +9,6 @@ test.afterEach(async ({ request }) => {
   await purgeUserData(request);
 });
 
-test("myHealth login smoke", async ({ page }) => {
+test("Health login smoke", async ({ page }) => {
   await loginUi(page);
 });

@@ -19,7 +19,7 @@ RUN mkdir -p /app/data
 
 ENV HOST=0.0.0.0 \
     PORT=5555 \
-    DB_PATH=/app/data/myhealth.sqlite
+    DB_PATH=/app/data/health.sqlite
 
 EXPOSE 5555
 CMD ["bun", "--cwd", "backend", "src/server.ts"]

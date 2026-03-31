@@ -21,9 +21,9 @@ function parseArgs(): Args {
   };
   const fresh = args.includes("--fresh");
   const source = get("source", path.resolve(process.cwd(), "../data/mytools.sqlite"));
-  const target = get("target", process.env.DB_PATH || path.resolve(process.cwd(), "../data/myhealth.sqlite"));
+  const target = get("target", process.env.DB_PATH || path.resolve(process.cwd(), "../data/health.sqlite"));
   const primaryEmail = get("primary-email", process.env.MIGRATION_PRIMARY_EMAIL || "").trim();
-  const report = get("report", path.resolve(process.cwd(), "../data/myhealth-migration-report.json"));
+  const report = get("report", path.resolve(process.cwd(), "../data/health-migration-report.json"));
   if (!primaryEmail) {
     throw new Error("Missing primary email. Use --primary-email=... or MIGRATION_PRIMARY_EMAIL.");
   }

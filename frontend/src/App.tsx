@@ -605,7 +605,7 @@ function App() {
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const anchor = document.createElement("a");
     anchor.href = URL.createObjectURL(blob);
-    anchor.download = `myhealth-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.download = `health-backup-${new Date().toISOString().slice(0, 10)}.json`;
     anchor.click();
     URL.revokeObjectURL(anchor.href);
   };
@@ -628,7 +628,7 @@ function App() {
     const blob = await response.blob();
     const anchor = document.createElement("a");
     anchor.href = URL.createObjectURL(blob);
-    anchor.download = `myhealth-backup-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    anchor.download = `health-backup-${new Date().toISOString().slice(0, 10)}.xlsx`;
     anchor.click();
     URL.revokeObjectURL(anchor.href);
   };
@@ -716,7 +716,7 @@ function App() {
     return (
       <main className="screen auth-screen">
         <section className="auth-card">
-          <h1>myHealth</h1>
+          <h1>Health</h1>
           <p>Sign in to access your private health workspace.</p>
           <form onSubmit={loginForm.handleSubmit((values) => loginMutation.mutate(values))} className="stack">
             <label>
@@ -742,7 +742,7 @@ function App() {
     <main className="screen app-screen">
       <header className="app-header">
         <div>
-          <h1>myHealth</h1>
+          <h1>Health</h1>
         </div>
         <div className="header-actions">
           <details>

@@ -1,7 +1,7 @@
 import path from "node:path";
 import { openDb, runMigrations } from "./db.ts";
 
-const dbPath = process.env.DB_PATH || path.resolve(process.cwd(), "../data/myhealth.sqlite");
+const dbPath = process.env.DB_PATH || path.resolve(process.cwd(), "../data/health.sqlite");
 const cmd = process.argv[2];
 const args = process.argv.slice(3);
 

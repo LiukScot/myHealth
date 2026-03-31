@@ -30,11 +30,11 @@ type SessionData = {
 const envSchema = z.object({
   HOST: z.string().default("0.0.0.0"),
   PORT: z.coerce.number().default(5555),
-  DB_PATH: z.string().default(path.resolve(process.cwd(), "../data/myhealth.sqlite")),
+  DB_PATH: z.string().default(path.resolve(process.cwd(), "../data/health.sqlite")),
   REDIS_URL: z.string().min(1, "REDIS_URL is required"),
   SESSION_TTL_SECONDS: z.coerce.number().default(60 * 60 * 24 * 30),
-  SESSION_COOKIE_NAME: z.string().default("MYHEALTH_SESSID"),
-  SESSION_PREFIX: z.string().default("myhealth:sess:"),
+  SESSION_COOKIE_NAME: z.string().default("HEALTH_SESSID"),
+  SESSION_PREFIX: z.string().default("health:sess:"),
   ALLOWED_ORIGINS: z.string().default("http://localhost:5173,http://127.0.0.1:5173,http://localhost:5555,http://127.0.0.1:5555"),
   PUBLIC_DIR: z.string().default(path.resolve(process.cwd(), "../frontend/dist")),
   COOKIE_SECURE: z.string().default("false")
@@ -375,7 +375,7 @@ function loadMoodOptionsForUser(userId: number): MoodTagMap {
 
 function rowsToHealthBackup(diaryRows: any[], painRows: any[]): { diary: any; pain: any } {
   const diary = {
-    source: "myhealth-backend",
+    source: "health-backend",
     imported_at: new Date().toISOString(),
     headers: ["date", "hour", "mood level", "depression", "anxiety", "positive moods", "negative moods", "general moods", "description", "gratitude", "reflection"],
     rows: diaryRows.map((row) => ({
@@ -394,7 +394,7 @@ function rowsToHealthBackup(diaryRows: any[], painRows: any[]): { diary: any; pa
   };
 
   const pain = {
-    source: "myhealth-backend",
+    source: "health-backend",
     imported_at: new Date().toISOString(),
     headers: [
       "date",
@@ -1144,7 +1144,7 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
     const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
     const headers = new Headers(corsHeaders);
     headers.set("content-type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    headers.set("content-disposition", `attachment; filename="myhealth-${new Date().toISOString().slice(0, 10)}.xlsx"`);
+    headers.set("content-disposition", `attachment; filename="health-${new Date().toISOString().slice(0, 10)}.xlsx"`);
     return new Response(buffer, { status: 200, headers });
   }
 
@@ -1269,6 +1269,8 @@ const server = Bun.serve({
         url.pathname.startsWith("/hub/") ||
         url.pathname === "/myhealth" ||
         url.pathname.startsWith("/myhealth/") ||
+        url.pathname === "/health" ||
+        url.pathname.startsWith("/health/") ||
         url.pathname === "/mymoney" ||
         url.pathname.startsWith("/mymoney/")
       ) {
@@ -1285,7 +1287,7 @@ const server = Bun.serve({
         return new Response(Bun.file(indexFile), { headers: cors });
       }
 
-      return new Response("myHealth backend running. Frontend build not found.", {
+      return new Response("Health backend running. Frontend build not found.", {
         status: 200,
         headers: cors
       });
@@ -1299,4 +1301,4 @@ const server = Bun.serve({
   }
 });
 
-console.log(`myHealth backend listening on http://${env.HOST}:${server.port}`);
+console.log(`Health backend listening on http://${env.HOST}:${server.port}`);
