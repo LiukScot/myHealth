@@ -27,6 +27,7 @@ export async function callMistral(
 ): Promise<string> {
   const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
     method: "POST",
+    signal: AbortSignal.timeout(30_000),
     headers: {
       "content-type": "application/json",
       authorization: `Bearer ${apiKey}`

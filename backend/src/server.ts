@@ -1,4 +1,3 @@
-import { Database } from "bun:sqlite";
 import fs from "node:fs";
 import path from "node:path";
 import cookie from "cookie";
@@ -56,6 +55,8 @@ const redis = new Redis(env.REDIS_URL, {
   maxRetriesPerRequest: 1,
   enableReadyCheck: true
 });
+
+redis.on("error", (err) => console.error("[redis] connection error:", err.message));
 
 await redis.ping();
 
@@ -1179,8 +1180,8 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
       db.query(`DELETE FROM diary_entries WHERE user_id = ?`).run(userId);
 
       const insertDiary = db.query(
-        `INSERT INTO diary_entries (user_id, entry_date, entry_time, mood_level, depression_level, anxiety_level, description, gratitude, reflection)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO diary_entries (user_id, entry_date, entry_time, mood_level, depression_level, anxiety_level, description, gratitude, reflection, positive_moods, negative_moods, general_moods)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       );
       for (const row of diaryRows) {
         insertDiary.run(
@@ -1192,7 +1193,10 @@ async function handleApi(req: Request, url: URL, corsHeaders: Headers): Promise<
           toNullableNumber(row.anxiety),
           String(row.description ?? ""),
           String(row.gratitude ?? ""),
-          String(row.reflection ?? "")
+          String(row.reflection ?? ""),
+          String(row["positive moods"] ?? row.positive_moods ?? ""),
+          String(row["negative moods"] ?? row.negative_moods ?? ""),
+          String(row["general moods"] ?? row.general_moods ?? "")
         );
       }
 

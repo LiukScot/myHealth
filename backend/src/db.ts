@@ -19,7 +19,12 @@ function tableExists(db: SQLiteDB, tableName: string): boolean {
   return Boolean(row?.name);
 }
 
+const ALLOWED_TABLE_NAMES = new Set(["diary_entries", "pain_entries"]);
+
 function columnExists(db: SQLiteDB, tableName: string, columnName: string): boolean {
+  if (!ALLOWED_TABLE_NAMES.has(tableName)) {
+    throw new Error(`columnExists: disallowed table name "${tableName}"`);
+  }
   const rows = db.query(`PRAGMA table_info(${tableName})`).all() as Array<{ name: string }>;
   return rows.some((row) => row.name === columnName);
 }
