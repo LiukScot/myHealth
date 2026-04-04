@@ -5,6 +5,8 @@ import { Chart as ChartJS, TimeScale, LinearScale, PointElement, LineElement, To
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
 import type { DashboardQuickRange, DiaryEntry, DiaryFormValues, InlineMessage, PainEntry, PainFormValues, WellbeingSeries, WellbeingSeriesKey } from "./core";
+import { getErrorMessage } from "../lib";
+import type { useAuth } from "../hooks/use-auth";
 import {
   AiKeyEditor,
   ChatComposer,
@@ -53,7 +55,7 @@ export function DashboardSection({
 }) {
   return (
     <section className="panel">
-      <h2>Dashboard</h2>
+      <h1 className="panel-title">Dashboard</h1>
 
       <div className="dashboard-filters">
         <label>
@@ -168,7 +170,7 @@ export function DiarySection({
 }) {
   return (
     <section className="panel">
-      <h2>Diary</h2>
+      <h1 className="panel-title">Diary</h1>
       <form className="form-grid" onSubmit={diaryForm.handleSubmit(onSubmit)}>
         <label>
           Date/time
@@ -316,7 +318,7 @@ export function PainSection({
 }) {
   return (
     <section className="panel">
-      <h2>Pain</h2>
+      <h1 className="panel-title">Pain</h1>
       <form className="stack pain-form" onSubmit={painForm.handleSubmit(onSubmit)}>
         <div className="pain-core-grid">
           <label>
@@ -431,7 +433,7 @@ export function ChatSection({
 }) {
   return (
     <section className="panel">
-      <h2>Chatbot</h2>
+      <h1 className="panel-title">Chatbot</h1>
       <ChatComposer defaultModel={defaultModel} defaultRange={defaultRange} onSend={onSend} />
       {chatStatus && <p className="hint">{chatStatus}</p>}
       {chatReply && <article className="chat-output">{chatReply}</article>}
@@ -440,6 +442,7 @@ export function ChatSection({
 }
 
 export function SettingsSection({
+  auth,
   aiKeyHasKey,
   aiKeyFeedback,
   aiKeySaving,
@@ -461,6 +464,7 @@ export function SettingsSection({
   onImportXlsx,
   backupFeedback,
 }: {
+  auth: ReturnType<typeof useAuth>;
   aiKeyHasKey: boolean;
   aiKeyFeedback: InlineMessage | null;
   aiKeySaving: boolean;
@@ -484,9 +488,43 @@ export function SettingsSection({
 }) {
   return (
     <section className="panel">
-      <h2>Settings</h2>
+      <h1 className="panel-title">Settings</h1>
       <div className="settings-grid">
         <div className="settings-column">
+          <article>
+            <h3>Account</h3>
+            <form
+              className="stack"
+              onFocus={auth.clearPasswordStatus}
+              onSubmit={auth.changePasswordForm.handleSubmit((v) => auth.changePasswordMutation.mutate(v))}
+            >
+              <label>
+                Current password
+                <input type="password" autoComplete="current-password" {...auth.changePasswordForm.register("currentPassword")} />
+              </label>
+              <label>
+                New password
+                <input type="password" autoComplete="new-password" {...auth.changePasswordForm.register("newPassword")} />
+              </label>
+              <label>
+                Confirm
+                <input type="password" autoComplete="new-password" {...auth.changePasswordForm.register("confirmPassword")} />
+              </label>
+              <button type="submit" disabled={auth.changePasswordMutation.isPending}>
+                Change password
+              </button>
+              <InlineFeedback
+                message={
+                  auth.changePasswordMutation.error
+                    ? { tone: "error", text: getErrorMessage(auth.changePasswordMutation.error) }
+                    : auth.passwordFeedback
+                }
+              />
+            </form>
+            <button onClick={() => auth.logoutMutation.mutate()} disabled={auth.logoutMutation.isPending} style={{ marginTop: 10 }}>
+              Log out
+            </button>
+          </article>
           <article>
             <h3>AI key</h3>
             <AiKeyEditor

@@ -1,7 +1,6 @@
 import { getErrorMessage } from "../lib";
 import { InlineFeedback } from "./shared";
 import type { useAuth } from "../hooks/use-auth";
-
 type AppHeaderProps = {
   auth: ReturnType<typeof useAuth>;
 };
@@ -9,9 +8,7 @@ type AppHeaderProps = {
 export function AppHeader({ auth }: AppHeaderProps) {
   return (
     <header className="app-header">
-      <div>
-        <h1>Health</h1>
-      </div>
+      <div></div>
       <div className="header-actions">
         <details>
           <summary>Account</summary>
