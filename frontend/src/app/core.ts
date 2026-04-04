@@ -146,8 +146,11 @@ export type PainEntry = z.infer<typeof painEntrySchema>;
 export type DiaryFormValues = z.infer<typeof diaryFormSchema>;
 export type PainFormValues = z.infer<typeof painFormSchema>;
 
-export const navItems = ["dashboard", "diary", "pain", "chat", "settings"] as const;
+export const navItems = ["dashboard", "diary", "pain", "cbt", "dbt", "chat", "settings"] as const;
 export type NavItem = (typeof navItems)[number];
+
+export const newEntryItems: NavItem[] = ["pain", "diary", "cbt", "dbt"];
+export const therapyItems: NavItem[] = ["diary", "cbt", "dbt"];
 
 export const dashboardQuickRanges = [
   { value: "7", label: "1 week" },

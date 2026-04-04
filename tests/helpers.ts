@@ -110,3 +110,14 @@ export async function seedPainEntry(
 export async function openAccountPanel(page: Page) {
   await page.locator("summary").filter({ hasText: "Account" }).click();
 }
+
+export async function navigateTo(page: Page, section: string) {
+  const newEntryItems = ["pain", "diary", "cbt", "dbt"];
+  if (newEntryItems.includes(section.toLowerCase())) {
+    const details = page.locator("details.nav-group");
+    if (!(await details.getAttribute("open") !== null)) {
+      await details.locator("summary").click();
+    }
+  }
+  await page.getByRole("button", { name: section }).click();
+}

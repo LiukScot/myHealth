@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 export const migrationStatements: string[] = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -168,7 +168,16 @@ export const migrationStatements: string[] = [
      SELECT 'other',               '>12h day byte'                   UNION ALL
      SELECT 'other',               '<1h masturbation'                UNION ALL
      SELECT 'other',               '>1h masturbation'
-   ) AS v`
+   ) AS v`,
+  `CREATE TABLE IF NOT EXISTS sessions (
+    sid TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    email TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)`
 ];
 
 export const TAG_TYPES = ["area", "symptoms", "activities", "medicines", "habits", "other"] as const;

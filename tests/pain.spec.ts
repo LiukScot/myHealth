@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { loginUi, purgeUserData, uniqueText } from "./helpers";
+import { loginUi, navigateTo, purgeUserData, uniqueText } from "./helpers";
 
 test.beforeEach(async ({ request, page }) => {
   await purgeUserData(request);
   await loginUi(page);
-  await page.getByRole("button", { name: "pain" }).click();
+  await navigateTo(page, "pain");
   await expect(page.getByRole("heading", { name: "Pain" })).toBeVisible();
 });
 

@@ -24,7 +24,7 @@ import {
   listToCsv,
   loginSchema,
   moodOptionsSchema,
-  navItems,
+
   normalizeQuickRange,
   painFormSchema,
   painListSchema,
@@ -775,11 +775,13 @@ function App() {
       </header>
 
       <nav className="nav-grid">
-        {navItems.map((item) => (
-          <button key={item} className={item === nav ? "active" : ""} onClick={() => setNav(item)}>
-            {item}
-          </button>
-        ))}
+        <button className={nav === "dashboard" ? "active" : ""} onClick={() => setNav("dashboard")}>dashboard</button>
+        <button className={nav === "pain" ? "active" : ""} onClick={() => setNav("pain")}>pain</button>
+        <button className={nav === "diary" ? "active" : ""} onClick={() => setNav("diary")}>diary</button>
+        <button className={nav === "cbt" ? "active" : ""} onClick={() => setNav("cbt")} disabled>CBT</button>
+        <button className={nav === "dbt" ? "active" : ""} onClick={() => setNav("dbt")} disabled>DBT</button>
+        <button className={nav === "chat" ? "active" : ""} onClick={() => setNav("chat")}>chat</button>
+        <button className={nav === "settings" ? "active" : ""} onClick={() => setNav("settings")}>settings</button>
       </nav>
 
       {nav === "dashboard" && (
@@ -858,6 +860,20 @@ function App() {
           }}
           onDeleteBlur={() => setConfirmDeletePain(null)}
         />
+      )}
+
+      {nav === "cbt" && (
+        <section className="panel">
+          <h2>CBT Thought Response</h2>
+          <p className="hint">Coming soon — this entry form is not yet implemented.</p>
+        </section>
+      )}
+
+      {nav === "dbt" && (
+        <section className="panel">
+          <h2>DBT Distress Tolerance</h2>
+          <p className="hint">Coming soon — this entry form is not yet implemented.</p>
+        </section>
       )}
 
       {nav === "chat" && (

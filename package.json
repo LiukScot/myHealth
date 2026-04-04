@@ -14,7 +14,7 @@
     "test:unit": "npm --prefix backend run test",
     "test:migration-fixture": "./scripts/run-bun.sh --cwd backend src/migration-fixture-check.ts",
     "smoke:seed": "DB_PATH=${DB_PATH:-./data/smoke-health.sqlite} ./scripts/run-bun.sh --cwd backend src/migrate.ts --fresh && DB_PATH=${DB_PATH:-./data/smoke-health.sqlite} ./scripts/run-bun.sh --cwd backend src/user-cli.ts create --email=smoke@example.com --password=Password123 --name=Smoke || true",
-    "smoke:serve": "npm run build && HOST=127.0.0.1 PORT=${PORT:-5555} DB_PATH=${DB_PATH:-./data/smoke-health.sqlite} REDIS_URL=${REDIS_URL:-redis://127.0.0.1:6379} ./scripts/run-bun.sh --cwd backend src/server.ts",
+    "smoke:serve": "npm run build && HOST=127.0.0.1 PORT=${PORT:-5555} DB_PATH=${DB_PATH:-./data/smoke-health.sqlite} ./scripts/run-bun.sh --cwd backend src/server.ts",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
