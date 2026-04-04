@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { eq, sql } from "drizzle-orm";
-import bcrypt from "bcryptjs";
 import type { DrizzleDB } from "../db/index.ts";
 import { users } from "../db/index.ts";
 import type { SQLiteDB } from "../db.ts";
@@ -10,7 +9,7 @@ import { getSession, createSession, deleteSession, requireAuth } from "../middle
 
 async function verifyPassword(password: string, storedHash: string): Promise<{ ok: boolean; rehash?: string }> {
   if (storedHash.startsWith("$2a$") || storedHash.startsWith("$2b$") || storedHash.startsWith("$2y$")) {
-    const ok = bcrypt.compareSync(password, storedHash);
+    const ok = await Bun.password.verify(password, storedHash);
     if (!ok) return { ok: false };
     const rehash = await Bun.password.hash(password, { algorithm: "argon2id" });
     return { ok: true, rehash };

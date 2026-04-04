@@ -222,11 +222,11 @@ export function rowsToHealthBackup(diaryRows: any[], painRows: any[]): { diary: 
 export function painRowToApi(row: any) {
   return {
     id: row.id,
-    entryDate: row.entry_date,
-    entryTime: row.entry_time,
-    painLevel: row.pain_level,
-    fatigueLevel: row.fatigue_level,
-    coffeeCount: row.coffee_count,
+    entryDate: row.entryDate,
+    entryTime: row.entryTime,
+    painLevel: row.painLevel,
+    fatigueLevel: row.fatigueLevel,
+    coffeeCount: row.coffeeCount,
     area: row.area ?? "",
     symptoms: row.symptoms ?? "",
     activities: row.activities ?? "",
@@ -234,7 +234,7 @@ export function painRowToApi(row: any) {
     habits: row.habits ?? "",
     other: row.other ?? "",
     note: row.note ?? "",
-    createdAt: row.created_at,
-    updatedAt: row.updated_at
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
   };
 }
