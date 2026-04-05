@@ -4,6 +4,7 @@ services:
     image: health:local
     container_name: health
     network_mode: host
+    mem_limit: 512m
     environment:
       HOST: 0.0.0.0
       PORT: 5555
@@ -19,5 +20,28 @@ services:
           target: /app/backend/src
         - path: ./backend/package.json
           action: rebuild
-        - path: ./frontend
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: health-frontend
+    network_mode: host
+    profiles:
+      - dev
+    develop:
+      watch:
+        - path: ./frontend/src
+          action: sync
+          target: /app/src
+        - path: ./frontend/index.html
+          action: sync
+          target: /app/index.html
+        - path: ./frontend/public
+          action: sync
+          target: /app/public
+        - path: ./frontend/vite.config.ts
+          action: sync+restart
+          target: /app/vite.config.ts
+        - path: ./frontend/package.json
           action: rebuild

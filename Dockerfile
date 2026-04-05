@@ -1,14 +1,17 @@
-FROM oven/bun:1 AS frontend-build
+FROM oven/bun:1 AS frontend-deps
 WORKDIR /app/frontend
 COPY frontend/package.json ./
 RUN bun install
+
+FROM frontend-deps AS frontend-build
 COPY frontend/ ./
+ENV NODE_OPTIONS="--max-old-space-size=384"
 RUN bun run build
 
 FROM oven/bun:1
 WORKDIR /app
 
-COPY backend/package.json ./backend/
+COPY backend/package.json backend/bun.lock* ./backend/
 RUN cd backend && bun install --production
 
 COPY backend/ ./backend/
