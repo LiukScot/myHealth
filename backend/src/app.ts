@@ -13,6 +13,8 @@ import pain from "./routes/pain.ts";
 import mood from "./routes/mood.ts";
 import preferences from "./routes/preferences.ts";
 import ai from "./routes/ai.ts";
+import cbt from "./routes/cbt.ts";
+import dbt from "./routes/dbt.ts";
 import backup from "./routes/backup.ts";
 
 // Initialize database
@@ -64,6 +66,8 @@ app.route("/api/v1/auth", auth);
 app.route("/api/v1/diary", diary);
 app.route("/api/v1/pain", pain);
 app.route("/api/v1/mood", mood);
+app.route("/api/v1/cbt", cbt);
+app.route("/api/v1/dbt", dbt);
 app.route("/api/v1/preferences", preferences);
 app.route("/api/v1/ai", ai);
 app.route("/api/v1/backup", backup);

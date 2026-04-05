@@ -83,8 +83,68 @@ export const aiKeyStatusSchema = apiEnvelopeSchema(
   }),
 );
 
+export const cbtEntrySchema = z.object({
+  id: z.number(),
+  entryDate: z.string(),
+  entryTime: z.string(),
+  situation: z.string(),
+  thoughts: z.string(),
+  helpfulReasoning: z.string(),
+  mainUnhelpfulThought: z.string(),
+  effectOfBelieving: z.string(),
+  evidenceForAgainst: z.string(),
+  alternativeExplanation: z.string(),
+  worstBestScenario: z.string(),
+  friendAdvice: z.string(),
+  productiveResponse: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const dbtEntrySchema = z.object({
+  id: z.number(),
+  entryDate: z.string(),
+  entryTime: z.string(),
+  emotionName: z.string(),
+  allowAffirmation: z.string(),
+  watchEmotion: z.string(),
+  bodyLocation: z.string(),
+  bodyFeeling: z.string(),
+  presentMoment: z.string(),
+  emotionReturns: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const cbtFormSchema = z.object({
+  dateTime: z.string().min(1),
+  situation: z.string().default(""),
+  thoughts: z.string().default(""),
+  helpfulReasoning: z.string().default(""),
+  mainUnhelpfulThought: z.string().default(""),
+  effectOfBelieving: z.string().default(""),
+  evidenceForAgainst: z.string().default(""),
+  alternativeExplanation: z.string().default(""),
+  worstBestScenario: z.string().default(""),
+  friendAdvice: z.string().default(""),
+  productiveResponse: z.string().default(""),
+});
+
+export const dbtFormSchema = z.object({
+  dateTime: z.string().min(1),
+  emotionName: z.string().default(""),
+  allowAffirmation: z.string().default(""),
+  watchEmotion: z.string().default(""),
+  bodyLocation: z.string().default(""),
+  bodyFeeling: z.string().default(""),
+  presentMoment: z.string().default(""),
+  emotionReturns: z.string().default(""),
+});
+
 export const diaryListSchema = apiEnvelopeSchema(z.array(diaryEntrySchema));
 export const painListSchema = apiEnvelopeSchema(z.array(painEntrySchema));
+export const cbtListSchema = apiEnvelopeSchema(z.array(cbtEntrySchema));
+export const dbtListSchema = apiEnvelopeSchema(z.array(dbtEntrySchema));
 export const painOptionsSchema = apiEnvelopeSchema(
   z.object({
     area: z.array(z.string()),
@@ -143,8 +203,12 @@ export const painFormSchema = z.object({
 
 export type DiaryEntry = z.infer<typeof diaryEntrySchema>;
 export type PainEntry = z.infer<typeof painEntrySchema>;
+export type CbtEntry = z.infer<typeof cbtEntrySchema>;
+export type DbtEntry = z.infer<typeof dbtEntrySchema>;
 export type DiaryFormValues = z.infer<typeof diaryFormSchema>;
 export type PainFormValues = z.infer<typeof painFormSchema>;
+export type CbtFormValues = z.infer<typeof cbtFormSchema>;
+export type DbtFormValues = z.infer<typeof dbtFormSchema>;
 
 export const navItems = ["dashboard", "diary", "pain", "cbt", "dbt", "chat", "settings"] as const;
 export type NavItem = (typeof navItems)[number];

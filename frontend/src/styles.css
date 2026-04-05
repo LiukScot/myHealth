@@ -429,6 +429,58 @@ label {
   color: var(--accent);
 }
 
+/* Therapy form: vertical guided worksheet layout (CBT, DBT) */
+.therapy-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 10px;
+}
+
+.therapy-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.therapy-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.therapy-form input[type="text"],
+.therapy-form input[type="datetime-local"] {
+  width: 100%;
+  height: 44px;
+  box-sizing: border-box;
+}
+
+.therapy-section {
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+  margin: 20px 0 12px;
+}
+
+.therapy-section h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.therapy-callout {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 .panel .hint {
   margin: 0 0 8px;
 }

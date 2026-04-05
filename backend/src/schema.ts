@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 export const migrationStatements: string[] = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -177,7 +177,44 @@ export const migrationStatements: string[] = [
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`,
-  `CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)`
+  `CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)`,
+  `CREATE TABLE IF NOT EXISTS cbt_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    entry_date TEXT NOT NULL,
+    entry_time TEXT NOT NULL,
+    situation TEXT NOT NULL DEFAULT '',
+    thoughts TEXT NOT NULL DEFAULT '',
+    helpful_reasoning TEXT NOT NULL DEFAULT '',
+    main_unhelpful_thought TEXT NOT NULL DEFAULT '',
+    effect_of_believing TEXT NOT NULL DEFAULT '',
+    evidence_for_against TEXT NOT NULL DEFAULT '',
+    alternative_explanation TEXT NOT NULL DEFAULT '',
+    worst_best_scenario TEXT NOT NULL DEFAULT '',
+    friend_advice TEXT NOT NULL DEFAULT '',
+    productive_response TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_cbt_user_date ON cbt_entries(user_id, entry_date DESC, entry_time DESC)`,
+  `CREATE TABLE IF NOT EXISTS dbt_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    entry_date TEXT NOT NULL,
+    entry_time TEXT NOT NULL,
+    emotion_name TEXT NOT NULL DEFAULT '',
+    allow_affirmation TEXT NOT NULL DEFAULT '',
+    watch_emotion TEXT NOT NULL DEFAULT '',
+    body_location TEXT NOT NULL DEFAULT '',
+    body_feeling TEXT NOT NULL DEFAULT '',
+    present_moment TEXT NOT NULL DEFAULT '',
+    emotion_returns TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_dbt_user_date ON dbt_entries(user_id, entry_date DESC, entry_time DESC)`
 ];
 
 export const TAG_TYPES = ["area", "symptoms", "activities", "medicines", "habits", "other"] as const;

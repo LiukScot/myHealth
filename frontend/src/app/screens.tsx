@@ -4,7 +4,7 @@ import { type UseFormReturn } from "react-hook-form";
 import { Chart as ChartJS, TimeScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
-import type { DashboardQuickRange, DiaryEntry, DiaryFormValues, InlineMessage, PainEntry, PainFormValues, WellbeingSeries, WellbeingSeriesKey } from "./core";
+import type { CbtEntry, CbtFormValues, DashboardQuickRange, DbtEntry, DbtFormValues, DiaryEntry, DiaryFormValues, InlineMessage, PainEntry, PainFormValues, WellbeingSeries, WellbeingSeriesKey } from "./core";
 import { getErrorMessage } from "../lib";
 import type { useAuth } from "../hooks/use-auth";
 import {
@@ -216,15 +216,15 @@ export function DiarySection({
         </div>
         <label>
           Description
-          <textarea {...diaryForm.register("description")} />
+          <input type="text" {...diaryForm.register("description")} />
         </label>
         <label>
           Gratitude
-          <textarea {...diaryForm.register("gratitude")} />
+          <input type="text" {...diaryForm.register("gratitude")} />
         </label>
         <label>
           Reflection
-          <textarea {...diaryForm.register("reflection")} />
+          <input type="text" {...diaryForm.register("reflection")} />
         </label>
         <div className="row-actions">
           <button type="submit" className={diaryMutationState.isSuccess ? "btn-check" : ""}>
@@ -350,7 +350,7 @@ export function PainSection({
 
         <label className="pain-note-field">
           Notes
-          <textarea {...painForm.register("note")} />
+          <input type="text" {...painForm.register("note")} />
         </label>
 
         <div className="row-actions">
@@ -407,6 +407,258 @@ export function PainSection({
                     onBlur={onDeleteBlur}
                   >
                     {confirmDeletePain === entry.id ? "Delete?" : "Delete"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+export function CbtSection({
+  cbtForm,
+  cbtMutationState,
+  editingCbt,
+  cbtEntries,
+  confirmDeleteCbt,
+  onSubmit,
+  onCancelEdit,
+  onStartEdit,
+  onDeleteClick,
+  onDeleteBlur,
+}: {
+  cbtForm: UseFormReturn<CbtFormValues>;
+  cbtMutationState: { isSuccess: boolean };
+  editingCbt: CbtEntry | null;
+  cbtEntries: CbtEntry[];
+  confirmDeleteCbt: number | null;
+  onSubmit: (values: CbtFormValues) => void;
+  onCancelEdit: () => void;
+  onStartEdit: (entry: CbtEntry) => void;
+  onDeleteClick: (id: number) => void;
+  onDeleteBlur: () => void;
+}) {
+  return (
+    <section className="panel">
+      <h1 className="panel-title">CBT Thought Response</h1>
+      <form className="therapy-form" onSubmit={cbtForm.handleSubmit(onSubmit)}>
+        <label>
+          Date/time
+          <input type="datetime-local" {...cbtForm.register("dateTime")} />
+        </label>
+
+        <div className="therapy-section"><h2>Situation</h2></div>
+        <label>
+          What's the situation?
+          <input type="text" {...cbtForm.register("situation")} />
+        </label>
+
+        <div className="therapy-section"><h2>Thoughts</h2></div>
+        <label>
+          What thoughts are running through your mind? How much do you believe each one? Go beyond simple thoughts — ask: why would this be bad? What would it mean?
+          <input type="text" {...cbtForm.register("thoughts")} />
+        </label>
+        <label>
+          Do you have any helpful reasoning to counter this thought pattern?
+          <input type="text" {...cbtForm.register("helpfulReasoning")} />
+        </label>
+
+        <div className="therapy-section"><h2>Question your unhelpful thoughts</h2></div>
+        <label>
+          What is the main unhelpful thought?
+          <input type="text" {...cbtForm.register("mainUnhelpfulThought")} />
+        </label>
+        <label>
+          What is the effect of believing this? What would you be able to do if you didn't believe it?
+          <input type="text" {...cbtForm.register("effectOfBelieving")} />
+        </label>
+        <label>
+          What evidence supports or rejects this thought?
+          <input type="text" {...cbtForm.register("evidenceForAgainst")} />
+        </label>
+        <label>
+          Could there be an alternative explanation for the situation?
+          <input type="text" {...cbtForm.register("alternativeExplanation")} />
+        </label>
+        <label>
+          What's the worst that could happen? Would you survive it? How about the best scenario?
+          <input type="text" {...cbtForm.register("worstBestScenario")} />
+        </label>
+        <label>
+          Imagine your friend was in this situation. What advice would you give them?
+          <input type="text" {...cbtForm.register("friendAdvice")} />
+        </label>
+
+        <div className="therapy-section"><h2>A more productive response</h2></div>
+        <div className="therapy-callout">Take a deep breath and try to see the thoughts from an outside perspective. Is there a more productive and rational response to this situation?</div>
+        <label>
+          What are your next steps?
+          <input type="text" {...cbtForm.register("productiveResponse")} />
+        </label>
+
+        <div className="row-actions">
+          <button type="submit" className={cbtMutationState.isSuccess ? "btn-check" : ""}>
+            {cbtMutationState.isSuccess ? "\u2713" : editingCbt ? "Update entry" : "Add entry"}
+          </button>
+          {editingCbt && (
+            <button type="button" onClick={onCancelEdit}>
+              Cancel
+            </button>
+          )}
+        </div>
+      </form>
+
+      <div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Situation</th>
+              <th>Main thought</th>
+              <th>Response</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cbtEntries.map((entry) => (
+              <tr key={entry.id}>
+                <td>{entry.entryDate}</td>
+                <td>{entry.entryTime}</td>
+                <td>{entry.situation || "-"}</td>
+                <td>{entry.mainUnhelpfulThought || "-"}</td>
+                <td>{entry.productiveResponse || "-"}</td>
+                <td>
+                  <button onClick={() => onStartEdit(entry)}>Edit</button>
+                  <button
+                    className={confirmDeleteCbt === entry.id ? "btn-delete-confirm" : ""}
+                    onClick={() => onDeleteClick(entry.id)}
+                    onBlur={onDeleteBlur}
+                  >
+                    {confirmDeleteCbt === entry.id ? "Delete?" : "Delete"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+export function DbtSection({
+  dbtForm,
+  dbtMutationState,
+  editingDbt,
+  dbtEntries,
+  confirmDeleteDbt,
+  onSubmit,
+  onCancelEdit,
+  onStartEdit,
+  onDeleteClick,
+  onDeleteBlur,
+}: {
+  dbtForm: UseFormReturn<DbtFormValues>;
+  dbtMutationState: { isSuccess: boolean };
+  editingDbt: DbtEntry | null;
+  dbtEntries: DbtEntry[];
+  confirmDeleteDbt: number | null;
+  onSubmit: (values: DbtFormValues) => void;
+  onCancelEdit: () => void;
+  onStartEdit: (entry: DbtEntry) => void;
+  onDeleteClick: (id: number) => void;
+  onDeleteBlur: () => void;
+}) {
+  return (
+    <section className="panel">
+      <h1 className="panel-title">DBT Distress Tolerance</h1>
+      <form className="therapy-form" onSubmit={dbtForm.handleSubmit(onSubmit)}>
+        <label>
+          Date/time
+          <input type="datetime-local" {...dbtForm.register("dateTime")} />
+        </label>
+
+        <div className="therapy-section"><h2>Recognize and allow the emotion</h2></div>
+        <div className="therapy-callout">Try to think of a more intense form of your emotion. Instead of sad, maybe you are distraught or crushed. Instead of mad, you are disgusted or appalled.</div>
+        <label>
+          What emotion are you feeling?
+          <input type="text" {...dbtForm.register("emotionName")} />
+        </label>
+        <div className="therapy-callout">"I am feeling this emotion. It's ok, I can allow myself to feel this. I'm not bad because I have this feeling. I'm going to make space for it. I can control myself, so I don't need to get rid of this feeling."</div>
+        <label>
+          Write your own affirmation:
+          <input type="text" {...dbtForm.register("allowAffirmation")} />
+        </label>
+
+        <div className="therapy-section"><h2>Watch the emotion</h2></div>
+        <div className="therapy-callout">Let me watch this emotion and see what it does. I don't have to get caught up in it. My emotion is like an ocean wave — I'm going to float with it.</div>
+        <label>
+          Call the emotion what it is.
+          <input type="text" {...dbtForm.register("watchEmotion")} />
+        </label>
+        <label>
+          Where do you notice the emotion in your body?
+          <input type="text" {...dbtForm.register("bodyLocation")} />
+        </label>
+        <label>
+          What do you feel?
+          <input type="text" {...dbtForm.register("bodyFeeling")} />
+        </label>
+
+        <div className="therapy-section"><h2>Be present</h2></div>
+        <div className="therapy-callout">Turn your attention back to what you are doing now. Notice what's going on with all five senses, or focus on your breath as your anchor for the present moment.</div>
+        <label>
+          What can you feel, hear, see, smell, or taste right now?
+          <input type="text" {...dbtForm.register("presentMoment")} />
+        </label>
+
+        <div className="therapy-section"><h2>When the emotion comes back</h2></div>
+        <div className="therapy-callout">That's ok. Emotions come and go. Watch it again. Let it sit in the room with you, or float with it like an ocean wave.</div>
+
+        <div className="row-actions">
+          <button type="submit" className={dbtMutationState.isSuccess ? "btn-check" : ""}>
+            {dbtMutationState.isSuccess ? "\u2713" : editingDbt ? "Update entry" : "Add entry"}
+          </button>
+          {editingDbt && (
+            <button type="button" onClick={onCancelEdit}>
+              Cancel
+            </button>
+          )}
+        </div>
+      </form>
+
+      <div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Emotion</th>
+              <th>Body location</th>
+              <th>Present moment</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dbtEntries.map((entry) => (
+              <tr key={entry.id}>
+                <td>{entry.entryDate}</td>
+                <td>{entry.entryTime}</td>
+                <td>{entry.emotionName || "-"}</td>
+                <td>{entry.bodyLocation || "-"}</td>
+                <td>{entry.presentMoment || "-"}</td>
+                <td>
+                  <button onClick={() => onStartEdit(entry)}>Edit</button>
+                  <button
+                    className={confirmDeleteDbt === entry.id ? "btn-delete-confirm" : ""}
+                    onClick={() => onDeleteClick(entry.id)}
+                    onBlur={onDeleteBlur}
+                  >
+                    {confirmDeleteDbt === entry.id ? "Delete?" : "Delete"}
                   </button>
                 </td>
               </tr>

@@ -59,6 +59,53 @@ export const painEntries = sqliteTable(
   ]
 );
 
+export const cbtEntries = sqliteTable(
+  "cbt_entries",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    entryDate: text("entry_date").notNull(),
+    entryTime: text("entry_time").notNull(),
+    situation: text("situation").notNull().default(""),
+    thoughts: text("thoughts").notNull().default(""),
+    helpfulReasoning: text("helpful_reasoning").notNull().default(""),
+    mainUnhelpfulThought: text("main_unhelpful_thought").notNull().default(""),
+    effectOfBelieving: text("effect_of_believing").notNull().default(""),
+    evidenceForAgainst: text("evidence_for_against").notNull().default(""),
+    alternativeExplanation: text("alternative_explanation").notNull().default(""),
+    worstBestScenario: text("worst_best_scenario").notNull().default(""),
+    friendAdvice: text("friend_advice").notNull().default(""),
+    productiveResponse: text("productive_response").notNull().default(""),
+    createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
+    updatedAt: text("updated_at").notNull().default("CURRENT_TIMESTAMP"),
+  },
+  (table) => [
+    index("idx_cbt_user_date").on(table.userId, table.entryDate, table.entryTime),
+  ]
+);
+
+export const dbtEntries = sqliteTable(
+  "dbt_entries",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    entryDate: text("entry_date").notNull(),
+    entryTime: text("entry_time").notNull(),
+    emotionName: text("emotion_name").notNull().default(""),
+    allowAffirmation: text("allow_affirmation").notNull().default(""),
+    watchEmotion: text("watch_emotion").notNull().default(""),
+    bodyLocation: text("body_location").notNull().default(""),
+    bodyFeeling: text("body_feeling").notNull().default(""),
+    presentMoment: text("present_moment").notNull().default(""),
+    emotionReturns: text("emotion_returns").notNull().default(""),
+    createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
+    updatedAt: text("updated_at").notNull().default("CURRENT_TIMESTAMP"),
+  },
+  (table) => [
+    index("idx_dbt_user_date").on(table.userId, table.entryDate, table.entryTime),
+  ]
+);
+
 export const userPreferences = sqliteTable("user_preferences", {
   userId: integer("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
   model: text("model").notNull().default("mistral-small-latest"),

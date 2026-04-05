@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useAuth, useDiary, usePain, useDashboard, useSettings, useChat } from "./hooks";
+import { useAuth, useDiary, usePain, useCbt, useDbt, useDashboard, useSettings, useChat } from "./hooks";
 import { LoginScreen } from "./app/LoginScreen";
 import { Sidebar } from "./app/Sidebar";
-import { ChatSection, DashboardSection, DiarySection, PainSection, SettingsSection } from "./app/screens";
+import { ChatSection, CbtSection, DbtSection, DashboardSection, DiarySection, PainSection, SettingsSection } from "./app/screens";
 import type { NavItem } from "./app/core";
 
 function App() {
@@ -13,6 +13,8 @@ function App() {
 
   const diary = useDiary(loggedIn);
   const pain = usePain(loggedIn);
+  const cbt = useCbt(loggedIn);
+  const dbt = useDbt(loggedIn);
   const dashboard = useDashboard(loggedIn);
   const settings = useSettings(loggedIn);
   const chat = useChat(loggedIn);
@@ -59,11 +61,23 @@ function App() {
         )}
 
         {nav === "cbt" && (
-          <section className="panel"><h1 className="panel-title">CBT Thought Response</h1><p className="hint">Coming soon — this entry form is not yet implemented.</p></section>
+          <CbtSection
+            cbtForm={cbt.cbtForm} cbtMutationState={{ isSuccess: cbt.cbtMutation.isSuccess }}
+            editingCbt={cbt.editingCbt} cbtEntries={cbt.cbtEntries}
+            confirmDeleteCbt={cbt.confirmDeleteCbt} onSubmit={(v) => cbt.cbtMutation.mutate(v)}
+            onCancelEdit={cbt.resetCbtForm} onStartEdit={cbt.startCbtEdit}
+            onDeleteClick={cbt.onDeleteClick} onDeleteBlur={cbt.onDeleteBlur}
+          />
         )}
 
         {nav === "dbt" && (
-          <section className="panel"><h1 className="panel-title">DBT Distress Tolerance</h1><p className="hint">Coming soon — this entry form is not yet implemented.</p></section>
+          <DbtSection
+            dbtForm={dbt.dbtForm} dbtMutationState={{ isSuccess: dbt.dbtMutation.isSuccess }}
+            editingDbt={dbt.editingDbt} dbtEntries={dbt.dbtEntries}
+            confirmDeleteDbt={dbt.confirmDeleteDbt} onSubmit={(v) => dbt.dbtMutation.mutate(v)}
+            onCancelEdit={dbt.resetDbtForm} onStartEdit={dbt.startDbtEdit}
+            onDeleteClick={dbt.onDeleteClick} onDeleteBlur={dbt.onDeleteBlur}
+          />
         )}
 
         {nav === "chat" && <ChatSection {...chat} />}

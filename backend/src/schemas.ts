@@ -52,6 +52,33 @@ export const painSchema = z.object({
     .optional()
 });
 
+export const cbtSchema = z.object({
+  entryDate: z.string().min(1),
+  entryTime: z.string().min(1),
+  situation: z.string().optional().default(""),
+  thoughts: z.string().optional().default(""),
+  helpfulReasoning: z.string().optional().default(""),
+  mainUnhelpfulThought: z.string().optional().default(""),
+  effectOfBelieving: z.string().optional().default(""),
+  evidenceForAgainst: z.string().optional().default(""),
+  alternativeExplanation: z.string().optional().default(""),
+  worstBestScenario: z.string().optional().default(""),
+  friendAdvice: z.string().optional().default(""),
+  productiveResponse: z.string().optional().default(""),
+});
+
+export const dbtSchema = z.object({
+  entryDate: z.string().min(1),
+  entryTime: z.string().min(1),
+  emotionName: z.string().optional().default(""),
+  allowAffirmation: z.string().optional().default(""),
+  watchEmotion: z.string().optional().default(""),
+  bodyLocation: z.string().optional().default(""),
+  bodyFeeling: z.string().optional().default(""),
+  presentMoment: z.string().optional().default(""),
+  emotionReturns: z.string().optional().default(""),
+});
+
 export const prefsSchema = z.object({
   model: z.string().default("mistral-small-latest"),
   chatRange: z.string().default("all"),

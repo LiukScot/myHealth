@@ -17,6 +17,8 @@ export {
   userAiSettings,
   appMeta,
   sessions,
+  cbtEntries,
+  dbtEntries,
   painRemovedOptions,
   painOptions,
   moodOptions,
