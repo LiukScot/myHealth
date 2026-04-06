@@ -925,14 +925,103 @@ tbody tr:hover {
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  /* Allow native horizontal panning here so the page-level pan-y rule doesn't
+     block table scrolling. */
+  touch-action: pan-x pan-y;
+}
+
+/* Mobile menu button — hidden on desktop, shown on mobile */
+.mobile-menu-btn {
+  display: none;
+}
+/* Mobile close button inside sidebar — hidden on desktop */
+.sidebar-close-btn {
+  display: none;
 }
 
 @media (max-width: 720px) {
-  .shell { grid-template-columns: 62px 1fr; }
-  .sidebar-heart { width: 0; opacity: 0; overflow: hidden; }
-  .sidebar-title { opacity: 0; flex: 0; }
-  .sidebar-item-label { opacity: 0; width: 0; }
-  .sidebar { padding: 10px 6px; }
+  /* Tell the browser the page only pans vertically; horizontal swipes are
+     reserved for our sidebar gesture. This lets our touch listener stay
+     passive (browser doesn't have to wait for it before scrolling). */
+  body {
+    touch-action: pan-y;
+  }
+
+  /* Shell becomes a single column on mobile — sidebar floats on top */
+  .shell,
+  .shell.collapsed { grid-template-columns: 1fr; }
+
+  /* Sidebar: full-screen overlay, slid off-screen by default */
+  .sidebar {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    padding: 14px 18px;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .shell.mobile-open .sidebar {
+    transform: translateX(0);
+  }
+  /* Lock the page underneath the open drawer so it can't be scrolled. */
+  .shell.mobile-open {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .shell.mobile-open .app-main {
+    overflow: hidden;
+  }
+
+  /* Force expanded look inside the mobile drawer, overriding .collapsed rules */
+  .sidebar-heart { width: 26px; opacity: 1; overflow: visible; }
+  .sidebar-title { opacity: 1; flex: 1; }
+  .sidebar-item-label { opacity: 1; width: auto; }
+
+  /* Hide desktop collapse button, show mobile close button */
+  .sidebar-collapse-btn { display: none; }
+  .sidebar-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    box-shadow: none;
+  }
+  .sidebar-close-btn svg { width: 20px; height: 20px; }
+  .sidebar-close-btn:hover { color: var(--text); }
+
+  /* Bigger tap targets inside the mobile drawer */
+  .sidebar-item { padding: 14px 12px; font-size: 16px; }
+  .sidebar-item svg { width: 22px; height: 22px; }
+
+  /* Mobile hamburger button at top-left of main content */
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin: 0 0 10px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: none;
+  }
+
   .screen { padding: 10px; }
   .app-main { padding: 10px; }
   .app-screen { width: 100%; }

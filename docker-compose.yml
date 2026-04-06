@@ -5,6 +5,7 @@ services:
     container_name: health
     network_mode: host
     mem_limit: 512m
+    user: "1000:1000"
     environment:
       HOST: 0.0.0.0
       PORT: 5555

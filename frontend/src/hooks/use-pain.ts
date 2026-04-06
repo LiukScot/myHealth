@@ -11,6 +11,15 @@ import {
 } from "../app/core";
 import type { PainEntry, PainFormValues } from "../app/core";
 
+const EMPTY_PAIN_OPTIONS = {
+  area: [] as string[],
+  symptoms: [] as string[],
+  activities: [] as string[],
+  medicines: [] as string[],
+  habits: [] as string[],
+  other: [] as string[],
+};
+
 export function usePain(enabled: boolean) {
   const queryClient = useQueryClient();
   const [editingPain, setEditingPain] = useState<PainEntry | null>(null);
@@ -28,14 +37,7 @@ export function usePain(enabled: boolean) {
     queryFn: async () => apiFetch("/api/v1/pain/options", { method: "GET" }, (raw) => painOptionsSchema.parse(raw).data),
   });
 
-  const painFieldOptions = painOptionsQuery.data ?? {
-    area: [],
-    symptoms: [],
-    activities: [],
-    medicines: [],
-    habits: [],
-    other: [],
-  };
+  const painFieldOptions = painOptionsQuery.data ?? EMPTY_PAIN_OPTIONS;
 
   const createDefaultPainFormValues = useCallback(
     () => ({

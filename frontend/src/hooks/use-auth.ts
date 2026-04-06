@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiEnvelopeSchema, apiFetch } from "../lib";
 import { loginSchema, changePasswordSchema, sessionDataSchema, useAuthStore } from "../app/core";
 import type { InlineMessage } from "../app/core";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export function useAuth() {
   const queryClient = useQueryClient();
@@ -17,12 +17,17 @@ export function useAuth() {
     queryFn: async () => apiFetch("/api/v1/auth/session", { method: "GET" }, (raw) => sessionDataSchema.parse(raw).data),
   });
 
-  if (sessionQuery.data?.authenticated && sessionQuery.data.user && !user) {
-    setUser(sessionQuery.data.user);
-  }
-  if (sessionQuery.data && !sessionQuery.data.authenticated && user) {
-    setUser(null);
-  }
+  // Sync the auth store with the session query result. Must run as an effect,
+  // not during render, otherwise React warns about updating one component
+  // (zustand subscribers) while rendering another (App).
+  useEffect(() => {
+    if (!sessionQuery.data) return;
+    if (sessionQuery.data.authenticated && sessionQuery.data.user && !user) {
+      setUser(sessionQuery.data.user);
+    } else if (!sessionQuery.data.authenticated && user) {
+      setUser(null);
+    }
+  }, [sessionQuery.data, user, setUser]);
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({ resolver: zodResolver(loginSchema) });
 

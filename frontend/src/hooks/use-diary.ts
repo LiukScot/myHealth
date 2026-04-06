@@ -10,6 +10,12 @@ import {
 } from "../app/core";
 import type { DiaryEntry, DiaryFormValues } from "../app/core";
 
+const EMPTY_MOOD_OPTIONS = {
+  positive_moods: [] as string[],
+  negative_moods: [] as string[],
+  general_moods: [] as string[],
+};
+
 export function useDiary(enabled: boolean) {
   const queryClient = useQueryClient();
   const [editingDiary, setEditingDiary] = useState<DiaryEntry | null>(null);
@@ -27,11 +33,7 @@ export function useDiary(enabled: boolean) {
     queryFn: async () => apiFetch("/api/v1/mood/options", { method: "GET" }, (raw) => moodOptionsSchema.parse(raw).data),
   });
 
-  const moodFieldOptions = moodOptionsQuery.data ?? {
-    positive_moods: [],
-    negative_moods: [],
-    general_moods: [],
-  };
+  const moodFieldOptions = moodOptionsQuery.data ?? EMPTY_MOOD_OPTIONS;
 
   const diaryForm = useForm<DiaryFormValues>({
     defaultValues: {

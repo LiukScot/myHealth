@@ -39,13 +39,19 @@ type SidebarProps = {
   onNav: (item: NavItem) => void;
   collapsed: boolean;
   onToggle: () => void;
+  onCloseMobile: () => void;
+  mobileOpen: boolean;
 };
 
 const items: NavItem[] = ["dashboard", "pain", "diary", "cbt", "dbt", "chat", "settings"];
 
-export function Sidebar({ nav, onNav, collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ nav, onNav, collapsed, onToggle, onCloseMobile, mobileOpen }: SidebarProps) {
   return (
-    <aside className="sidebar">
+    <aside
+      className="sidebar"
+      aria-label="Main navigation"
+      {...(mobileOpen ? { role: "dialog", "aria-modal": true } : {})}
+    >
       <div className="sidebar-brand">
         <svg className="sidebar-heart" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -53,6 +59,9 @@ export function Sidebar({ nav, onNav, collapsed, onToggle }: SidebarProps) {
         <span className="sidebar-title">Health</span>
         <button className="sidebar-collapse-btn" onClick={onToggle} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="3" x2="9" y2="21" /></svg>
+        </button>
+        <button className="sidebar-close-btn" onClick={onCloseMobile} aria-label="Close menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
