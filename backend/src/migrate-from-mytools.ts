@@ -192,21 +192,10 @@ function main() {
         JSON.stringify(prefs.graphSelection ?? {})
       );
 
-    const settingsRows = source.query(`SELECT user_id, gemini_key FROM user_settings`).all() as any[];
-    const upsertAi = target.query(
-      `INSERT INTO user_ai_settings (user_id, mistral_api_key, updated_at)
-       VALUES (?, ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(user_id) DO UPDATE SET mistral_api_key=excluded.mistral_api_key, updated_at=CURRENT_TIMESTAMP`
-    );
-    let aiKeys = 0;
-    for (const row of settingsRows) {
-      if (!row.gemini_key) continue;
-      const exists = users.some((u) => Number(u.id) === Number(row.user_id));
-      if (!exists) continue;
-      upsertAi.run(row.user_id, String(row.gemini_key));
-      aiKeys += 1;
-    }
-    report.aiKeys = aiKeys;
+    // AI key migration removed: the user_ai_settings table no longer exists
+    // (Mistral chatbot replaced by MCP server). Users now manage Personal
+    // Access Tokens from the Settings → MCP Access UI instead.
+    report.aiKeys = 0;
 
     report.usersCopied = users.length;
   });

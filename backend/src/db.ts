@@ -82,6 +82,48 @@ function dropLegacyPainTables(db: SQLiteDB): void {
   db.exec("DROP TABLE IF EXISTS pain_tag_catalog");
 }
 
+// Backfills FTS5 virtual tables with rows from their source tables.
+// Idempotent: only runs if the FTS table is empty (i.e. just created by the migration).
+// On a populated DB this is a no-op because the triggers keep FTS in sync going forward.
+function backfillFtsTables(db: SQLiteDB): void {
+  type CountRow = { c: number };
+
+  const isEmpty = (ftsTable: string): boolean => {
+    const row = db.query(`SELECT count(*) AS c FROM ${ftsTable}`).get() as CountRow | null;
+    return (row?.c ?? 0) === 0;
+  };
+
+  if (isEmpty("diary_fts")) {
+    db.exec(
+      `INSERT INTO diary_fts(rowid, description, reflection)
+       SELECT id, COALESCE(description, ''), COALESCE(reflection, '') FROM diary_entries`
+    );
+  }
+
+  if (isEmpty("cbt_fts")) {
+    db.exec(
+      `INSERT INTO cbt_fts(rowid, situation, thoughts, helpful_reasoning, main_unhelpful_thought, effect_of_believing, evidence_for_against, alternative_explanation, worst_best_scenario, friend_advice, productive_response)
+       SELECT id, situation, thoughts, helpful_reasoning, main_unhelpful_thought, effect_of_believing, evidence_for_against, alternative_explanation, worst_best_scenario, friend_advice, productive_response
+       FROM cbt_entries`
+    );
+  }
+
+  if (isEmpty("dbt_fts")) {
+    db.exec(
+      `INSERT INTO dbt_fts(rowid, emotion_name, allow_affirmation, watch_emotion, body_location, body_feeling, present_moment, emotion_returns)
+       SELECT id, emotion_name, allow_affirmation, watch_emotion, body_location, body_feeling, present_moment, emotion_returns
+       FROM dbt_entries`
+    );
+  }
+
+  if (isEmpty("pain_fts")) {
+    db.exec(
+      `INSERT INTO pain_fts(rowid, note, symptoms)
+       SELECT id, COALESCE(note, ''), COALESCE(symptoms, '') FROM pain_entries`
+    );
+  }
+}
+
 export function openDb(dbPath: string): SQLiteDB {
   const db = new Database(dbPath);
   db.exec("PRAGMA journal_mode = WAL;");
@@ -99,6 +141,7 @@ export function runMigrations(db: SQLiteDB): void {
     ensureMoodColumns(db);
     backfillPainColumnsFromLegacyTags(db);
     dropLegacyPainTables(db);
+    backfillFtsTables(db);
 
     db.query(
       `INSERT INTO app_meta(key, value) VALUES('schema_version', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`

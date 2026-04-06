@@ -13,16 +13,14 @@ test.afterEach(async ({ request }) => {
 });
 
 test("saves preferences", async ({ page }) => {
-  await page.getByLabel("Model").selectOption("mistral-large-latest");
-  await page.getByLabel("Chat range").selectOption("90");
+  // Model and Chat range fields were removed when the Mistral chatbot was
+  // replaced by the MCP server. Only the dashboard range remains.
   await page.getByLabel("Last dashboard range").selectOption("30");
   await page.getByRole("button", { name: "Save prefs" }).click();
 
   await page.reload();
   await page.getByRole("button", { name: "settings" }).click();
 
-  await expect(page.getByLabel("Model")).toHaveValue("mistral-large-latest");
-  await expect(page.getByLabel("Chat range")).toHaveValue("90");
   await expect(page.getByLabel("Last dashboard range")).toHaveValue("30");
 });
 

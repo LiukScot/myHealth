@@ -14,7 +14,6 @@ export {
   diaryEntries,
   painEntries,
   userPreferences,
-  userAiSettings,
   appMeta,
   sessions,
   cbtEntries,
@@ -22,5 +21,6 @@ export {
   painRemovedOptions,
   painOptions,
   moodOptions,
-  moodRemovedOptions
+  moodRemovedOptions,
+  mcpTokens
 } from "./drizzle-schema.ts";

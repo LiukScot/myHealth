@@ -86,12 +86,12 @@ export const prefsSchema = z.object({
   graphSelection: z.record(z.string(), z.any()).default({})
 });
 
-export const aiKeySchema = z.object({ key: z.string().min(1).max(4096) });
-
-export const chatSchema = z.object({
-  message: z.string().min(1),
-  range: z.string().optional(),
-  model: z.string().optional()
+export const mcpTokenCreateSchema = z.object({
+  label: z.string().min(0).max(100).optional().default(""),
+  // expiresAt is either an ISO timestamp string or null (= never expires).
+  // Frontend computes the absolute timestamp client-side from the chosen
+  // duration ("30d", "90d", "1y", "never") so the server stays simple.
+  expiresAt: z.string().datetime().nullable().optional().default(null),
 });
 
 export const backupImportSchema = z.object({

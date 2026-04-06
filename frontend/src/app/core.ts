@@ -76,13 +76,6 @@ export const prefsSchema = apiEnvelopeSchema(
   }),
 );
 
-export const aiKeyStatusSchema = apiEnvelopeSchema(
-  z.object({
-    hasKey: z.boolean(),
-    last4: z.string().optional(),
-  }),
-);
-
 export const cbtEntrySchema = z.object({
   id: z.number(),
   entryDate: z.string(),
@@ -210,7 +203,7 @@ export type PainFormValues = z.infer<typeof painFormSchema>;
 export type CbtFormValues = z.infer<typeof cbtFormSchema>;
 export type DbtFormValues = z.infer<typeof dbtFormSchema>;
 
-export const navItems = ["dashboard", "diary", "pain", "cbt", "dbt", "chat", "settings"] as const;
+export const navItems = ["dashboard", "diary", "pain", "cbt", "dbt", "settings"] as const;
 export type NavItem = (typeof navItems)[number];
 
 export const newEntryItems: NavItem[] = ["pain", "diary", "cbt", "dbt"];
@@ -232,7 +225,10 @@ export type WellbeingSeriesKey = (typeof wellbeingSeriesKeys)[number];
 
 export const wellbeingGraphId = "graph-wellbeing";
 export const defaultPrefsValue = {
-  model: "mistral-small-latest",
+  // model and chatRange are kept for backwards compatibility with the
+  // user_preferences DB columns but no longer surfaced in the UI (Mistral
+  // chatbot was replaced by the MCP server).
+  model: "",
   chatRange: "all",
   lastRange: "all",
   graphSelection: {},

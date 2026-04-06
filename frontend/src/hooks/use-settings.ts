@@ -1,9 +1,8 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiEnvelopeSchema, apiFetch, getErrorMessage } from "../lib";
 import {
-  aiKeyStatusSchema,
   BACKUP_JSON_EXPORT_OK,
   BACKUP_JSON_IMPORT_OK,
   BACKUP_XLSX_EXPORT_OK,
@@ -50,45 +49,8 @@ export function usePrefs(enabled: boolean) {
 export function useSettings(enabled: boolean) {
   const queryClient = useQueryClient();
   const { prefsQuery, prefsMutation } = usePrefs(enabled);
-  const [aiKeyFeedback, setAiKeyFeedback] = useState<InlineMessage | null>(null);
   const [backupFeedback, setBackupFeedback] = useState<InlineMessage | null>(null);
   const [purgeConfirmArmed, setPurgeConfirmArmed] = useState(false);
-
-  const aiKeyQuery = useQuery({
-    queryKey: ["ai-key"],
-    enabled,
-    queryFn: async () => apiFetch("/api/v1/ai/key", { method: "GET" }, (raw) => aiKeyStatusSchema.parse(raw).data),
-  });
-
-  const aiKeyMutation = useMutation({
-    mutationFn: async (key: string) =>
-      apiFetch("/api/v1/ai/key", { method: "PUT", body: JSON.stringify({ key }) }, (raw) =>
-        apiEnvelopeSchema(z.object({ hasKey: z.boolean() })).parse(raw).data,
-      ),
-    onMutate: () => setAiKeyFeedback(null),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["ai-key"] });
-      setAiKeyFeedback({ tone: "success", text: "AI key saved." });
-    },
-    onError: (error) => setAiKeyFeedback({ tone: "error", text: getErrorMessage(error) }),
-  });
-
-  const clearAiKeyMutation = useMutation({
-    mutationFn: async () =>
-      apiFetch("/api/v1/ai/key", { method: "DELETE" }, (raw) =>
-        apiEnvelopeSchema(z.object({ hasKey: z.boolean() })).parse(raw).data,
-      ),
-    onMutate: () => setAiKeyFeedback(null),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["ai-key"] });
-      setAiKeyFeedback({ tone: "info", text: "Stored AI key cleared." });
-    },
-    onError: (error) => setAiKeyFeedback({ tone: "error", text: getErrorMessage(error) }),
-  });
-
-  const clearAiKeyStatus = useCallback(() => {
-    if (aiKeyFeedback) setAiKeyFeedback(null);
-  }, [aiKeyFeedback]);
 
   const purgeMutation = useMutation({
     mutationFn: async () =>
@@ -167,24 +129,6 @@ export function useSettings(enabled: boolean) {
     prefsValue: prefsQuery.data ?? defaultPrefsValue,
     onSavePrefs: (value: { model: string; chatRange: string; lastRange: string; graphSelection: Record<string, unknown> }) =>
       prefsMutation.mutate(value),
-    aiKeyHasKey: Boolean(aiKeyQuery.data?.hasKey),
-    aiKeyFeedback,
-    aiKeySaving: aiKeyMutation.isPending,
-    aiKeyClearing: clearAiKeyMutation.isPending,
-    clearAiKeyStatus,
-    onAiKeySave: (key: string) => {
-      const clean = key.trim();
-      if (!clean) {
-        setAiKeyFeedback({ tone: "error", text: "Enter a key before saving." });
-        return false;
-      }
-      aiKeyMutation.mutate(clean);
-      return true;
-    },
-    onAiKeyClear: () => {
-      clearAiKeyStatus();
-      clearAiKeyMutation.mutate();
-    },
     purgeConfirmArmed,
     purgePending: purgeMutation.isPending,
     purgeError: purgeMutation.error ? { tone: "error" as const, text: getErrorMessage(purgeMutation.error) } : null,

@@ -136,7 +136,8 @@ const report = JSON.parse(fs.readFileSync(reportPath, "utf8")) as Record<string,
 assert(report.usersCopied === 2, "Expected 2 migrated users");
 assert(report.diaryRows === 2, "Expected 2 diary rows");
 assert(report.painRows === 1, "Expected 1 pain row");
-assert(report.aiKeys === 1, "Expected 1 AI key");
+// AI key migration was removed when the Mistral chatbot was replaced by MCP.
+assert(report.aiKeys === 0, "Expected 0 AI keys after Mistral deprecation");
 
 const target = new Database(targetPath, { readonly: true });
 const count = (table: string) => Number((target.query(`SELECT COUNT(*) as c FROM ${table}`).get() as any)?.c ?? 0);

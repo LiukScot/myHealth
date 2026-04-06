@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { useAuth, useDiary, usePain, useCbt, useDbt, useDashboard, useSettings, useChat } from "./hooks";
+import { useAuth, useDiary, usePain, useCbt, useDbt, useDashboard, useSettings } from "./hooks";
 import { LoginScreen } from "./app/LoginScreen";
 import { Sidebar } from "./app/Sidebar";
-import { ChatSection, CbtSection, DbtSection, DashboardSection, DiarySection, PainSection, SettingsSection } from "./app/screens";
+import { CbtSection, DbtSection, DashboardSection, DiarySection, PainSection, SettingsSection } from "./app/screens";
 import type { NavItem } from "./app/core";
 
 function App() {
@@ -82,7 +82,6 @@ function App() {
   const dbt = useDbt(loggedIn);
   const dashboard = useDashboard(loggedIn);
   const settings = useSettings(loggedIn);
-  const chat = useChat(loggedIn);
 
   // Interactive swipe gestures: the sidebar follows the finger 1:1 during
   // the drag, then snaps open or closed on release based on how far it moved.
@@ -312,14 +311,9 @@ function App() {
           />
         )}
 
-        {nav === "chat" && <ChatSection {...chat} />}
-
         {nav === "settings" && (
           <SettingsSection auth={auth}
-            aiKeyHasKey={settings.aiKeyHasKey} aiKeyFeedback={settings.aiKeyFeedback}
-            aiKeySaving={settings.aiKeySaving} aiKeyClearing={settings.aiKeyClearing}
-            onAiKeyFeedbackClear={settings.clearAiKeyStatus} onAiKeySave={settings.onAiKeySave}
-            onAiKeyClear={settings.onAiKeyClear} purgeConfirmArmed={settings.purgeConfirmArmed}
+            purgeConfirmArmed={settings.purgeConfirmArmed}
             purgePending={settings.purgePending} purgeError={settings.purgeError}
             onPurgeArm={settings.onPurgeArm} onPurgeConfirm={settings.onPurgeConfirm}
             onPurgeCancel={settings.onPurgeCancel} prefsValue={settings.prefsValue}

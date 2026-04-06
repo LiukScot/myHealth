@@ -12,10 +12,11 @@ import diary from "./routes/diary.ts";
 import pain from "./routes/pain.ts";
 import mood from "./routes/mood.ts";
 import preferences from "./routes/preferences.ts";
-import ai from "./routes/ai.ts";
 import cbt from "./routes/cbt.ts";
 import dbt from "./routes/dbt.ts";
 import backup from "./routes/backup.ts";
+import mcpTokens from "./routes/mcp-tokens.ts";
+import { createMcpApp } from "./mcp/server.ts";
 
 // Initialize database
 fs.mkdirSync(path.dirname(env.DB_PATH), { recursive: true });
@@ -69,14 +70,19 @@ app.route("/api/v1/mood", mood);
 app.route("/api/v1/cbt", cbt);
 app.route("/api/v1/dbt", dbt);
 app.route("/api/v1/preferences", preferences);
-app.route("/api/v1/ai", ai);
 app.route("/api/v1/backup", backup);
 app.route("/api/v1/data", backup);
+app.route("/api/v1/mcp/tokens", mcpTokens);
 
 // API 404 fallback
 app.all("/api/*", (c) => {
   return c.json({ error: { code: "NOT_FOUND", message: "Route not found" } }, 404);
 });
+
+// MCP server protocol endpoint. Mounted on /mcp with its own auth (PAT) and
+// CORS — completely separate from the cookie-authenticated /api/* routes.
+// Must be mounted BEFORE the SPA fallback (`app.get("*", ...)`).
+app.route("/mcp", createMcpApp(db, rawDb));
 
 // Block other app routes that don't belong to this app
 const blockedPrefixes = ["/hub", "/myhealth", "/health", "/mymoney"];

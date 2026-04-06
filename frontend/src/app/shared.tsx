@@ -224,54 +224,6 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
   );
 }
 
-type AiKeyEditorProps = {
-  hasKey: boolean;
-  feedback: InlineMessage | null;
-  isSaving: boolean;
-  isClearing: boolean;
-  onFeedbackClear: () => void;
-  onSave: (key: string) => boolean;
-  onClear: () => void;
-};
-
-export function AiKeyEditor({ hasKey, feedback, isSaving, isClearing, onFeedbackClear, onSave, onClear }: AiKeyEditorProps) {
-  const [value, setValue] = useState("");
-  return (
-    <div className="stack">
-      <input
-        type="password"
-        autoComplete="off"
-        placeholder={hasKey ? "Stored key exists" : "Paste key"}
-        value={value}
-        onChange={(e) => {
-          if (feedback) {
-            onFeedbackClear();
-          }
-          setValue(e.target.value);
-        }}
-      />
-      <div className="row-actions">
-        <button
-          type="button"
-          disabled={isSaving || isClearing}
-          onClick={() => {
-            const submitted = onSave(value);
-            if (submitted) {
-              setValue("");
-            }
-          }}
-        >
-          {isSaving ? "Saving..." : "Save key"}
-        </button>
-        <button type="button" onClick={onClear} disabled={isSaving || isClearing || !hasKey}>
-          {isClearing ? "Clearing..." : "Clear key"}
-        </button>
-      </div>
-      <InlineFeedback message={feedback} />
-    </div>
-  );
-}
-
 type PreferencesValue = {
   model: string;
   chatRange: string;
@@ -285,29 +237,10 @@ type PreferencesEditorProps = {
 };
 
 export function PreferencesEditor({ value, onSave }: PreferencesEditorProps) {
-  const [model, setModel] = useState(value.model);
-  const [chatRange, setChatRange] = useState(value.chatRange);
   const [lastRange, setLastRange] = useState(value.lastRange);
 
   return (
     <div className="stack">
-      <label>
-        Model
-        <select value={model} onChange={(e) => setModel(e.target.value)}>
-          <option value="mistral-small-latest">mistral-small-latest</option>
-          <option value="mistral-medium-latest">mistral-medium-latest</option>
-          <option value="mistral-large-latest">mistral-large-latest</option>
-        </select>
-      </label>
-      <label>
-        Chat range
-        <select value={chatRange} onChange={(e) => setChatRange(e.target.value)}>
-          <option value="all">all</option>
-          <option value="30">30 days</option>
-          <option value="90">90 days</option>
-          <option value="365">365 days</option>
-        </select>
-      </label>
       <label>
         Last dashboard range
         <select value={lastRange} onChange={(e) => setLastRange(e.target.value)}>
@@ -320,56 +253,17 @@ export function PreferencesEditor({ value, onSave }: PreferencesEditorProps) {
           <option value="1095">1095 days</option>
         </select>
       </label>
-      <button onClick={() => onSave({ model, chatRange, lastRange, graphSelection: value.graphSelection ?? {} })}>Save prefs</button>
-    </div>
-  );
-}
-
-type ChatComposerProps = {
-  defaultModel: string;
-  defaultRange: string;
-  onSend: (message: string, model: string, range: string) => Promise<void>;
-};
-
-export function ChatComposer({ defaultModel, defaultRange, onSend }: ChatComposerProps) {
-  const [message, setMessage] = useState("");
-  const [model, setModel] = useState(defaultModel);
-  const [range, setRange] = useState(defaultRange);
-  const [loading, setLoading] = useState(false);
-
-  return (
-    <div className="stack stack-compact">
-      <label>
-        Model
-        <select value={model} onChange={(e) => setModel(e.target.value)}>
-          <option value="mistral-small-latest">mistral-small-latest</option>
-          <option value="mistral-medium-latest">mistral-medium-latest</option>
-          <option value="mistral-large-latest">mistral-large-latest</option>
-        </select>
-      </label>
-      <label>
-        Range
-        <select value={range} onChange={(e) => setRange(e.target.value)}>
-          <option value="all">all</option>
-          <option value="30">30 days</option>
-          <option value="90">90 days</option>
-          <option value="365">365 days</option>
-        </select>
-      </label>
-      <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={4} placeholder="Ask about your trends..." />
       <button
-        disabled={loading || !message.trim()}
-        onClick={async () => {
-          setLoading(true);
-          try {
-            await onSend(message.trim(), model, range);
-            setMessage("");
-          } finally {
-            setLoading(false);
-          }
-        }}
+        onClick={() =>
+          onSave({
+            model: value.model,
+            chatRange: value.chatRange,
+            lastRange,
+            graphSelection: value.graphSelection ?? {},
+          })
+        }
       >
-        {loading ? "Sending..." : "Send"}
+        Save prefs
       </button>
     </div>
   );

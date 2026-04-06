@@ -8,12 +8,11 @@ import type { CbtEntry, CbtFormValues, DashboardQuickRange, DbtEntry, DbtFormVal
 import { getErrorMessage } from "../lib";
 import type { useAuth } from "../hooks/use-auth";
 import {
-  AiKeyEditor,
-  ChatComposer,
   InlineFeedback,
   MultiSelectField,
   PreferencesEditor,
 } from "./shared";
+import { McpAccessSection } from "./McpAccessSection";
 import {
   calcDeltaPercent,
   dashboardQuickRanges,
@@ -670,38 +669,8 @@ export function DbtSection({
   );
 }
 
-export function ChatSection({
-  defaultModel,
-  defaultRange,
-  chatStatus,
-  chatReply,
-  onSend,
-}: {
-  defaultModel: string;
-  defaultRange: string;
-  chatStatus: string;
-  chatReply: string;
-  onSend: (message: string, model: string, range: string) => Promise<void>;
-}) {
-  return (
-    <section className="panel">
-      <h1 className="panel-title">Chatbot</h1>
-      <ChatComposer defaultModel={defaultModel} defaultRange={defaultRange} onSend={onSend} />
-      {chatStatus && <p className="hint">{chatStatus}</p>}
-      {chatReply && <article className="chat-output">{chatReply}</article>}
-    </section>
-  );
-}
-
 export function SettingsSection({
   auth,
-  aiKeyHasKey,
-  aiKeyFeedback,
-  aiKeySaving,
-  aiKeyClearing,
-  onAiKeyFeedbackClear,
-  onAiKeySave,
-  onAiKeyClear,
   purgeConfirmArmed,
   purgePending,
   purgeError,
@@ -717,13 +686,6 @@ export function SettingsSection({
   backupFeedback,
 }: {
   auth: ReturnType<typeof useAuth>;
-  aiKeyHasKey: boolean;
-  aiKeyFeedback: InlineMessage | null;
-  aiKeySaving: boolean;
-  aiKeyClearing: boolean;
-  onAiKeyFeedbackClear: () => void;
-  onAiKeySave: (key: string) => boolean;
-  onAiKeyClear: () => void;
   purgeConfirmArmed: boolean;
   purgePending: boolean;
   purgeError: InlineMessage | null;
@@ -776,18 +738,6 @@ export function SettingsSection({
             <button onClick={() => auth.logoutMutation.mutate()} disabled={auth.logoutMutation.isPending} style={{ marginTop: 10 }}>
               Log out
             </button>
-          </article>
-          <article>
-            <h3>AI key</h3>
-            <AiKeyEditor
-              hasKey={aiKeyHasKey}
-              feedback={aiKeyFeedback}
-              isSaving={aiKeySaving}
-              isClearing={aiKeyClearing}
-              onFeedbackClear={onAiKeyFeedbackClear}
-              onSave={onAiKeySave}
-              onClear={onAiKeyClear}
-            />
           </article>
           <article className="danger-zone">
             <h3>Danger zone</h3>
@@ -861,6 +811,7 @@ export function SettingsSection({
             <InlineFeedback message={backupFeedback} />
           </div>
         </article>
+        <McpAccessSection enabled />
       </div>
     </section>
   );

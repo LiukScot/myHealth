@@ -115,12 +115,6 @@ export const userPreferences = sqliteTable("user_preferences", {
   updatedAt: text("updated_at").notNull().default("CURRENT_TIMESTAMP"),
 });
 
-export const userAiSettings = sqliteTable("user_ai_settings", {
-  userId: integer("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
-  mistralApiKey: text("mistral_api_key"),
-  updatedAt: text("updated_at").notNull().default("CURRENT_TIMESTAMP"),
-});
-
 export const appMeta = sqliteTable("app_meta", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
@@ -169,5 +163,21 @@ export const moodRemovedOptions = sqliteTable(
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.field, table.value] }),
+  ]
+);
+
+export const mcpTokens = sqliteTable(
+  "mcp_tokens",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    label: text("label").notNull().default(""),
+    createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
+    expiresAt: text("expires_at"),
+    lastUsedAt: text("last_used_at"),
+  },
+  (table) => [
+    index("idx_mcp_tokens_user").on(table.userId),
   ]
 );

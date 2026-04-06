@@ -1,13 +1,14 @@
 # Health
 
-A personal health tracking app for logging daily mood, pain, and habits — with an AI assistant powered by Mistral.
+A personal health tracking app for logging daily mood, pain, and habits — with optional AI assistance via the Model Context Protocol (MCP).
 
 **Features:**
 
 - Mood diary (mood, depression, anxiety levels + free text)
 - Pain journal (pain area, symptoms, activities, medicines, habits, and more)
+- CBT thought records and DBT distress tolerance entries
 - Graphs and history over time
-- AI chat that reads your health data and answers questions about it
+- Built-in MCP server: connect any MCP-compatible AI client (Claude Desktop, Claude Code, …) and let it read your health data with full-text search and aggregate statistics
 - Backup and restore your data
 
 ---
@@ -16,15 +17,13 @@ A personal health tracking app for logging daily mood, pain, and habits — with
 
 The easiest way to run Health is with Docker.
 
-**Prerequisites:** [Docker](https://docs.docker.com/get-docker/) and a running Redis instance.
+**Prerequisites:** [Docker](https://docs.docker.com/get-docker/).
 
 1. Copy the example env file and fill in your values:
 
    ```bash
    cp .env.example .env
    ```
-
-   The only required value is `REDIS_URL` (e.g. `redis://127.0.0.1:6379`).
 
 2. Start the app:
 
@@ -60,6 +59,53 @@ You can also export and import data as JSON or Excel from within the app itself 
 
 ---
 
-## AI assistant
+## MCP server (AI assistant)
 
-The AI chat uses the [Mistral API](https://mistral.ai). To enable it, add your Mistral API key in the app under **Settings → AI**.
+Health exposes a built-in MCP server on `/mcp` that lets any MCP-compatible AI client read your health data over an authenticated HTTPS connection. Tools are read-only — the AI can search, list, and aggregate but cannot create or modify entries.
+
+### What the AI can do
+
+- **Diary**: list entries, full-text search, aggregate stats (avg mood / depression / anxiety per period)
+- **Pain**: list entries, full-text search, aggregate stats, configured body areas
+- **CBT thought records**: list entries, full-text search across all reflective fields
+- **DBT distress tolerance**: list entries, full-text search
+- **Cross-cutting**: high-level overview snapshot, Pearson correlations between any two daily-aggregated signals (e.g. *does coffee correlate with anxiety?*)
+- **Schema doc**: a `health://schema` resource explaining each table, scale direction, and value semantics so the AI can interpret numbers correctly
+
+Search uses SQLite FTS5 with Unicode and accent-insensitive matching — search for `ansia` and you'll find `ansìa` too.
+
+### Setup
+
+1. Open the app, go to **Settings → MCP Access**, and click **Create new token**.
+2. Choose a label and an expiry (`Never` / `30 days` / `90 days` / `1 year`), then click **Create token**.
+3. Copy the token immediately — it is shown **only once** and not stored in cleartext anywhere.
+4. Add the server to your MCP client configuration. For Claude Desktop, edit `claude_desktop_config.json`:
+
+   ```json
+   {
+     "mcpServers": {
+       "health": {
+         "url": "https://your-host/mcp",
+         "headers": { "Authorization": "Bearer <your token>" }
+       }
+     }
+   }
+   ```
+
+   For Claude Code:
+
+   ```bash
+   claude mcp add --transport http health https://your-host/mcp \
+     --header "Authorization: Bearer <your token>"
+   ```
+
+5. Restart the client. Try a prompt like *"How many diary entries did I have last week with mood below 5?"*
+
+The Settings UI also offers ready-to-copy snippets for Claude Desktop, Claude Code, and a curl health-check command.
+
+### Token management
+
+- Tokens are stored as SHA-256 hashes — the cleartext is never persisted server-side.
+- Each token has an optional expiry (`expires_at`) and tracks `last_used_at` for observability.
+- Revoke a token at any time from **Settings → MCP Access**.
+- Authentication failures (missing token, invalid token, expired token) all return `401 Unauthorized`.
