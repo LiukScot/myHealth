@@ -111,7 +111,7 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
 
   return (
     <div className="multi-select-field">
-      <span>{label}</span>
+      <span className="section-heading">{label}</span>
       <div className="multi-option-list" role="group" aria-label={label}>
         {allOptions.map((option) => {
           const optionKey = option.toLowerCase();

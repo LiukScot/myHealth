@@ -173,19 +173,19 @@ export function DiarySection({
       <h1 className="panel-title">Diary</h1>
       <form className="form-grid" onSubmit={diaryForm.handleSubmit(onSubmit)}>
         <label>
-          Date/time
+          <span className="section-heading">Date/time</span>
           <input type="datetime-local" {...diaryForm.register("dateTime")} />
         </label>
         <label>
-          Mood (1-9)
+          <span className="section-heading">Mood (1-9)</span>
           <input type="number" min={1} max={9} step={0.1} {...diaryForm.register("moodLevel", { valueAsNumber: true })} />
         </label>
         <label>
-          Depression (1-9)
+          <span className="section-heading">Depression (1-9)</span>
           <input type="number" min={1} max={9} {...diaryForm.register("depressionLevel", { valueAsNumber: true })} />
         </label>
         <label>
-          Anxiety (1-9)
+          <span className="section-heading">Anxiety (1-9)</span>
           <input type="number" min={1} max={9} {...diaryForm.register("anxietyLevel", { valueAsNumber: true })} />
         </label>
         <div className="mood-tags-grid">
@@ -215,15 +215,15 @@ export function DiarySection({
           />
         </div>
         <label>
-          Description
+          <span className="section-heading">Description</span>
           <input type="text" {...diaryForm.register("description")} />
         </label>
         <label>
-          Gratitude
+          <span className="section-heading">Gratitude</span>
           <input type="text" {...diaryForm.register("gratitude")} />
         </label>
         <label>
-          Reflection
+          <span className="section-heading">Reflection</span>
           <input type="text" {...diaryForm.register("reflection")} />
         </label>
         <div className="row-actions">
@@ -322,19 +322,19 @@ export function PainSection({
       <form className="stack pain-form" onSubmit={painForm.handleSubmit(onSubmit)}>
         <div className="pain-core-grid">
           <label>
-            Date/time
+            <span className="section-heading">Date/time</span>
             <input type="datetime-local" {...painForm.register("dateTime")} />
           </label>
           <label>
-            Pain (1-9)
+            <span className="section-heading">Pain (1-9)</span>
             <input type="number" min={1} max={9} {...painForm.register("painLevel", { valueAsNumber: true })} />
           </label>
           <label>
-            Fatigue (1-9)
+            <span className="section-heading">Fatigue (1-9)</span>
             <input type="number" min={1} max={9} {...painForm.register("fatigueLevel", { valueAsNumber: true })} />
           </label>
           <label>
-            Coffee
+            <span className="section-heading">Coffee</span>
             <input type="number" min={0} max={50} {...painForm.register("coffeeCount", { valueAsNumber: true })} />
           </label>
         </div>
@@ -349,7 +349,7 @@ export function PainSection({
         </div>
 
         <label className="pain-note-field">
-          Notes
+          <span className="section-heading">Notes</span>
           <input type="text" {...painForm.register("note")} />
         </label>
 

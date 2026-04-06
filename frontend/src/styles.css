@@ -210,7 +210,7 @@ body {
 .app-main {
   max-width: 1500px;
   width: 100%;
-  padding: 14px clamp(14px, 3vw, 40px) var(--space-2);
+  padding: clamp(14px, 3vw, 40px) clamp(14px, 3vw, 40px) var(--space-2);
   overflow-y: auto;
 }
 
@@ -471,6 +471,26 @@ label {
   color: var(--accent);
 }
 
+/* Generic section subtitle: red text + left accent stripe.
+   Use the same look as the therapy-section H2 (CBT/DBT) for any
+   section heading on other pages (Settings, Dashboard, etc.) AND for
+   field labels inside form rows. The margin is zero by default so it
+   plays nicely inline; standalone H3s opt back into top margin below. */
+.section-heading {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.2;
+}
+h3.section-heading {
+  margin: 20px 0 12px;
+  padding-left: 16px;
+  font-size: 16px;
+}
+
 .therapy-callout {
   background: rgba(255, 255, 255, 0.03);
   border-radius: var(--radius-sm);
@@ -660,18 +680,21 @@ tbody tr:hover {
 }
 
 .multi-option-list {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px;
-  min-height: 46px;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  min-height: 0;
   max-height: 180px;
   overflow: auto;
-  background: var(--card-strong);
+  background: transparent;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   align-content: flex-start;
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
+  /* Render the chips below the add-option input + buttons by giving them
+     a higher CSS grid order than the surrounding siblings (label, actions). */
+  order: 1;
 }
 
 .multi-option-item {
@@ -688,6 +711,7 @@ tbody tr:hover {
   border-radius: 999px;
   font-size: 13px;
   line-height: 1;
+  background: var(--card-strong);
   box-shadow: none;
 }
 
