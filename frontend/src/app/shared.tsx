@@ -55,12 +55,20 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
     });
   }, [options, selectedValues, hiddenSet, selectedSet]);
   const [customValue, setCustomValue] = useState("");
+  const [editOptionsMode, setEditOptionsMode] = useState(false);
 
   useEffect(() => {
     if (pendingRemovalKey) {
       confirmRemoveRef.current?.focus();
     }
   }, [pendingRemovalKey]);
+
+  useEffect(() => {
+    if (!editOptionsMode) {
+      setPendingRemovalKey(null);
+      setCustomValue("");
+    }
+  }, [editOptionsMode]);
 
   const toggleOption = (option: string) => {
     const key = option.trim().toLowerCase();
@@ -103,14 +111,8 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
     }
   };
 
-  const clearSelections = () => {
-    setPendingRemovalKey(null);
-    setCustomValue("");
-    onChange("");
-  };
-
   return (
-    <div className="multi-select-field">
+    <div className={editOptionsMode ? "multi-select-field editing-options" : "multi-select-field"}>
       <span className="section-heading">{label}</span>
       <div className="multi-option-list" role="group" aria-label={label}>
         {allOptions.map((option) => {
@@ -146,29 +148,41 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
               <button
                 type="button"
                 className={isSelected ? "multi-option-chip active" : "multi-option-chip"}
-                onClick={() => toggleOption(option)}
+                tabIndex={editOptionsMode ? -1 : undefined}
+                onClick={() => {
+                  if (editOptionsMode) return;
+                  toggleOption(option);
+                }}
+                onKeyDown={(e) => {
+                  if (!editOptionsMode) return;
+                  if (e.key === " " || e.key === "Enter") {
+                    e.preventDefault();
+                  }
+                }}
                 aria-pressed={isSelected}
               >
                 <span className="multi-option-label">{option}</span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  className="multi-option-remove"
-                  aria-label={`Remove ${option} from suggestions`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPendingRemovalKey(optionKey);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
+                {editOptionsMode ? (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="multi-option-remove"
+                    aria-label={`Remove ${option} from suggestions`}
+                    onClick={(e) => {
                       e.stopPropagation();
                       setPendingRemovalKey(optionKey);
-                    }
-                  }}
-                >
-                  ×
-                </span>
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setPendingRemovalKey(optionKey);
+                      }
+                    }}
+                  >
+                    ×
+                  </span>
+                ) : null}
               </button>
             </div>
           );
@@ -216,8 +230,13 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
         >
           Add
         </button>
-        <button type="button" onClick={clearSelections} disabled={!selectedValues.length}>
-          Clear
+        <button
+          type="button"
+          className={editOptionsMode ? "multi-option-edit active" : "multi-option-edit"}
+          aria-pressed={editOptionsMode}
+          onClick={() => setEditOptionsMode((v) => !v)}
+        >
+          {editOptionsMode ? "Editing..." : "Edit"}
         </button>
       </div>
     </div>

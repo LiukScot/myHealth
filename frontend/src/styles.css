@@ -232,6 +232,15 @@ body {
   box-shadow: var(--shadow);
 }
 
+/* Settings: no outer card — inner articles carry their own surfaces. */
+.panel.panel--frameless {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+}
+
 .auth-card { width: min(560px, 94vw); }
 
 .app-header {
@@ -461,23 +470,23 @@ label {
 .therapy-section {
   border-left: 3px solid var(--accent);
   padding-left: 16px;
-  margin: 20px 0 12px;
+  margin: 10px 0 10px;
 }
 
 .therapy-section h2 {
   margin: 0 0 4px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
+  line-height: 1.2;
   color: var(--accent);
 }
 
 /* Generic section subtitle: red text + left accent stripe.
-   Use the same look as the therapy-section H2 (CBT/DBT) for any
-   section heading on other pages (Settings, Dashboard, etc.) AND for
-   field labels inside form rows. The margin is zero by default so it
-   plays nicely inline; standalone H3s opt back into top margin below. */
+   Matches therapy-section H2 (CBT/DBT) label size. Use for Settings,
+   Dashboard, field labels in grids (Pain, Diary, etc.). Standalone H3s
+   override below. */
 .section-heading {
-  margin: 0;
+  margin: 10px 0;
   padding-left: 12px;
   border-left: 3px solid var(--accent);
   font-size: 14px;
@@ -578,15 +587,15 @@ h3.section-heading {
 .settings-column > article,
 .settings-grid > article {
   padding: 14px;
-}
-
-.settings-grid > article {
-  border-left: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card-strong) 75%, var(--card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
 }
 
 .settings-column > article.danger-zone {
-  border-top: 1px solid var(--border);
-  padding-top: 18px;
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+  background: color-mix(in srgb, var(--danger) 7%, var(--card-strong));
 }
 
 .danger {
@@ -679,13 +688,25 @@ tbody tr:hover {
   align-content: start;
 }
 
+.multi-select-field .section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* In edit mode, chips are not for toggling selection — only × removes. */
+.multi-select-field.editing-options .multi-option-chip {
+  cursor: default;
+}
+
 .multi-option-list {
   border: none;
   border-radius: 0;
   padding: 0;
+  margin-top: 5px;
+  margin-bottom: 5px;
   min-height: 0;
-  max-height: 180px;
-  overflow: auto;
   background: transparent;
   display: flex;
   flex-wrap: wrap;
@@ -779,18 +800,22 @@ tbody tr:hover {
 
 .multi-option-actions {
   margin-top: 0;
+  align-self: stretch;
 }
 
+/* Grow with row width: global `input { width: 100% }` would force a full-row
+   flex item; use auto width + flex so Add/Edit stay inline and the field
+   absorbs leftover space. */
 .multi-option-actions input {
-  flex: 0 1 300px;
+  flex: 1 1 120px;
   min-width: 0;
+  width: auto;
+  /* Cap desktop stretch (~30% under 30rem); still uses min(100%, …) on narrow rows. */
+  max-width: min(100%, 21rem);
 }
 
-@media (max-width: 720px) {
-  .multi-option-actions input {
-    flex: 0 1 100px;
-    max-width: 140px;
-  }
+.multi-option-actions button {
+  flex-shrink: 0;
 }
 
 .multi-select-field .hint {
@@ -1066,21 +1091,7 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
   .settings-column {
-    gap: 0;
-  }
-  .settings-column > article,
-  .settings-grid > article {
-    border-left: none;
-    border-top: 1px solid var(--border);
-    padding-top: 18px;
-  }
-  .settings-column > article:first-child {
-    border-top: none;
-    padding-top: 14px;
-  }
-  .settings-grid > article:first-child {
-    border-top: none;
-    padding-top: 14px;
+    gap: 10px;
   }
   .dashboard-filters {
     grid-template-columns: 1fr;
@@ -1099,12 +1110,13 @@ tbody tr:hover {
     min-height: 220px;
     height: 280px;
   }
-  .multi-option-list {
-    max-height: 220px;
-  }
   .panel {
     padding: var(--space-1);
     border-radius: var(--radius-md);
+  }
+  .panel.panel--frameless {
+    padding: 0;
+    border-radius: 0;
   }
   button,
   summary {

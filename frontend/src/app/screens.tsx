@@ -701,7 +701,7 @@ export function SettingsSection({
   backupFeedback: InlineMessage | null;
 }) {
   return (
-    <section className="panel">
+    <section className="panel panel--frameless">
       <h1 className="panel-title">Settings</h1>
       <div className="settings-grid">
         <div className="settings-column">

@@ -10,6 +10,7 @@
     "test": "../scripts/run-bun.sh test --pass-with-no-tests"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "cookie": "^1.1.1",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.10",
