@@ -44,3 +44,11 @@ export function periodCutoff(period: Period): string | null {
 export function sanitizeFtsQuery(raw: string): string {
   return raw.replace(/["()*:^]/g, " ").trim();
 }
+
+/**
+ * Escapes SQL LIKE special characters (% and _) so they are treated as
+ * literal characters in a LIKE pattern, not wildcards.
+ */
+export function escapeLike(value: string): string {
+  return value.replace(/%/g, "\\%").replace(/_/g, "\\_");
+}

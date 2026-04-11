@@ -4,7 +4,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { dbtEntries } from "../../db/index.ts";
 import type { McpToolContext } from "../server.ts";
-import { jsonContent, sanitizeFtsQuery } from "./_shared.ts";
+import { jsonContent, sanitizeFtsQuery, escapeLike } from "./_shared.ts";
 
 export function registerDbtTools(server: McpServer, ctx: McpToolContext): void {
   const { db, rawDb, userId } = ctx;
@@ -34,7 +34,7 @@ export function registerDbtTools(server: McpServer, ctx: McpToolContext): void {
       if (args.from) conditions.push(gte(dbtEntries.entryDate, args.from));
       if (args.to) conditions.push(lte(dbtEntries.entryDate, args.to));
       if (args.emotion_contains) {
-        conditions.push(like(dbtEntries.emotionName, `%${args.emotion_contains}%`));
+        conditions.push(like(dbtEntries.emotionName, `%${escapeLike(args.emotion_contains)}%`));
       }
 
       const rows = db

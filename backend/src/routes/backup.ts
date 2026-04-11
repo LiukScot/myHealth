@@ -298,6 +298,8 @@ backup.post("/purge", async (c) => {
   const tx = rawDb.transaction(() => {
     rawDb.query(`DELETE FROM pain_entries WHERE user_id = ?`).run(userId);
     rawDb.query(`DELETE FROM diary_entries WHERE user_id = ?`).run(userId);
+    rawDb.query(`DELETE FROM cbt_entries WHERE user_id = ?`).run(userId);
+    rawDb.query(`DELETE FROM dbt_entries WHERE user_id = ?`).run(userId);
     rawDb.query(`DELETE FROM user_preferences WHERE user_id = ?`).run(userId);
   });
   tx();
