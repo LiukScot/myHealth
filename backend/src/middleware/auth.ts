@@ -27,12 +27,12 @@ export function getSession(db: DrizzleDB, req: Request): SessionData | null {
 
 export function createSession(db: DrizzleDB, userId: number, email: string): string {
   const sid = crypto.randomUUID().replaceAll("-", "");
-  const ttlDays = Math.floor(env.SESSION_TTL_SECONDS / 86400);
+  const ttlSeconds = env.SESSION_TTL_SECONDS;
   db.insert(sessions).values({
     sid,
     userId,
     email,
-    expiresAt: sql`datetime('now', '+' || ${ttlDays} || ' days')`,
+    expiresAt: sql`datetime('now', '+' || ${ttlSeconds} || ' seconds')`,
   }).run();
   return sid;
 }
@@ -60,12 +60,12 @@ export const requireAuth = createMiddleware<{
   }
 
   const me = db
-    .select({ id: users.id, email: users.email, name: users.name })
+    .select({ id: users.id, email: users.email, name: users.name, disabledAt: users.disabledAt })
     .from(users)
     .where(eq(users.id, session.userId))
     .limit(1)
     .get();
-  if (!me) {
+  if (!me || me.disabledAt) {
     return c.json({ error: { code: "UNAUTHORIZED", message: "Authentication required" } }, 401);
   }
 

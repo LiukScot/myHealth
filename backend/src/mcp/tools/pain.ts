@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { eq, and, gte, lte, like, desc, sql } from "drizzle-orm";
+import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { painEntries, painOptions } from "../../db/index.ts";
 import type { McpToolContext } from "../server.ts";
-import { jsonContent, periodCutoff, sanitizeFtsQuery } from "./_shared.ts";
+import { jsonContent, periodCutoff, sanitizeFtsQuery, escapeLike } from "./_shared.ts";
 
 export function registerPainTools(server: McpServer, ctx: McpToolContext): void {
   const { db, rawDb, userId } = ctx;
@@ -38,8 +38,8 @@ export function registerPainTools(server: McpServer, ctx: McpToolContext): void 
       if (args.from) conditions.push(gte(painEntries.entryDate, args.from));
       if (args.to) conditions.push(lte(painEntries.entryDate, args.to));
       if (args.level_min !== undefined) conditions.push(gte(painEntries.painLevel, args.level_min));
-      if (args.area) conditions.push(like(painEntries.area, `%${args.area}%`));
-      if (args.symptoms_contains) conditions.push(like(painEntries.symptoms, `%${args.symptoms_contains}%`));
+      if (args.area) conditions.push(sql`${painEntries.area} LIKE ${'%' + escapeLike(args.area) + '%'} ESCAPE '\\'`);
+      if (args.symptoms_contains) conditions.push(sql`${painEntries.symptoms} LIKE ${'%' + escapeLike(args.symptoms_contains) + '%'} ESCAPE '\\'`);
 
       const rows = db
         .select({
