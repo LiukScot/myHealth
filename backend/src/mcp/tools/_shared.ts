@@ -50,5 +50,8 @@ export function sanitizeFtsQuery(raw: string): string {
  * literal characters in a LIKE pattern, not wildcards.
  */
 export function escapeLike(value: string): string {
-  return value.replace(/%/g, "\\%").replace(/_/g, "\\_");
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/%/g, "\\%")
+    .replace(/_/g, "\\_");
 }
