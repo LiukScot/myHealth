@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, gte, lte, like, desc, sql } from "drizzle-orm";
+import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { painEntries, painOptions } from "../../db/index.ts";
@@ -38,8 +38,8 @@ export function registerPainTools(server: McpServer, ctx: McpToolContext): void 
       if (args.from) conditions.push(gte(painEntries.entryDate, args.from));
       if (args.to) conditions.push(lte(painEntries.entryDate, args.to));
       if (args.level_min !== undefined) conditions.push(gte(painEntries.painLevel, args.level_min));
-      if (args.area) conditions.push(like(painEntries.area, `%${escapeLike(args.area)}%`));
-      if (args.symptoms_contains) conditions.push(like(painEntries.symptoms, `%${escapeLike(args.symptoms_contains)}%`));
+      if (args.area) conditions.push(sql`${painEntries.area} LIKE ${'%' + escapeLike(args.area) + '%'} ESCAPE '\\'`);
+      if (args.symptoms_contains) conditions.push(sql`${painEntries.symptoms} LIKE ${'%' + escapeLike(args.symptoms_contains) + '%'} ESCAPE '\\'`);
 
       const rows = db
         .select({

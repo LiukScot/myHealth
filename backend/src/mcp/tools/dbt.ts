@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, gte, lte, like, desc } from "drizzle-orm";
+import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { dbtEntries } from "../../db/index.ts";
@@ -34,7 +34,7 @@ export function registerDbtTools(server: McpServer, ctx: McpToolContext): void {
       if (args.from) conditions.push(gte(dbtEntries.entryDate, args.from));
       if (args.to) conditions.push(lte(dbtEntries.entryDate, args.to));
       if (args.emotion_contains) {
-        conditions.push(like(dbtEntries.emotionName, `%${escapeLike(args.emotion_contains)}%`));
+        conditions.push(sql`${dbtEntries.emotionName} LIKE ${'%' + escapeLike(args.emotion_contains) + '%'} ESCAPE '\\'`);
       }
 
       const rows = db
