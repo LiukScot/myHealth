@@ -12,18 +12,6 @@ test.afterEach(async ({ request }) => {
   await purgeUserData(request);
 });
 
-test("saves preferences", async ({ page }) => {
-  // Model and Chat range fields were removed when the Mistral chatbot was
-  // replaced by the MCP server. Only the dashboard range remains.
-  await page.getByLabel("Last dashboard range").selectOption("30");
-  await page.getByRole("button", { name: "Save prefs" }).click();
-
-  await page.reload();
-  await page.getByRole("button", { name: "settings" }).click();
-
-  await expect(page.getByLabel("Last dashboard range")).toHaveValue("30");
-});
-
 test("changes password and restores the original password", async ({ page }) => {
   const temporaryPassword = "Password456";
 
@@ -32,17 +20,24 @@ test("changes password and restores the original password", async ({ page }) => 
   await page.getByLabel("New password").fill(temporaryPassword);
   await page.getByLabel("Confirm").fill(temporaryPassword);
   await page.getByRole("button", { name: "Change password" }).click();
+  
+  // Wait for password update confirmation
   await expect(page.getByText("Password updated.")).toBeVisible();
+  await page.waitForTimeout(500);
 
   await page.getByRole("button", { name: "Log out" }).click();
   await loginUi(page, temporaryPassword);
 
+  await page.getByRole("button", { name: "settings" }).click();
   await openAccountPanel(page);
   await page.getByLabel("Current password").fill(temporaryPassword);
   await page.getByLabel("New password").fill(e2eUser.password);
   await page.getByLabel("Confirm").fill(e2eUser.password);
   await page.getByRole("button", { name: "Change password" }).click();
+  
+  // Wait for password update confirmation 
   await expect(page.getByText("Password updated.")).toBeVisible();
+  await page.waitForTimeout(500);
 
   await page.getByRole("button", { name: "Log out" }).click();
   await loginUi(page);

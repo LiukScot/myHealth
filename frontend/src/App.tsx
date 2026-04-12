@@ -316,8 +316,7 @@ function App() {
             purgeConfirmArmed={settings.purgeConfirmArmed}
             purgePending={settings.purgePending} purgeError={settings.purgeError}
             onPurgeArm={settings.onPurgeArm} onPurgeConfirm={settings.onPurgeConfirm}
-            onPurgeCancel={settings.onPurgeCancel} prefsValue={settings.prefsValue}
-            onSavePrefs={settings.onSavePrefs} onExportJson={settings.onExportJson}
+            onPurgeCancel={settings.onPurgeCancel} onExportJson={settings.onExportJson}
             onImportJson={settings.onImportJson} onExportXlsx={settings.onExportXlsx}
             onImportXlsx={settings.onImportXlsx} backupFeedback={settings.backupFeedback}
           />

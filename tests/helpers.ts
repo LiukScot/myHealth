@@ -22,7 +22,13 @@ export async function loginApi(request: APIRequestContext, password = e2eUser.pa
   const response = await request.post("/api/v1/auth/login", {
     data: { email: e2eUser.email, password },
   });
-  expect(response.ok(), `expected API login to succeed for ${e2eUser.email}`).toBeTruthy();
+  if (!response.ok()) {
+    const body = await response.text();
+    expect(
+      response.ok(),
+      `expected API login to succeed for ${e2eUser.email}; status=${response.status()} body=${body}`,
+    ).toBeTruthy();
+  }
 }
 
 export async function purgeUserData(request: APIRequestContext, password = e2eUser.password) {
@@ -108,16 +114,20 @@ export async function seedPainEntry(
 }
 
 export async function openAccountPanel(page: Page) {
-  await page.locator("summary").filter({ hasText: "Account" }).click();
+  const currentPasswordField = page.getByLabel("Current password");
+  if (await currentPasswordField.count()) {
+    await expect(currentPasswordField).toBeVisible();
+    return;
+  }
+
+  const accountSummary = page.locator("summary").filter({ hasText: "Account" });
+  if (await accountSummary.count()) {
+    await accountSummary.click();
+  }
+
+  await expect(currentPasswordField).toBeVisible();
 }
 
 export async function navigateTo(page: Page, section: string) {
-  const newEntryItems = ["pain", "diary", "cbt", "dbt"];
-  if (newEntryItems.includes(section.toLowerCase())) {
-    const details = page.locator("details.nav-group");
-    if (!(await details.getAttribute("open") !== null)) {
-      await details.locator("summary").click();
-    }
-  }
   await page.getByRole("button", { name: section }).click();
 }

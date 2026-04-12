@@ -1,9 +1,13 @@
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { defineConfig } from "@playwright/test";
 
 const smokePort = Number(process.env.SMOKE_PORT || 4173);
-const smokeDbPath = path.resolve(__dirname, "backend/data/smoke-health.sqlite");
+const smokeDbDir = fs.mkdtempSync(path.join(os.tmpdir(), "health-playwright-"));
+const smokeDbPath = path.join(smokeDbDir, "smoke-health.sqlite");
 const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
+const quoteShell = (value: string) => JSON.stringify(value);
 
 export default defineConfig({
   testDir: "./tests",
@@ -17,7 +21,7 @@ export default defineConfig({
   webServer: externalBaseURL
     ? undefined
     : {
-        command: `DB_PATH=${smokeDbPath} npm run smoke:seed && PORT=${smokePort} DB_PATH=${smokeDbPath} npm run smoke:serve`,
+        command: `rm -f ${quoteShell(smokeDbPath)} ${quoteShell(`${smokeDbPath}-shm`)} ${quoteShell(`${smokeDbPath}-wal`)} && DB_JOURNAL_MODE=DELETE DB_PATH=${quoteShell(smokeDbPath)} npm run smoke:seed && PORT=${smokePort} DB_JOURNAL_MODE=DELETE DB_PATH=${quoteShell(smokeDbPath)} npm run smoke:serve`,
         port: smokePort,
         reuseExistingServer: false,
         timeout: 180_000

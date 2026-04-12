@@ -10,7 +10,6 @@ import type { useAuth } from "../hooks/use-auth";
 import {
   InlineFeedback,
   MultiSelectField,
-  PreferencesEditor,
 } from "./shared";
 import { McpAccessSection } from "./McpAccessSection";
 import {
@@ -677,8 +676,6 @@ export function SettingsSection({
   onPurgeArm,
   onPurgeConfirm,
   onPurgeCancel,
-  prefsValue,
-  onSavePrefs,
   onExportJson,
   onImportJson,
   onExportXlsx,
@@ -692,8 +689,6 @@ export function SettingsSection({
   onPurgeArm: () => void;
   onPurgeConfirm: () => void;
   onPurgeCancel: () => void;
-  prefsValue: { model: string; chatRange: string; lastRange: string; graphSelection: Record<string, unknown> };
-  onSavePrefs: (value: { model: string; chatRange: string; lastRange: string; graphSelection: Record<string, unknown> }) => void;
   onExportJson: () => void;
   onImportJson: (file: File) => void;
   onExportXlsx: () => void;
@@ -767,14 +762,6 @@ export function SettingsSection({
             <InlineFeedback message={purgeError} />
           </article>
         </div>
-        <article>
-          <h3>Preferences</h3>
-          <PreferencesEditor
-            key={`${prefsValue.model}:${prefsValue.chatRange}:${prefsValue.lastRange}`}
-            value={prefsValue}
-            onSave={onSavePrefs}
-          />
-        </article>
         <article>
           <h3>Backup</h3>
           <div className="stack">

@@ -12,7 +12,7 @@ if (fresh && fs.existsSync(dbPath)) {
   fs.rmSync(dbPath, { force: true });
 }
 
-const db = openDb(dbPath);
+const db = openDb(dbPath, process.env.DB_JOURNAL_MODE || "WAL");
 runMigrations(db);
 db.close();
 console.log(`Health DB ready at ${dbPath}`);

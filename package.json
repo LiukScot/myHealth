@@ -2,6 +2,7 @@
   "name": "health",
   "private": true,
   "scripts": {
+    "dev": "npm run dev:backend & npm run dev:frontend & wait",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "./scripts/run-bun.sh --cwd backend src/server.ts",
     "build": "npm --prefix frontend run build",

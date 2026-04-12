@@ -25,15 +25,19 @@ test("creates, edits, and deletes a diary entry", async ({ page }) => {
   await page.getByLabel("Description").fill(description);
   await page.getByLabel("Gratitude").fill("warm shower");
   await page.getByLabel("Reflection").fill("kept a steady pace");
-  await page.getByRole("button", { name: "Add entry" }).click();
-
+  await page.locator(".form-grid button[type='submit']").click();
+  
+  // Wait for entry to appear in table
+  await page.waitForSelector(".diary-table tbody tr", { timeout: 5000 });
   await expect(page.getByRole("cell", { name: description })).toBeVisible();
 
   const row = page.locator(".diary-table tbody tr").filter({ hasText: description });
   await row.getByRole("button", { name: "Edit" }).click();
   await page.getByLabel("Description").fill(updatedDescription);
-  await page.getByRole("button", { name: "Update entry" }).click();
+  await page.locator(".form-grid button[type='submit']").click();
 
+  // Wait for update to reflect in table
+  await page.waitForSelector(".diary-table tbody tr", { timeout: 5000 });
   await expect(page.getByRole("cell", { name: updatedDescription })).toBeVisible();
 
   const updatedRow = page.locator(".diary-table tbody tr").filter({ hasText: updatedDescription });

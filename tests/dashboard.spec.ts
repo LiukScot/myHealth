@@ -17,16 +17,23 @@ test("renders dashboard data and supports chart toggles", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
   await expect(page.locator("article").filter({ hasText: "Journal entries" }).locator("strong")).toHaveText("1");
   await expect(page.locator("article").filter({ hasText: "Pain entries" }).locator("strong")).toHaveText("1");
+  
+  // Wait for chart canvas to render dynamically
+  await page.waitForSelector(".chart-canvas canvas", { timeout: 5000 });
   await expect(page.locator(".chart-canvas canvas")).toBeVisible();
 
-  await page.getByLabel("Pain").uncheck();
-  await page.getByLabel("Fatigue").uncheck();
-  await page.getByLabel("Mood").uncheck();
-  await page.getByLabel("Depression").uncheck();
-  await page.getByLabel("Anxiety").uncheck();
+  // Uncheck all metrics by text label (using parent locator to find input)
+  await page.getByText("Pain", { exact: true }).locator("..").locator("input[type='checkbox']").uncheck();
+  await page.getByText("Fatigue", { exact: true }).locator("..").locator("input[type='checkbox']").uncheck();
+  await page.getByText("Mood", { exact: true }).locator("..").locator("input[type='checkbox']").uncheck();
+  await page.getByText("Depression", { exact: true }).locator("..").locator("input[type='checkbox']").uncheck();
+  await page.getByText("Anxiety", { exact: true }).locator("..").locator("input[type='checkbox']").uncheck();
+  
   await expect(page.getByText("Toggle on a metric to see it.")).toBeVisible();
 
-  await page.getByLabel("Mood").check();
+  // Check mood again
+  await page.getByText("Mood", { exact: true }).locator("..").locator("input[type='checkbox']").check();
+  await page.waitForSelector(".chart-canvas canvas", { timeout: 5000 });
   await expect(page.locator(".chart-canvas canvas")).toBeVisible();
 
   await page.getByRole("button", { name: "1 week" }).click();

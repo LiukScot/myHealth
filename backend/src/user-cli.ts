@@ -20,7 +20,7 @@ function required(name: string): string {
 }
 
 async function main() {
-  const db = openDb(dbPath);
+  const db = openDb(dbPath, process.env.DB_JOURNAL_MODE || "WAL");
   runMigrations(db);
 
   if (cmd === "list") {

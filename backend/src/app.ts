@@ -20,7 +20,7 @@ import { createMcpApp } from "./mcp/server.ts";
 
 // Initialize database
 fs.mkdirSync(path.dirname(env.DB_PATH), { recursive: true });
-const rawDb = openDb(env.DB_PATH);
+const rawDb = openDb(env.DB_PATH, env.DB_JOURNAL_MODE);
 runMigrations(rawDb);
 const db = createDrizzle(rawDb);
 

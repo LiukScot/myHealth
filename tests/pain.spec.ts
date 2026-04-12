@@ -24,15 +24,19 @@ test("creates, edits, and deletes a pain entry", async ({ page }) => {
   await page.locator(".multi-option-chip", { hasText: "work" }).click();
   await page.locator(".multi-option-chip", { hasText: "good sleep" }).click();
   await page.getByLabel("Notes").fill(note);
-  await page.getByRole("button", { name: "Add entry" }).click();
+  await page.locator(".pain-form button[type='submit']").click();
 
+  // Wait for entry to appear in table
+  await page.waitForSelector(".pain-table tbody tr", { timeout: 5000 });
   await expect(page.getByRole("cell", { name: note })).toBeVisible();
 
   const row = page.locator(".pain-table tbody tr").filter({ hasText: note });
   await row.getByRole("button", { name: "Edit" }).click();
   await page.getByLabel("Notes").fill(updatedNote);
-  await page.getByRole("button", { name: "Update entry" }).click();
+  await page.locator(".pain-form button[type='submit']").click();
 
+  // Wait for update to reflect in table
+  await page.waitForSelector(".pain-table tbody tr", { timeout: 5000 });
   await expect(page.getByRole("cell", { name: updatedNote })).toBeVisible();
 
   const updatedRow = page.locator(".pain-table tbody tr").filter({ hasText: updatedNote });
