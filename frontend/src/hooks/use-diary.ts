@@ -139,6 +139,7 @@ export function useDiary(enabled: boolean) {
 
   return {
     diaryEntries: diaryQuery.data ?? [],
+    isLoading: diaryQuery.isLoading,
     moodFieldOptions,
     diaryForm,
     diaryMutation,

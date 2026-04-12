@@ -183,6 +183,7 @@ export function useDashboard(enabled: boolean) {
     dashboardFrom,
     dashboardTo,
     activeQuickRange,
+    isLoading: diaryQuery.isLoading || painQuery.isLoading,
     handleDateChange,
     applyQuickRange,
     dashboardCards,

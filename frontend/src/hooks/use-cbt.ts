@@ -108,6 +108,7 @@ export function useCbt(enabled: boolean) {
 
   return {
     cbtEntries: cbtQuery.data ?? [],
+    isLoading: cbtQuery.isLoading,
     cbtForm,
     cbtMutation,
     editingCbt,

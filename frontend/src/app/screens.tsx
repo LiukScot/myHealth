@@ -8,6 +8,7 @@ import type { CbtEntry, CbtFormValues, DashboardQuickRange, DbtEntry, DbtFormVal
 import { getErrorMessage } from "../lib";
 import type { useAuth } from "../hooks/use-auth";
 import {
+  AnimatedEditingLabel,
   InlineFeedback,
   MultiSelectField,
 } from "./shared";
@@ -32,6 +33,7 @@ export function DashboardSection({
   dashboardFrom,
   dashboardTo,
   activeQuickRange,
+  isLoading,
   onDateChange,
   onQuickRange,
   dashboardCards,
@@ -43,6 +45,7 @@ export function DashboardSection({
   dashboardFrom: string;
   dashboardTo: string;
   activeQuickRange: DashboardQuickRange;
+  isLoading: boolean;
   onDateChange: (field: "from" | "to", value: string) => void;
   onQuickRange: (range: DashboardQuickRange) => void;
   dashboardCards: Array<{ label: string; emoji: string; value: number | null; formattedValue: string; previous: number | null; invertDelta?: boolean }>;
@@ -78,65 +81,71 @@ export function DashboardSection({
         </div>
       </div>
 
-      <div className="stats-grid stats-grid-dashboard">
-        {dashboardCards.map((card) => {
-          const deltaPct = calcDeltaPercent(card.value, card.previous);
-          const delta = deltaPct === null ? null : formatDelta(deltaPct, Boolean(card.invertDelta));
-          const absPct = deltaPct !== null ? Math.abs(deltaPct) : 0;
-          const deltaStyle = delta ? getDeltaStyle(delta.className, absPct) : undefined;
-          return (
-            <article key={card.label}>
-              <h3>
-                <span className="card-emoji" aria-hidden="true">
-                  {card.emoji}
-                </span>
-                {card.label}
-              </h3>
-              <strong>{card.formattedValue}</strong>
-              {delta ? (
-                <span className={`delta ${delta.className}`} style={deltaStyle}>
-                  {delta.text}
-                </span>
-              ) : null}
-            </article>
-          );
-        })}
-      </div>
-
-      <div className="chart-wrap chart-wrap-wide">
-        <div className="graph-header">
-          <h3>Metrics over time</h3>
-          <div className="graph-toggle-list">
-            {wellbeingSeries.map((series) => {
-              const checked = graphSelection[series.key] ?? true;
-              const hasData = series.points.length > 0;
+      {isLoading ? (
+        <p className="hint">Loading dashboard data...</p>
+      ) : (
+        <>
+          <div className="stats-grid stats-grid-dashboard">
+            {dashboardCards.map((card) => {
+              const deltaPct = calcDeltaPercent(card.value, card.previous);
+              const delta = deltaPct === null ? null : formatDelta(deltaPct, Boolean(card.invertDelta));
+              const absPct = deltaPct !== null ? Math.abs(deltaPct) : 0;
+              const deltaStyle = delta ? getDeltaStyle(delta.className, absPct) : undefined;
               return (
-                <label
-                  key={series.key}
-                  className={hasData ? "series-toggle" : "series-toggle is-disabled"}
-                  style={{ "--series-color": series.color } as CSSProperties}
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked && hasData}
-                    disabled={!hasData}
-                    onChange={(event) => onGraphToggle(series.key, event.target.checked)}
-                  />
-                  <span>{series.label}</span>
-                </label>
+                <article key={card.label}>
+                  <h3>
+                    <span className="card-emoji" aria-hidden="true">
+                      {card.emoji}
+                    </span>
+                    {card.label}
+                  </h3>
+                  <strong>{card.formattedValue}</strong>
+                  {delta ? (
+                    <span className={`delta ${delta.className}`} style={deltaStyle}>
+                      {delta.text}
+                    </span>
+                  ) : null}
+                </article>
               );
             })}
           </div>
-        </div>
 
-        {wellbeingChart.hasVisibleData ? (
-          <div className="chart-canvas chart-canvas-wide">
-            <Line data={wellbeingChart.data} options={wellbeingChart.options} />
+          <div className="chart-wrap chart-wrap-wide">
+            <div className="graph-header">
+              <h3>Metrics over time</h3>
+              <div className="graph-toggle-list">
+                {wellbeingSeries.map((series) => {
+                  const checked = graphSelection[series.key] ?? true;
+                  const hasData = series.points.length > 0;
+                  return (
+                    <label
+                      key={series.key}
+                      className={hasData ? "series-toggle" : "series-toggle is-disabled"}
+                      style={{ "--series-color": series.color } as CSSProperties}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked && hasData}
+                        disabled={!hasData}
+                        onChange={(event) => onGraphToggle(series.key, event.target.checked)}
+                      />
+                      <span>{series.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {wellbeingChart.hasVisibleData ? (
+              <div className="chart-canvas chart-canvas-wide">
+                <Line data={wellbeingChart.data} options={wellbeingChart.options} />
+              </div>
+            ) : (
+              <p className="hint">{wellbeingChart.hasAnyData ? "Toggle on a metric to see it." : "No data yet"}</p>
+            )}
           </div>
-        ) : (
-          <p className="hint">{wellbeingChart.hasAnyData ? "Toggle on a metric to see it." : "No data yet"}</p>
-        )}
-      </div>
+        </>
+      )}
     </section>
   );
 }
@@ -144,6 +153,7 @@ export function DashboardSection({
 export function DiarySection({
   diaryForm,
   diaryMutationState,
+  isLoading,
   editingDiary,
   moodFieldOptions,
   diaryEntries,
@@ -156,6 +166,7 @@ export function DiarySection({
 }: {
   diaryForm: UseFormReturn<DiaryFormValues>;
   diaryMutationState: { isSuccess: boolean };
+  isLoading: boolean;
   editingDiary: DiaryEntry | null;
   moodFieldOptions: { positive_moods: string[]; negative_moods: string[]; general_moods: string[] };
   diaryEntries: DiaryEntry[];
@@ -236,6 +247,8 @@ export function DiarySection({
         </div>
       </form>
 
+      {isLoading && <p className="hint">Loading diary entries...</p>}
+
       <div className="table-scroll diary-table">
         <table>
           <thead>
@@ -269,8 +282,21 @@ export function DiarySection({
                 <td>{entry.gratitude || "-"}</td>
                 <td>{entry.reflection || "-"}</td>
                 <td>
-                  <button onClick={() => onStartEdit(entry)}>Edit</button>
                   <button
+                    type="button"
+                    className={editingDiary?.id === entry.id ? "active is-editing" : editingDiary ? "is-editing" : undefined}
+                    onClick={() => {
+                      if (editingDiary) {
+                        onCancelEdit();
+                        return;
+                      }
+                      onStartEdit(entry);
+                    }}
+                  >
+                    <AnimatedEditingLabel active={Boolean(editingDiary)} />
+                  </button>
+                  <button
+                    type="button"
                     className={confirmDeleteDiary === entry.id ? "btn-delete-confirm" : ""}
                     onClick={() => onDeleteClick(entry.id)}
                     onBlur={onDeleteBlur}
@@ -290,6 +316,7 @@ export function DiarySection({
 export function PainSection({
   painForm,
   painMutationState,
+  isLoading,
   editingPain,
   painFieldOptions,
   watchedValues,
@@ -303,6 +330,7 @@ export function PainSection({
 }: {
   painForm: UseFormReturn<PainFormValues>;
   painMutationState: { isSuccess: boolean };
+  isLoading: boolean;
   editingPain: PainEntry | null;
   painFieldOptions: { area: string[]; symptoms: string[]; activities: string[]; medicines: string[]; habits: string[]; other: string[] };
   watchedValues: { area: string; symptoms: string; activities: string; medicines: string; habits: string; other: string };
@@ -363,6 +391,8 @@ export function PainSection({
         </div>
       </form>
 
+      {isLoading && <p className="hint">Loading pain entries...</p>}
+
       <div className="table-scroll pain-table">
         <table>
           <thead>
@@ -398,8 +428,21 @@ export function PainSection({
                 <td>{entry.other || "-"}</td>
                 <td>{entry.note || "-"}</td>
                 <td>
-                  <button onClick={() => onStartEdit(entry)}>Edit</button>
                   <button
+                    type="button"
+                    className={editingPain?.id === entry.id ? "active is-editing" : editingPain ? "is-editing" : undefined}
+                    onClick={() => {
+                      if (editingPain) {
+                        onCancelEdit();
+                        return;
+                      }
+                      onStartEdit(entry);
+                    }}
+                  >
+                    <AnimatedEditingLabel active={Boolean(editingPain)} />
+                  </button>
+                  <button
+                    type="button"
                     className={confirmDeletePain === entry.id ? "btn-delete-confirm" : ""}
                     onClick={() => onDeleteClick(entry.id)}
                     onBlur={onDeleteBlur}
@@ -419,6 +462,7 @@ export function PainSection({
 export function CbtSection({
   cbtForm,
   cbtMutationState,
+  isLoading,
   editingCbt,
   cbtEntries,
   confirmDeleteCbt,
@@ -430,6 +474,7 @@ export function CbtSection({
 }: {
   cbtForm: UseFormReturn<CbtFormValues>;
   cbtMutationState: { isSuccess: boolean };
+  isLoading: boolean;
   editingCbt: CbtEntry | null;
   cbtEntries: CbtEntry[];
   confirmDeleteCbt: number | null;
@@ -509,6 +554,8 @@ export function CbtSection({
         </div>
       </form>
 
+      {isLoading && <p className="hint">Loading CBT entries...</p>}
+
       <div className="table-scroll">
         <table>
           <thead>
@@ -530,8 +577,21 @@ export function CbtSection({
                 <td>{entry.mainUnhelpfulThought || "-"}</td>
                 <td>{entry.productiveResponse || "-"}</td>
                 <td>
-                  <button onClick={() => onStartEdit(entry)}>Edit</button>
                   <button
+                    type="button"
+                    className={editingCbt?.id === entry.id ? "active is-editing" : editingCbt ? "is-editing" : undefined}
+                    onClick={() => {
+                      if (editingCbt) {
+                        onCancelEdit();
+                        return;
+                      }
+                      onStartEdit(entry);
+                    }}
+                  >
+                    <AnimatedEditingLabel active={Boolean(editingCbt)} />
+                  </button>
+                  <button
+                    type="button"
                     className={confirmDeleteCbt === entry.id ? "btn-delete-confirm" : ""}
                     onClick={() => onDeleteClick(entry.id)}
                     onBlur={onDeleteBlur}
@@ -551,6 +611,7 @@ export function CbtSection({
 export function DbtSection({
   dbtForm,
   dbtMutationState,
+  isLoading,
   editingDbt,
   dbtEntries,
   confirmDeleteDbt,
@@ -562,6 +623,7 @@ export function DbtSection({
 }: {
   dbtForm: UseFormReturn<DbtFormValues>;
   dbtMutationState: { isSuccess: boolean };
+  isLoading: boolean;
   editingDbt: DbtEntry | null;
   dbtEntries: DbtEntry[];
   confirmDeleteDbt: number | null;
@@ -629,6 +691,8 @@ export function DbtSection({
         </div>
       </form>
 
+      {isLoading && <p className="hint">Loading DBT entries...</p>}
+
       <div className="table-scroll">
         <table>
           <thead>
@@ -650,8 +714,21 @@ export function DbtSection({
                 <td>{entry.bodyLocation || "-"}</td>
                 <td>{entry.presentMoment || "-"}</td>
                 <td>
-                  <button onClick={() => onStartEdit(entry)}>Edit</button>
                   <button
+                    type="button"
+                    className={editingDbt?.id === entry.id ? "active is-editing" : editingDbt ? "is-editing" : undefined}
+                    onClick={() => {
+                      if (editingDbt) {
+                        onCancelEdit();
+                        return;
+                      }
+                      onStartEdit(entry);
+                    }}
+                  >
+                    <AnimatedEditingLabel active={Boolean(editingDbt)} />
+                  </button>
+                  <button
+                    type="button"
                     className={confirmDeleteDbt === entry.id ? "btn-delete-confirm" : ""}
                     onClick={() => onDeleteClick(entry.id)}
                     onBlur={onDeleteBlur}

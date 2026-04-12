@@ -137,6 +137,7 @@ export function usePain(enabled: boolean) {
 
   return {
     painEntries: painQuery.data ?? [],
+    isLoading: painQuery.isLoading,
     painFieldOptions,
     painForm,
     painMutation,

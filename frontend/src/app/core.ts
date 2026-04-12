@@ -206,6 +206,21 @@ export type DbtFormValues = z.infer<typeof dbtFormSchema>;
 export const navItems = ["dashboard", "diary", "pain", "cbt", "dbt", "settings"] as const;
 export type NavItem = (typeof navItems)[number];
 
+export const appName = "Health";
+
+export const navLabels: Record<NavItem, string> = {
+  dashboard: "Dashboard",
+  diary: "Diary",
+  pain: "Pain",
+  cbt: "CBT",
+  dbt: "DBT",
+  settings: "Settings",
+};
+
+export function formatDocumentTitle(section?: string) {
+  return section ? `${section} - ${appName}` : appName;
+}
+
 export const newEntryItems: NavItem[] = ["pain", "diary", "cbt", "dbt"];
 export const therapyItems: NavItem[] = ["diary", "cbt", "dbt"];
 

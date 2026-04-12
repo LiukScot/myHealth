@@ -21,6 +21,43 @@ export function InlineFeedback({ message, className }: { message: InlineMessage 
   );
 }
 
+export function AnimatedEditingLabel({
+  active,
+  idleLabel = "Edit",
+  editingLabel = "Editing",
+}: {
+  active: boolean;
+  idleLabel?: string;
+  editingLabel?: string;
+}) {
+  const [dotsCount, setDotsCount] = useState(1);
+
+  useEffect(() => {
+    if (!active) {
+      setDotsCount(1);
+      return;
+    }
+
+    setDotsCount(1);
+    const timer = window.setInterval(() => {
+      setDotsCount((count) => (count % 3) + 1);
+    }, 500);
+
+    return () => window.clearInterval(timer);
+  }, [active]);
+
+  if (!active) {
+    return idleLabel;
+  }
+
+  return (
+    <span className="animated-editing-stack">
+      <span className="animated-editing-label">{editingLabel + ".".repeat(dotsCount)}</span>
+      <span className="animated-editing-sizer" aria-hidden="true">{editingLabel}...</span>
+    </span>
+  );
+}
+
 type MultiSelectDomain = "pain" | "mood";
 
 const domainConfig: Record<MultiSelectDomain, { apiBase: string; queryKey: string }> = {
@@ -56,6 +93,8 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
   }, [options, selectedValues, hiddenSet, selectedSet]);
   const [customValue, setCustomValue] = useState("");
   const [editOptionsMode, setEditOptionsMode] = useState(false);
+  const [addSuccess, setAddSuccess] = useState(false);
+  const addSuccessTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (pendingRemovalKey) {
@@ -69,6 +108,12 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
       setCustomValue("");
     }
   }, [editOptionsMode]);
+
+  useEffect(() => () => {
+    if (addSuccessTimerRef.current !== null) {
+      window.clearTimeout(addSuccessTimerRef.current);
+    }
+  }, []);
 
   const toggleOption = (option: string) => {
     const key = option.trim().toLowerCase();
@@ -197,11 +242,20 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
         />
         <button
           type="button"
+          className={addSuccess ? "btn-check" : ""}
           onClick={() => {
             const clean = customValue.trim();
             if (!clean) return;
             const nextValues = mergeOptions(selectedValues, [clean]);
             onChange(listToCsv(nextValues));
+            setAddSuccess(true);
+            if (addSuccessTimerRef.current !== null) {
+              window.clearTimeout(addSuccessTimerRef.current);
+            }
+            addSuccessTimerRef.current = window.setTimeout(() => {
+              setAddSuccess(false);
+              addSuccessTimerRef.current = null;
+            }, 900);
             setCustomValue("");
             setHiddenSet((current) => {
               const key = clean.toLowerCase();
@@ -228,15 +282,15 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
             })();
           }}
         >
-          Add
+          {addSuccess ? "\u2713" : "Add"}
         </button>
         <button
           type="button"
-          className={editOptionsMode ? "multi-option-edit active" : "multi-option-edit"}
+          className={editOptionsMode ? "multi-option-edit active is-editing" : "multi-option-edit"}
           aria-pressed={editOptionsMode}
           onClick={() => setEditOptionsMode((v) => !v)}
         >
-          {editOptionsMode ? "Editing..." : "Edit"}
+          <AnimatedEditingLabel active={editOptionsMode} />
         </button>
       </div>
     </div>

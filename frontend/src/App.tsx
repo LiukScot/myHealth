@@ -3,10 +3,11 @@ import { useAuth, useDiary, usePain, useCbt, useDbt, useDashboard, useSettings }
 import { LoginScreen } from "./app/LoginScreen";
 import { Sidebar } from "./app/Sidebar";
 import { CbtSection, DbtSection, DashboardSection, DiarySection, PainSection, SettingsSection } from "./app/screens";
-import type { NavItem } from "./app/core";
+import { formatDocumentTitle, navLabels, type NavItem } from "./app/core";
 
 function App() {
   const auth = useAuth();
+  const loggedIn = !!auth.user;
   const [nav, setNav] = useState<NavItem>("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -74,7 +75,10 @@ function App() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [nav]);
-  const loggedIn = !!auth.user;
+
+  useEffect(() => {
+    document.title = loggedIn ? formatDocumentTitle(navLabels[nav]) : formatDocumentTitle("Sign in");
+  }, [loggedIn, nav]);
 
   const diary = useDiary(loggedIn);
   const pain = usePain(loggedIn);
@@ -263,7 +267,7 @@ function App() {
         {nav === "dashboard" && (
           <DashboardSection
             dashboardFrom={dashboard.dashboardFrom} dashboardTo={dashboard.dashboardTo}
-            activeQuickRange={dashboard.activeQuickRange} onDateChange={dashboard.handleDateChange}
+            activeQuickRange={dashboard.activeQuickRange} isLoading={dashboard.isLoading} onDateChange={dashboard.handleDateChange}
             onQuickRange={dashboard.applyQuickRange} dashboardCards={dashboard.dashboardCards}
             wellbeingSeries={dashboard.wellbeingSeries} graphSelection={dashboard.graphSelection}
             onGraphToggle={dashboard.handleGraphToggle} wellbeingChart={dashboard.wellbeingChart}
@@ -272,7 +276,7 @@ function App() {
 
         {nav === "diary" && (
           <DiarySection
-            diaryForm={diary.diaryForm} diaryMutationState={{ isSuccess: diary.diaryMutation.isSuccess }}
+            diaryForm={diary.diaryForm} diaryMutationState={{ isSuccess: diary.diaryMutation.isSuccess }} isLoading={diary.isLoading}
             editingDiary={diary.editingDiary} moodFieldOptions={diary.moodFieldOptions}
             diaryEntries={diary.diaryEntries} confirmDeleteDiary={diary.confirmDeleteDiary}
             onSubmit={(v) => diary.diaryMutation.mutate(v)} onCancelEdit={diary.resetDiaryForm}
@@ -282,7 +286,7 @@ function App() {
 
         {nav === "pain" && (
           <PainSection
-            painForm={pain.painForm} painMutationState={{ isSuccess: pain.painMutation.isSuccess }}
+            painForm={pain.painForm} painMutationState={{ isSuccess: pain.painMutation.isSuccess }} isLoading={pain.isLoading}
             editingPain={pain.editingPain} painFieldOptions={pain.painFieldOptions}
             watchedValues={pain.watchedValues} painEntries={pain.painEntries}
             confirmDeletePain={pain.confirmDeletePain} onSubmit={(v) => pain.painMutation.mutate(v)}
@@ -293,7 +297,7 @@ function App() {
 
         {nav === "cbt" && (
           <CbtSection
-            cbtForm={cbt.cbtForm} cbtMutationState={{ isSuccess: cbt.cbtMutation.isSuccess }}
+            cbtForm={cbt.cbtForm} cbtMutationState={{ isSuccess: cbt.cbtMutation.isSuccess }} isLoading={cbt.isLoading}
             editingCbt={cbt.editingCbt} cbtEntries={cbt.cbtEntries}
             confirmDeleteCbt={cbt.confirmDeleteCbt} onSubmit={(v) => cbt.cbtMutation.mutate(v)}
             onCancelEdit={cbt.resetCbtForm} onStartEdit={cbt.startCbtEdit}
@@ -303,7 +307,7 @@ function App() {
 
         {nav === "dbt" && (
           <DbtSection
-            dbtForm={dbt.dbtForm} dbtMutationState={{ isSuccess: dbt.dbtMutation.isSuccess }}
+            dbtForm={dbt.dbtForm} dbtMutationState={{ isSuccess: dbt.dbtMutation.isSuccess }} isLoading={dbt.isLoading}
             editingDbt={dbt.editingDbt} dbtEntries={dbt.dbtEntries}
             confirmDeleteDbt={dbt.confirmDeleteDbt} onSubmit={(v) => dbt.dbtMutation.mutate(v)}
             onCancelEdit={dbt.resetDbtForm} onStartEdit={dbt.startDbtEdit}

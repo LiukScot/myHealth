@@ -99,6 +99,7 @@ export function useDbt(enabled: boolean) {
 
   return {
     dbtEntries: dbtQuery.data ?? [],
+    isLoading: dbtQuery.isLoading,
     dbtForm,
     dbtMutation,
     editingDbt,

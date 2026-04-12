@@ -230,6 +230,7 @@ body {
   border-radius: var(--radius-lg);
   padding: 14px;
   box-shadow: var(--shadow);
+  container-type: inline-size;
 }
 
 /* Settings: no outer card — inner articles carry their own surfaces. */
@@ -818,6 +819,25 @@ tbody tr:hover {
   flex-shrink: 0;
 }
 
+.multi-option-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.animated-editing-stack {
+  display: grid;
+}
+
+.animated-editing-label,
+.animated-editing-sizer {
+  grid-area: 1 / 1;
+}
+
+.animated-editing-sizer {
+  visibility: hidden;
+}
+
 .multi-select-field .hint {
   margin: 0;
   font-size: 12px;
@@ -964,6 +984,46 @@ tbody tr:hover {
 
 .chart-wrap-wide {
   margin-top: 10px;
+}
+
+@container (max-width: 980px) {
+  .dashboard-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .dashboard-quick-ranges {
+    grid-column: 1 / -1;
+    gap: 6px;
+  }
+
+  .dashboard-quick-ranges button {
+    min-height: 32px;
+    padding: 7px 10px;
+  }
+
+  .stats-grid.stats-grid-dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .graph-toggle-list {
+    gap: 6px;
+  }
+
+  .series-toggle {
+    padding: 6px 8px;
+  }
+}
+
+@container (max-width: 560px) {
+  .dashboard-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid.stats-grid-dashboard {
+    grid-template-columns: 1fr;
+  }
 }
 
 .chart-canvas-wide {
