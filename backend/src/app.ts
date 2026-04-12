@@ -98,6 +98,37 @@ app.use("*", async (c, next) => {
 
 // Static file serving + SPA fallback
 const publicDir = env.PUBLIC_DIR;
+const devFrontendProxyUrl = env.DEV_FRONTEND_PROXY_URL.trim();
+
+async function proxyDevFrontend(request: Request): Promise<Response> {
+  try {
+    const requestUrl = new URL(request.url);
+    const upstreamUrl = new URL(`${requestUrl.pathname}${requestUrl.search}`, `${devFrontendProxyUrl}/`);
+    const headers = new Headers(request.headers);
+
+    headers.set("host", upstreamUrl.host);
+    headers.set("x-forwarded-host", requestUrl.host);
+    headers.set("x-forwarded-proto", requestUrl.protocol.replace(":", ""));
+
+    const upstreamResponse = await fetch(upstreamUrl, {
+      method: request.method,
+      headers,
+      redirect: "manual"
+    });
+
+    return new Response(upstreamResponse.body, {
+      status: upstreamResponse.status,
+      statusText: upstreamResponse.statusText,
+      headers: upstreamResponse.headers
+    });
+  } catch (error) {
+    console.error("Failed to reach frontend dev server", error);
+    return new Response(
+      "Frontend dev server is unavailable. Run `bun run dev` from the repo root to start it.",
+      { status: 502 }
+    );
+  }
+}
 
 function resolveStaticFile(requestPath: string): string | null {
   const normalized = requestPath === "/" ? "/index.html" : requestPath;
@@ -112,6 +143,10 @@ function resolveStaticFile(requestPath: string): string | null {
 
 app.get("*", (c) => {
   const pathname = new URL(c.req.url).pathname;
+
+  if (devFrontendProxyUrl) {
+    return proxyDevFrontend(c.req.raw);
+  }
 
   // Try exact static file
   const staticFile = resolveStaticFile(pathname);

@@ -1,0 +1,9 @@
+services:
+  health:
+    command: ["bun", "--cwd", "backend", "--watch", "src/server.ts"]
+    environment:
+      DEV_FRONTEND_PROXY_URL: ${DEV_FRONTEND_PROXY_URL:-http://127.0.0.1:5173}
+    volumes:
+      - ./backend/src:/app/backend/src
+      - ./backend/package.json:/app/backend/package.json:ro
+      - ./backend/tsconfig.json:/app/backend/tsconfig.json:ro

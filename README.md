@@ -13,9 +13,37 @@ A personal health tracking app for logging daily mood, pain, and habits — with
 
 ---
 
+## Development
+
+Use Bun as the package manager for local development.
+
+Install dependencies once:
+
+```bash
+bun run setup
+```
+
+For day-to-day development, use the root dev command:
+
+```bash
+bun run dev
+```
+
+This starts the backend in Docker using the dev override and runs the frontend with Vite locally for fast hot reload. Open [http://localhost:5555](http://localhost:5555) and keep using that URL while you edit both backend and frontend files.
+
+The frontend dev server still binds locally on port `5173` for Vite's internal HMR connection, but you do not need to browse to that port during normal development.
+
+To stop the backend container after a dev session:
+
+```bash
+bun run dev:stop
+```
+
+---
+
 ## Running with Docker (recommended)
 
-The easiest way to run Health is with Docker.
+For a production-style local run, use Docker directly.
 
 **Prerequisites:** [Docker](https://docs.docker.com/get-docker/).
 
@@ -51,8 +79,8 @@ Your data is stored in `data/health.sqlite`. The app runs migrations automatical
 To back up or restore your data:
 
 ```bash
-npm run backup          # creates a backup of the DB
-npm run restore         # restores from a backup file
+bun run backup          # creates a backup of the DB
+bun run restore         # restores from a backup file
 ```
 
 You can also export and import data as JSON or Excel from within the app itself (Settings → Backup).

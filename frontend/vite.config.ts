@@ -12,7 +12,12 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: "0.0.0.0",
+    strictPort: true,
+    host: "127.0.0.1",
+    hmr: {
+      host: "127.0.0.1",
+      clientPort: 5173,
+    },
     proxy: {
       "/api": {
         target: "http://127.0.0.1:5555",
