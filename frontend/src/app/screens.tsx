@@ -29,11 +29,30 @@ type WellbeingChartView = {
   options: ChartOptions<"line">;
 };
 
+function EmptyState({
+  title,
+  description,
+  compact = false,
+}: {
+  title: string;
+  description: string;
+  compact?: boolean;
+}) {
+  return (
+    <div className={compact ? "empty-state empty-state-compact" : "empty-state"}>
+      <p className="empty-state-title">{title}</p>
+      <p className="empty-state-copy">{description}</p>
+    </div>
+  );
+}
+
 export function DashboardSection({
   dashboardFrom,
   dashboardTo,
   activeQuickRange,
   isLoading,
+  hasEntriesInRange,
+  hasEntriesOverall,
   onDateChange,
   onQuickRange,
   dashboardCards,
@@ -46,6 +65,8 @@ export function DashboardSection({
   dashboardTo: string;
   activeQuickRange: DashboardQuickRange;
   isLoading: boolean;
+  hasEntriesInRange: boolean;
+  hasEntriesOverall: boolean;
   onDateChange: (field: "from" | "to", value: string) => void;
   onQuickRange: (range: DashboardQuickRange) => void;
   dashboardCards: Array<{ label: string; emoji: string; value: number | null; formattedValue: string; previous: number | null; invertDelta?: boolean }>;
@@ -85,6 +106,15 @@ export function DashboardSection({
         <p className="hint">Loading dashboard data...</p>
       ) : (
         <>
+          {!hasEntriesInRange ? (
+            <EmptyState
+              title={hasEntriesOverall ? "No entries in this date range" : "No health entries yet"}
+              description={hasEntriesOverall
+                ? "Try widening the dates, or add a new diary or pain entry to start filling this range."
+                : "Your averages will appear here after you log your first diary or pain entry."}
+            />
+          ) : null}
+
           <div className="stats-grid stats-grid-dashboard">
             {dashboardCards.map((card) => {
               const deltaPct = calcDeltaPercent(card.value, card.previous);
@@ -141,7 +171,9 @@ export function DashboardSection({
                 <Line data={wellbeingChart.data} options={wellbeingChart.options} />
               </div>
             ) : (
-              <p className="hint">{wellbeingChart.hasAnyData ? "Toggle on a metric to see it." : "No data yet"}</p>
+              <p className="hint">
+                {wellbeingChart.hasAnyData ? "Toggle on a metric to see it." : hasEntriesOverall ? "No chart data in this date range." : "No chart data yet. Add a diary or pain entry to get started."}
+              </p>
             )}
           </div>
         </>
@@ -268,44 +300,56 @@ export function DiarySection({
             </tr>
           </thead>
           <tbody>
-            {diaryEntries.map((entry) => (
-              <tr key={entry.id}>
-                <td>{entry.entryDate}</td>
-                <td>{entry.entryTime}</td>
-                <td>{entry.moodLevel ?? "-"}</td>
-                <td>{entry.depressionLevel ?? "-"}</td>
-                <td>{entry.anxietyLevel ?? "-"}</td>
-                <td>{entry.positiveMoods || "-"}</td>
-                <td>{entry.negativeMoods || "-"}</td>
-                <td>{entry.generalMoods || "-"}</td>
-                <td>{entry.description || "-"}</td>
-                <td>{entry.gratitude || "-"}</td>
-                <td>{entry.reflection || "-"}</td>
-                <td>
-                  <button
-                    type="button"
-                    className={editingDiary?.id === entry.id ? "active is-editing" : editingDiary ? "is-editing" : undefined}
-                    onClick={() => {
-                      if (editingDiary) {
-                        onCancelEdit();
-                        return;
-                      }
-                      onStartEdit(entry);
-                    }}
-                  >
-                    <AnimatedEditingLabel active={Boolean(editingDiary)} />
-                  </button>
-                  <button
-                    type="button"
-                    className={confirmDeleteDiary === entry.id ? "btn-delete-confirm" : ""}
-                    onClick={() => onDeleteClick(entry.id)}
-                    onBlur={onDeleteBlur}
-                  >
-                    {confirmDeleteDiary === entry.id ? "Delete?" : "Delete"}
-                  </button>
+            {diaryEntries.length === 0 ? (
+              <tr>
+                <td colSpan={12}>
+                  <EmptyState
+                    title="No diary entries yet"
+                    description="Use the form above to log your first mood entry. Once you save it, it will appear here."
+                    compact
+                  />
                 </td>
               </tr>
-            ))}
+            ) : (
+              diaryEntries.map((entry) => (
+                <tr key={entry.id}>
+                  <td>{entry.entryDate}</td>
+                  <td>{entry.entryTime}</td>
+                  <td>{entry.moodLevel ?? "-"}</td>
+                  <td>{entry.depressionLevel ?? "-"}</td>
+                  <td>{entry.anxietyLevel ?? "-"}</td>
+                  <td>{entry.positiveMoods || "-"}</td>
+                  <td>{entry.negativeMoods || "-"}</td>
+                  <td>{entry.generalMoods || "-"}</td>
+                  <td>{entry.description || "-"}</td>
+                  <td>{entry.gratitude || "-"}</td>
+                  <td>{entry.reflection || "-"}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className={editingDiary?.id === entry.id ? "active is-editing" : editingDiary ? "is-editing" : undefined}
+                      onClick={() => {
+                        if (editingDiary) {
+                          onCancelEdit();
+                          return;
+                        }
+                        onStartEdit(entry);
+                      }}
+                    >
+                      <AnimatedEditingLabel active={Boolean(editingDiary)} />
+                    </button>
+                    <button
+                      type="button"
+                      className={confirmDeleteDiary === entry.id ? "btn-delete-confirm" : ""}
+                      onClick={() => onDeleteClick(entry.id)}
+                      onBlur={onDeleteBlur}
+                    >
+                      {confirmDeleteDiary === entry.id ? "Delete?" : "Delete"}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -413,45 +457,57 @@ export function PainSection({
             </tr>
           </thead>
           <tbody>
-            {painEntries.map((entry) => (
-              <tr key={entry.id}>
-                <td>{entry.entryDate}</td>
-                <td>{entry.entryTime}</td>
-                <td>{entry.painLevel ?? "-"}</td>
-                <td>{entry.fatigueLevel ?? "-"}</td>
-                <td>{entry.coffeeCount ?? "-"}</td>
-                <td>{entry.area || "-"}</td>
-                <td>{entry.symptoms || "-"}</td>
-                <td>{entry.activities || "-"}</td>
-                <td>{entry.medicines || "-"}</td>
-                <td>{entry.habits || "-"}</td>
-                <td>{entry.other || "-"}</td>
-                <td>{entry.note || "-"}</td>
-                <td>
-                  <button
-                    type="button"
-                    className={editingPain?.id === entry.id ? "active is-editing" : editingPain ? "is-editing" : undefined}
-                    onClick={() => {
-                      if (editingPain) {
-                        onCancelEdit();
-                        return;
-                      }
-                      onStartEdit(entry);
-                    }}
-                  >
-                    <AnimatedEditingLabel active={Boolean(editingPain)} />
-                  </button>
-                  <button
-                    type="button"
-                    className={confirmDeletePain === entry.id ? "btn-delete-confirm" : ""}
-                    onClick={() => onDeleteClick(entry.id)}
-                    onBlur={onDeleteBlur}
-                  >
-                    {confirmDeletePain === entry.id ? "Delete?" : "Delete"}
-                  </button>
+            {painEntries.length === 0 ? (
+              <tr>
+                <td colSpan={13}>
+                  <EmptyState
+                    title="No pain entries yet"
+                    description="Track your first session with the form above. Your pain history will show up here once you save it."
+                    compact
+                  />
                 </td>
               </tr>
-            ))}
+            ) : (
+              painEntries.map((entry) => (
+                <tr key={entry.id}>
+                  <td>{entry.entryDate}</td>
+                  <td>{entry.entryTime}</td>
+                  <td>{entry.painLevel ?? "-"}</td>
+                  <td>{entry.fatigueLevel ?? "-"}</td>
+                  <td>{entry.coffeeCount ?? "-"}</td>
+                  <td>{entry.area || "-"}</td>
+                  <td>{entry.symptoms || "-"}</td>
+                  <td>{entry.activities || "-"}</td>
+                  <td>{entry.medicines || "-"}</td>
+                  <td>{entry.habits || "-"}</td>
+                  <td>{entry.other || "-"}</td>
+                  <td>{entry.note || "-"}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className={editingPain?.id === entry.id ? "active is-editing" : editingPain ? "is-editing" : undefined}
+                      onClick={() => {
+                        if (editingPain) {
+                          onCancelEdit();
+                          return;
+                        }
+                        onStartEdit(entry);
+                      }}
+                    >
+                      <AnimatedEditingLabel active={Boolean(editingPain)} />
+                    </button>
+                    <button
+                      type="button"
+                      className={confirmDeletePain === entry.id ? "btn-delete-confirm" : ""}
+                      onClick={() => onDeleteClick(entry.id)}
+                      onBlur={onDeleteBlur}
+                    >
+                      {confirmDeletePain === entry.id ? "Delete?" : "Delete"}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -569,38 +625,50 @@ export function CbtSection({
             </tr>
           </thead>
           <tbody>
-            {cbtEntries.map((entry) => (
-              <tr key={entry.id}>
-                <td>{entry.entryDate}</td>
-                <td>{entry.entryTime}</td>
-                <td>{entry.situation || "-"}</td>
-                <td>{entry.mainUnhelpfulThought || "-"}</td>
-                <td>{entry.productiveResponse || "-"}</td>
-                <td>
-                  <button
-                    type="button"
-                    className={editingCbt?.id === entry.id ? "active is-editing" : editingCbt ? "is-editing" : undefined}
-                    onClick={() => {
-                      if (editingCbt) {
-                        onCancelEdit();
-                        return;
-                      }
-                      onStartEdit(entry);
-                    }}
-                  >
-                    <AnimatedEditingLabel active={Boolean(editingCbt)} />
-                  </button>
-                  <button
-                    type="button"
-                    className={confirmDeleteCbt === entry.id ? "btn-delete-confirm" : ""}
-                    onClick={() => onDeleteClick(entry.id)}
-                    onBlur={onDeleteBlur}
-                  >
-                    {confirmDeleteCbt === entry.id ? "Delete?" : "Delete"}
-                  </button>
+            {cbtEntries.length === 0 ? (
+              <tr>
+                <td colSpan={6}>
+                  <EmptyState
+                    title="No CBT entries yet"
+                    description="Use the prompts above to record your first thought response. Completed reflections will appear here."
+                    compact
+                  />
                 </td>
               </tr>
-            ))}
+            ) : (
+              cbtEntries.map((entry) => (
+                <tr key={entry.id}>
+                  <td>{entry.entryDate}</td>
+                  <td>{entry.entryTime}</td>
+                  <td>{entry.situation || "-"}</td>
+                  <td>{entry.mainUnhelpfulThought || "-"}</td>
+                  <td>{entry.productiveResponse || "-"}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className={editingCbt?.id === entry.id ? "active is-editing" : editingCbt ? "is-editing" : undefined}
+                      onClick={() => {
+                        if (editingCbt) {
+                          onCancelEdit();
+                          return;
+                        }
+                        onStartEdit(entry);
+                      }}
+                    >
+                      <AnimatedEditingLabel active={Boolean(editingCbt)} />
+                    </button>
+                    <button
+                      type="button"
+                      className={confirmDeleteCbt === entry.id ? "btn-delete-confirm" : ""}
+                      onClick={() => onDeleteClick(entry.id)}
+                      onBlur={onDeleteBlur}
+                    >
+                      {confirmDeleteCbt === entry.id ? "Delete?" : "Delete"}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -706,38 +774,50 @@ export function DbtSection({
             </tr>
           </thead>
           <tbody>
-            {dbtEntries.map((entry) => (
-              <tr key={entry.id}>
-                <td>{entry.entryDate}</td>
-                <td>{entry.entryTime}</td>
-                <td>{entry.emotionName || "-"}</td>
-                <td>{entry.bodyLocation || "-"}</td>
-                <td>{entry.presentMoment || "-"}</td>
-                <td>
-                  <button
-                    type="button"
-                    className={editingDbt?.id === entry.id ? "active is-editing" : editingDbt ? "is-editing" : undefined}
-                    onClick={() => {
-                      if (editingDbt) {
-                        onCancelEdit();
-                        return;
-                      }
-                      onStartEdit(entry);
-                    }}
-                  >
-                    <AnimatedEditingLabel active={Boolean(editingDbt)} />
-                  </button>
-                  <button
-                    type="button"
-                    className={confirmDeleteDbt === entry.id ? "btn-delete-confirm" : ""}
-                    onClick={() => onDeleteClick(entry.id)}
-                    onBlur={onDeleteBlur}
-                  >
-                    {confirmDeleteDbt === entry.id ? "Delete?" : "Delete"}
-                  </button>
+            {dbtEntries.length === 0 ? (
+              <tr>
+                <td colSpan={6}>
+                  <EmptyState
+                    title="No DBT entries yet"
+                    description="Work through the steps above to log your first distress-tolerance practice. Saved entries will appear here."
+                    compact
+                  />
                 </td>
               </tr>
-            ))}
+            ) : (
+              dbtEntries.map((entry) => (
+                <tr key={entry.id}>
+                  <td>{entry.entryDate}</td>
+                  <td>{entry.entryTime}</td>
+                  <td>{entry.emotionName || "-"}</td>
+                  <td>{entry.bodyLocation || "-"}</td>
+                  <td>{entry.presentMoment || "-"}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className={editingDbt?.id === entry.id ? "active is-editing" : editingDbt ? "is-editing" : undefined}
+                      onClick={() => {
+                        if (editingDbt) {
+                          onCancelEdit();
+                          return;
+                        }
+                        onStartEdit(entry);
+                      }}
+                    >
+                      <AnimatedEditingLabel active={Boolean(editingDbt)} />
+                    </button>
+                    <button
+                      type="button"
+                      className={confirmDeleteDbt === entry.id ? "btn-delete-confirm" : ""}
+                      onClick={() => onDeleteClick(entry.id)}
+                      onBlur={onDeleteBlur}
+                    >
+                      {confirmDeleteDbt === entry.id ? "Delete?" : "Delete"}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -40,3 +40,5 @@ playwright-report/
 # Legacy / archives
 .legacy_extract/
 rollback/legacy-runtime.tar.gz
+
+mockup/

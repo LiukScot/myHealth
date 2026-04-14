@@ -11,6 +11,16 @@ test.afterEach(async ({ request }) => {
   await purgeUserData(request);
 });
 
+test("explains the empty dashboard state", async ({ page, request }) => {
+  await purgeUserData(request);
+  await loginUi(page);
+
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByText("No health entries yet")).toBeVisible();
+  await expect(page.getByText("Your averages will appear here after you log your first diary or pain entry.")).toBeVisible();
+  await expect(page.getByText("No chart data yet. Add a diary or pain entry to get started.")).toBeVisible();
+});
+
 test("renders dashboard data and supports chart toggles", async ({ page }) => {
   await loginUi(page);
 

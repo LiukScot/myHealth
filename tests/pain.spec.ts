@@ -12,6 +12,11 @@ test.afterEach(async ({ request }) => {
   await purgeUserData(request);
 });
 
+test("shows a pain empty state when there are no entries", async ({ page }) => {
+  await expect(page.getByText("No pain entries yet")).toBeVisible();
+  await expect(page.getByText("Track your first session with the form above. Your pain history will show up here once you save it.")).toBeVisible();
+});
+
 test("creates, edits, and deletes a pain entry", async ({ page }) => {
   const note = uniqueText("pain-note");
   const updatedNote = uniqueText("pain-updated");

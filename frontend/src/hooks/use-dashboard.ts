@@ -74,6 +74,9 @@ export function useDashboard(enabled: boolean) {
     [painQuery.data, dashboardFrom, dashboardTo],
   );
 
+  const hasEntriesOverall = (diaryQuery.data?.length ?? 0) > 0 || (painQuery.data?.length ?? 0) > 0;
+  const hasEntriesInRange = filteredDiary.length > 0 || filteredPain.length > 0;
+
   const prevBounds = useMemo(() => previousRange(dashboardFrom, dashboardTo), [dashboardFrom, dashboardTo]);
   const prevFrom = prevBounds?.from ?? "";
   const prevTo = prevBounds?.to ?? "";
@@ -184,6 +187,8 @@ export function useDashboard(enabled: boolean) {
     dashboardTo,
     activeQuickRange,
     isLoading: diaryQuery.isLoading || painQuery.isLoading,
+    hasEntriesInRange,
+    hasEntriesOverall,
     handleDateChange,
     applyQuickRange,
     dashboardCards,

@@ -872,6 +872,45 @@ tbody tr:hover {
   line-height: 1.5;
 }
 
+.empty-state {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 14px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%),
+    color-mix(in srgb, var(--card-strong) 88%, var(--card));
+}
+
+.empty-state-compact {
+  margin: 0;
+  border-style: dashed;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.empty-state-title,
+.empty-state-copy {
+  margin: 0;
+}
+
+.empty-state-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.empty-state-copy {
+  max-width: 60ch;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.table-scroll td > .empty-state-compact {
+  margin: 4px;
+}
+
 
 .dashboard-filters {
   display: grid;

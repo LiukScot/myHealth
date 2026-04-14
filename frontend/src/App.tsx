@@ -267,7 +267,9 @@ function App() {
         {nav === "dashboard" && (
           <DashboardSection
             dashboardFrom={dashboard.dashboardFrom} dashboardTo={dashboard.dashboardTo}
-            activeQuickRange={dashboard.activeQuickRange} isLoading={dashboard.isLoading} onDateChange={dashboard.handleDateChange}
+            activeQuickRange={dashboard.activeQuickRange} isLoading={dashboard.isLoading}
+            hasEntriesInRange={dashboard.hasEntriesInRange} hasEntriesOverall={dashboard.hasEntriesOverall}
+            onDateChange={dashboard.handleDateChange}
             onQuickRange={dashboard.applyQuickRange} dashboardCards={dashboard.dashboardCards}
             wellbeingSeries={dashboard.wellbeingSeries} graphSelection={dashboard.graphSelection}
             onGraphToggle={dashboard.handleGraphToggle} wellbeingChart={dashboard.wellbeingChart}

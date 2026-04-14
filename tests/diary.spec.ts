@@ -12,6 +12,11 @@ test.afterEach(async ({ request }) => {
   await purgeUserData(request);
 });
 
+test("shows a diary empty state when there are no entries", async ({ page }) => {
+  await expect(page.getByText("No diary entries yet")).toBeVisible();
+  await expect(page.getByText("Use the form above to log your first mood entry. Once you save it, it will appear here.")).toBeVisible();
+});
+
 test("creates, edits, and deletes a diary entry", async ({ page }) => {
   const description = uniqueText("diary-description");
   const updatedDescription = uniqueText("diary-updated");
