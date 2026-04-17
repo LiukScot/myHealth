@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pain · Mockup D (chosen direction)</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* ─── FORM: two-column dense layout (from C) ─── */
+  .dense-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 860px) { .dense-grid { grid-template-columns: 1fr; } }
+
+  /* Right column groups tags-col + save-section as two separate cards */
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+  }
+  .right-col .tags-col {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /* Save box: third card — primary CTA fills the whole panel (same footprint as tag-panel area) */
+  .save-section {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    background: var(--card-strong);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    min-height: 0;
+  }
+  .save-section .save-cta {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    min-height: 72px;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    align-self: stretch;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  @media (max-width: 860px) {
+    .save-section .save-cta { min-height: 64px; }
+  }
+
+  .core-col {
+    background: var(--card-strong);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+  .core-col h3 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 0;
+  }
+  .bar-metric { display: grid; gap: 6px; }
+  .bar-metric-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .bar-metric-label .name { font-size: 13px; font-weight: 600; }
+  .bar-metric-label .val { font-size: 20px; font-weight: 800; }
+  .bar-metric-label .val.low { color: var(--success); }
+  .bar-metric-label .val.mid { color: var(--warning); }
+  .bar-metric-label .val.high { color: var(--danger); }
+  .bars {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 3px;
+  }
+  .bar {
+    height: 26px;
+    background: var(--card-soft);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .bar:hover { background: var(--border-soft); }
+  .bar.filled.low { background: var(--success); }
+  .bar.filled.mid { background: var(--warning); }
+  .bar.filled.high { background: var(--danger); }
+
+  .stepper-group {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    background: var(--card-soft);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .stepper-group button {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .stepper-group button:hover { color: var(--text); background: var(--card-strong); }
+  .stepper-group .val { text-align: center; font-weight: 700; font-size: 18px; }
+
+  .core-col textarea { min-height: 72px; resize: vertical; }
+
+  .save-cta {
+    padding: 18px 20px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .tags-col {
+    background: var(--card-strong);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .tag-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-soft);
+    overflow-x: auto;
+    background: var(--card-soft);
+  }
+  .tag-tabs button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .tag-tabs button:hover { color: var(--text); }
+  .tag-tabs button.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+    background: var(--card-strong);
+  }
+  .tag-tabs button .count {
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    border-radius: 999px;
+  }
+  .tag-tabs button.active .count { background: var(--accent); color: #1a0608; }
+
+  .tag-panel { padding: 20px; flex: 1; }
+  .tag-panel .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .add-new {
+    display: inline-flex;
+    padding: 7px 12px;
+    font-size: 13px;
+    color: var(--muted);
+    background: transparent;
+    border: 1px dashed var(--border-soft);
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .add-new:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── PAST ENTRIES: expandable rows (from B) ─── */
+  .entries-heading {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 32px 0 10px;
+  }
+  .entry-row {
+    background: var(--card-strong);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    margin-bottom: 6px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .entry-row[open] { border-color: var(--border); }
+  .entry-row summary {
+    list-style: none;
+    display: grid;
+    grid-template-columns: auto auto 1fr auto auto;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    cursor: pointer;
+  }
+  .entry-row summary::-webkit-details-marker { display: none; }
+  .entry-row summary .date {
+    font-size: 13px;
+    color: var(--muted);
+    min-width: 100px;
+    font-variant-numeric: tabular-nums;
+  }
+  .entry-row summary .preview {
+    font-size: 13px;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .entry-row summary .chevron {
+    color: var(--muted);
+    transition: transform 0.2s;
+    font-size: 12px;
+  }
+  .entry-row[open] summary .chevron { transform: rotate(90deg); }
+  .entry-expanded {
+    padding: 14px 16px 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .detail-group { display: grid; gap: 4px; }
+  .detail-group .label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .detail-group .value {
+    font-size: 13px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    color: var(--text);
+  }
+  .detail-group .tag-mini {
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--card-soft);
+    border-radius: 4px;
+  }
+  .detail-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-soft);
+  }
+</style>
+</head>
+<body>
+<div class="mockup-frame">
+  <div class="mockup-nav">
+    <a href="index.html">← All mockups</a>
+    <a href="pain-a.html">A · Progressive</a>
+    <a href="pain-b.html">B · Wizard</a>
+    <a href="pain-c.html">C · Dense</a>
+    <a href="pain-d.html" class="current">D · Chosen</a>
+  </div>
+  <div class="mockup-tag" style="background:color-mix(in srgb, var(--success) 14%, transparent); color:var(--success);">✓ Chosen direction</div>
+  <h1 class="mockup-title">Dense form + expandable log</h1>
+  <p class="mockup-subtitle">Form dashboard-style di C per inserire veloce. Lista espandibile di B per consultare. Due task, due UI.</p>
+
+  <!-- FORM: two-column dashboard -->
+  <div class="dense-grid">
+    <!-- Left: core metrics -->
+    <div class="core-col">
+      <h3>Right now</h3>
+
+      <label class="field">
+        <span class="section-heading">Date/time</span>
+        <input type="datetime-local" value="2026-04-17T14:30">
+      </label>
+
+      <div class="bar-metric">
+        <div class="bar-metric-label">
+          <span class="name">Pain level</span>
+          <span class="val high">7</span>
+        </div>
+        <div class="bars">
+          <span class="bar filled low"></span>
+          <span class="bar filled low"></span>
+          <span class="bar filled low"></span>
+          <span class="bar filled mid"></span>
+          <span class="bar filled mid"></span>
+          <span class="bar filled mid"></span>
+          <span class="bar filled high"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+
+      <div class="bar-metric">
+        <div class="bar-metric-label">
+          <span class="name">Fatigue</span>
+          <span class="val mid">5</span>
+        </div>
+        <div class="bars">
+          <span class="bar filled low"></span>
+          <span class="bar filled low"></span>
+          <span class="bar filled low"></span>
+          <span class="bar filled mid"></span>
+          <span class="bar filled mid"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+
+      <div class="bar-metric">
+        <div class="bar-metric-label">
+          <span class="name">Coffee</span>
+        </div>
+        <div class="stepper-group">
+          <button>−</button><span class="val">2</span><button>+</button>
+        </div>
+      </div>
+
+      <label class="field">
+        <span class="section-heading">Note</span>
+        <textarea placeholder="Optional note…">Started after meeting</textarea>
+      </label>
+    </div>
+
+    <!-- Right: two stacked cards (tags + save) -->
+    <div class="right-col">
+      <div class="tags-col">
+        <nav class="tag-tabs">
+          <button class="active">Area <span class="count">2</span></button>
+          <button>Symptoms <span class="count">1</span></button>
+          <button>Activities</button>
+          <button>Medicines <span class="count">4</span></button>
+          <button>Habits</button>
+          <button>Other</button>
+        </nav>
+        <div class="tag-panel">
+          <div class="chips">
+            <button class="chip">tmj</button>
+            <button class="chip">legs</button>
+            <button class="chip">shoulders</button>
+            <button class="chip">chest</button>
+            <button class="chip active">neck</button>
+            <button class="chip active">head</button>
+            <button class="chip">back</button>
+            <button class="chip">abdomen</button>
+            <button class="add-new">+ add area</button>
+          </div>
+        </div>
+      </div>
+      <div class="save-section">
+        <button class="btn-primary btn save-cta">Save entry</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAST ENTRIES: expandable rows -->
+  <h2 class="entries-heading">Past entries</h2>
+
+  <details class="entry-row" open>
+    <summary>
+      <span class="date">Apr 17, 14:30</span>
+      <span class="pain-badge sm high">7</span>
+      <span class="preview">head, neck, nausea · Started after meeting</span>
+      <span></span>
+      <span class="chevron">▶</span>
+    </summary>
+    <div class="entry-expanded">
+      <div class="detail-group">
+        <span class="label">Area</span>
+        <span class="value"><span class="tag-mini">head</span><span class="tag-mini">neck</span></span>
+      </div>
+      <div class="detail-group">
+        <span class="label">Symptoms</span>
+        <span class="value"><span class="tag-mini">nausea</span></span>
+      </div>
+      <div class="detail-group">
+        <span class="label">Medicines</span>
+        <span class="value"><span class="tag-mini">celebrex</span><span class="tag-mini">sirdalud</span></span>
+      </div>
+      <div class="detail-group">
+        <span class="label">Fatigue · Coffee</span>
+        <span class="value">5 · 2</span>
+      </div>
+      <div class="detail-group" style="grid-column:1/-1">
+        <span class="label">Note</span>
+        <span class="value">Started after meeting</span>
+      </div>
+      <div class="detail-actions">
+        <button class="btn">Edit</button>
+        <button class="btn" style="color:var(--danger); border-color:color-mix(in srgb, var(--danger) 40%, var(--border))">Delete</button>
+      </div>
+    </div>
+  </details>
+
+  <details class="entry-row">
+    <summary>
+      <span class="date">Apr 17, 09:00</span>
+      <span class="pain-badge sm mid">4</span>
+      <span class="preview">back</span>
+      <span></span>
+      <span class="chevron">▶</span>
+    </summary>
+  </details>
+
+  <details class="entry-row">
+    <summary>
+      <span class="date">Apr 16, 20:15</span>
+      <span class="pain-badge sm mid">6</span>
+      <span class="preview">shoulders, head, stiffness · Long day</span>
+      <span></span>
+      <span class="chevron">▶</span>
+    </summary>
+  </details>
+
+  <details class="entry-row">
+    <summary>
+      <span class="date">Apr 15, 22:00</span>
+      <span class="pain-badge sm mid">5</span>
+      <span class="preview">abdomen, cramps · After dinner</span>
+      <span></span>
+      <span class="chevron">▶</span>
+    </summary>
+  </details>
+
+  <details class="entry-row">
+    <summary>
+      <span class="date">Apr 15, 10:00</span>
+      <span class="pain-badge sm low">3</span>
+      <span class="preview">tmj</span>
+      <span></span>
+      <span class="chevron">▶</span>
+    </summary>
+  </details>
+</div>
+</body>
+</html>

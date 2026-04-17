@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pain redesign · Mockups</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .intro {
+    max-width: 720px;
+    margin-bottom: 40px;
+  }
+  .intro h1 {
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+  }
+  .intro p {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .mk-card {
+    display: grid;
+    gap: 10px;
+    padding: 22px;
+    background: var(--card-strong);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .mk-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .mk-card .letter {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .mk-card h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .mk-card .tagline {
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    margin: 0 0 6px;
+  }
+  .mk-card .desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0;
+  }
+  .mk-card .specs {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted-soft);
+  }
+  .mk-card .specs span::before { content: "· "; color: var(--accent); }
+  .mk-card .footer-link {
+    margin-top: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .mk-card.chosen {
+    border-color: var(--success);
+    background: color-mix(in srgb, var(--success) 6%, var(--card-strong));
+  }
+  .mk-card.chosen:hover { border-color: var(--success); }
+  .mk-card.chosen .letter { color: var(--success); }
+  .mk-card.chosen .footer-link { color: var(--success); }
+  .chosen-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--success);
+    text-transform: uppercase;
+    margin: 20px 0 12px;
+  }
+  .alternatives-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin: 32px 0 12px;
+  }
+</style>
+</head>
+<body>
+<div class="mockup-frame">
+  <div class="intro">
+    <div class="mockup-tag">Pain redesign</div>
+    <h1>Design directions</h1>
+    <p>Tre mockup iniziali + la direzione scelta che combina i punti forti di due di essi.</p>
+  </div>
+
+  <p class="chosen-section-title">✓ Chosen direction</p>
+  <div class="card-grid" style="grid-template-columns: 1fr; margin-bottom:12px;">
+    <a class="mk-card chosen" href="pain-d.html">
+      <span class="letter">Mockup D · Hybrid</span>
+      <h2>Dense form + expandable log</h2>
+      <p class="tagline">"Form di C, lista di B"</p>
+      <p class="desc">Form dashboard-style di C (bar scale colorate, tab per i tag) per inserire veloce. Lista espandibile di B per consultare le entries passate. Due task, due UI.</p>
+      <div class="specs">
+        <span>Inserimento veloce come C</span>
+        <span>Consultazione pulita come B</span>
+        <span>Nessuna sparkline (già c'è la Dashboard)</span>
+      </div>
+      <div class="footer-link">Esplora D →</div>
+    </a>
+  </div>
+
+  <p class="alternatives-title">Earlier alternatives (reference)</p>
+  <div class="card-grid">
+    <a class="mk-card" href="pain-a.html">
+      <span class="letter">Mockup A</span>
+      <h2>Progressive disclosure</h2>
+      <p class="tagline">"Mostra poco, espandi al bisogno"</p>
+      <p class="desc">Core metrics sempre visibili in alto. I 6 gruppi di tag diventano accordion: solo uno aperto di default. Entries come feed di card raggruppate per giorno.</p>
+      <div class="specs">
+        <span>Riduce cognitive load</span>
+        <span>Richiede click per espandere</span>
+        <span>Scale verticale sempre utile</span>
+      </div>
+      <div class="footer-link">Esplora A →</div>
+    </a>
+
+    <a class="mk-card" href="pain-b.html">
+      <span class="letter">Mockup B</span>
+      <h2>Guided wizard</h2>
+      <p class="tagline">"Una cosa alla volta"</p>
+      <p class="desc">Form suddiviso in 3 step: Come ti senti, Dove e cosa, Dettagli. Scale visuali grandi (Pain/Fatigue), zero overwhelm. Entries come righe espandibili.</p>
+      <div class="specs">
+        <span>Ideale mobile</span>
+        <span>Più focus ma più tap</span>
+        <span>Ottimo per nuovi utenti</span>
+      </div>
+      <div class="footer-link">Esplora B →</div>
+    </a>
+
+    <a class="mk-card" href="pain-c.html">
+      <span class="letter">Mockup C</span>
+      <h2>Dense dashboard</h2>
+      <p class="tagline">"Tutto in vista, nessuno scroll"</p>
+      <p class="desc">Due colonne: metriche con bar scale a sinistra, tag in tabs a destra. Entries raggruppate per giorno con sparkline di pain/fatigue. Per uso quotidiano.</p>
+      <div class="specs">
+        <span>Power user friendly</span>
+        <span>Intimidante al primo uso</span>
+        <span>Pattern visibili subito</span>
+      </div>
+      <div class="footer-link">Esplora C →</div>
+    </a>
+  </div>
+</div>
+</body>
+</html>

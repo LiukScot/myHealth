@@ -72,9 +72,11 @@ type MultiSelectFieldProps = {
   options: string[];
   onChange: (next: string) => void;
   domain?: MultiSelectDomain;
+  /** When true, the visible heading is omitted (e.g. tabbed layout provides the label). */
+  hideLabel?: boolean;
 };
 
-export function MultiSelectField({ label, fieldKey, value, options, onChange, domain = "pain" }: MultiSelectFieldProps) {
+export function MultiSelectField({ label, fieldKey, value, options, onChange, domain = "pain", hideLabel = false }: MultiSelectFieldProps) {
   const { apiBase, queryKey: queryKeyName } = domainConfig[domain];
   const queryClient = useQueryClient();
   const selectedValues = useMemo(() => csvToList(value), [value]);
@@ -158,7 +160,7 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
 
   return (
     <div className={editOptionsMode ? "multi-select-field editing-options" : "multi-select-field"}>
-      <span className="section-heading">{label}</span>
+      {hideLabel ? null : <span className="section-heading">{label}</span>}
       <div className="multi-option-list" role="group" aria-label={label}>
         {allOptions.map((option) => {
           const optionKey = option.toLowerCase();

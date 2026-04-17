@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pain · Mockup C</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* Two-column dense layout */
+  .dense-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 860px) {
+    .dense-grid { grid-template-columns: 1fr; }
+  }
+
+  /* LEFT COLUMN: core metrics */
+  .core-col {
+    background: var(--card-strong);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+  .core-col h3 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 0;
+  }
+  .bar-metric {
+    display: grid;
+    gap: 6px;
+  }
+  .bar-metric-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .bar-metric-label .name { font-size: 13px; font-weight: 600; }
+  .bar-metric-label .val {
+    font-size: 20px;
+    font-weight: 800;
+  }
+  .bar-metric-label .val.low { color: var(--success); }
+  .bar-metric-label .val.mid { color: var(--warning); }
+  .bar-metric-label .val.high { color: var(--danger); }
+  .bars {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 3px;
+  }
+  .bar {
+    height: 26px;
+    background: var(--card-soft);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .bar:hover { background: var(--border-soft); }
+  .bar.filled { background: var(--border); }
+  .bar.filled.low { background: var(--success); }
+  .bar.filled.mid { background: var(--warning); }
+  .bar.filled.high { background: var(--danger); }
+
+  .stepper-group {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    background: var(--card-soft);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .stepper-group button {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .stepper-group button:hover { color: var(--text); background: var(--card-strong); }
+  .stepper-group .val { text-align: center; font-weight: 700; font-size: 18px; }
+
+  .core-col textarea {
+    min-height: 72px;
+    resize: vertical;
+  }
+
+  .save-cta {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  /* RIGHT COLUMN: tag tabs */
+  .tags-col {
+    background: var(--card-strong);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .tag-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-soft);
+    overflow-x: auto;
+    background: var(--card-soft);
+  }
+  .tag-tabs button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .tag-tabs button:hover { color: var(--text); }
+  .tag-tabs button.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+    background: var(--card-strong);
+  }
+  .tag-tabs button .count {
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    border-radius: 999px;
+  }
+  .tag-tabs button.active .count { background: var(--accent); color: #1a0608; }
+
+  .tag-panel {
+    padding: 20px;
+    flex: 1;
+  }
+  .tag-panel .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .add-new {
+    display: inline-flex;
+    padding: 7px 12px;
+    font-size: 13px;
+    color: var(--muted);
+    background: transparent;
+    border: 1px dashed var(--border-soft);
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .add-new:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* HISTORY: grouped by day */
+  .history-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 28px 0 12px;
+  }
+  .history-heading h2 {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0;
+  }
+  .history-heading .total {
+    font-size: 12px;
+    color: var(--muted-soft);
+  }
+
+  .day-block {
+    background: var(--card-strong);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .day-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--card-soft);
+  }
+  .day-header .info {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .day-header .info h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .day-header .info .meta {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .day-header .sparklines {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+  }
+  .spark {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    gap: 6px;
+    align-items: center;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .spark svg { width: 64px; height: 20px; }
+  .spark .avg {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .day-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .day-table td, .day-table th {
+    padding: 10px 14px;
+    text-align: left;
+  }
+  .day-table thead {
+    background: transparent;
+  }
+  .day-table thead th {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted-soft);
+    padding: 8px 14px;
+  }
+  .day-table tbody tr {
+    border-top: 1px solid var(--border-soft);
+  }
+  .day-table tbody tr:hover { background: var(--card-soft); }
+  .day-table .time { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 52px; }
+  .day-table .pain-cell, .day-table .fat-cell {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    min-width: 42px;
+  }
+  .day-table .pain-cell.low, .day-table .fat-cell.low   { color: var(--success); }
+  .day-table .pain-cell.mid, .day-table .fat-cell.mid   { color: var(--warning); }
+  .day-table .pain-cell.high, .day-table .fat-cell.high { color: var(--danger); }
+  .day-table .tag-mini {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--card-soft);
+    border-radius: 4px;
+    margin-right: 4px;
+  }
+  .day-table .note-cell { color: var(--muted); font-style: italic; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .day-table .actions {
+    text-align: right;
+    color: var(--muted-soft);
+  }
+</style>
+</head>
+<body>
+<div class="mockup-frame">
+  <div class="mockup-nav">
+    <a href="index.html">← All mockups</a>
+    <a href="pain-a.html">A · Progressive</a>
+    <a href="pain-b.html">B · Wizard</a>
+    <a href="pain-c.html" class="current">C · Dense</a>
+  </div>
+  <div class="mockup-tag">Mockup C</div>
+  <h1 class="mockup-title">Dense dashboard</h1>
+  <p class="mockup-subtitle">Tutto in parallelo, nessuno scroll sprecato. Per utenti che loggano tutti i giorni e vogliono vedere pattern.</p>
+
+  <!-- TWO COLUMN FORM -->
+  <div class="dense-grid">
+    <!-- Left: core metrics -->
+    <div class="core-col">
+      <h3>Right now</h3>
+
+      <label class="field">
+        <span class="section-heading">Date/time</span>
+        <input type="datetime-local" value="2026-04-17T14:30">
+      </label>
+
+      <div class="bar-metric">
+        <div class="bar-metric-label">
+          <span class="name">Pain level</span>
+          <span class="val high">7</span>
+        </div>
+        <div class="bars">
+          <span class="bar filled low"></span>
+          <span class="bar filled low"></span>
+          <span class="bar filled low"></span>
+          <span class="bar filled mid"></span>
+          <span class="bar filled mid"></span>
+          <span class="bar filled mid"></span>
+          <span class="bar filled high"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+
+      <div class="bar-metric">
+        <div class="bar-metric-label">
+          <span class="name">Fatigue</span>
+          <span class="val mid">5</span>
+        </div>
+        <div class="bars">
+          <span class="bar filled low"></span>
+          <span class="bar filled low"></span>
+          <span class="bar filled low"></span>
+          <span class="bar filled mid"></span>
+          <span class="bar filled mid"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+
+      <div class="bar-metric">
+        <div class="bar-metric-label">
+          <span class="name">Coffee</span>
+        </div>
+        <div class="stepper-group">
+          <button>−</button><span class="val">2</span><button>+</button>
+        </div>
+      </div>
+
+      <label class="field">
+        <span class="section-heading">Note</span>
+        <textarea placeholder="Optional note…">Started after meeting</textarea>
+      </label>
+
+      <button class="btn-primary btn save-cta">Save entry</button>
+    </div>
+
+    <!-- Right: tag tabs -->
+    <div class="tags-col">
+      <nav class="tag-tabs">
+        <button class="active">Area <span class="count">2</span></button>
+        <button>Symptoms <span class="count">1</span></button>
+        <button>Activities</button>
+        <button>Medicines <span class="count">4</span></button>
+        <button>Habits</button>
+        <button>Other</button>
+      </nav>
+      <div class="tag-panel">
+        <div class="chips">
+          <button class="chip">tmj</button>
+          <button class="chip">legs</button>
+          <button class="chip">shoulders</button>
+          <button class="chip">chest</button>
+          <button class="chip active">neck</button>
+          <button class="chip active">head</button>
+          <button class="chip">back</button>
+          <button class="chip">abdomen</button>
+          <button class="add-new">+ add area</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY: grouped by day -->
+  <div class="history-heading">
+    <h2>History</h2>
+    <span class="total">5 entries across 3 days</span>
+  </div>
+
+  <div class="day-block">
+    <div class="day-header">
+      <div class="info">
+        <h3>Today · Apr 17</h3>
+        <span class="meta">2 entries</span>
+      </div>
+      <div class="sparklines">
+        <div class="spark">
+          <span>Pain</span>
+          <svg viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,12 32,4 64,4" fill="none" stroke="var(--danger)" stroke-width="2"/></svg>
+          <span class="avg" style="color:var(--danger)">5.5</span>
+        </div>
+        <div class="spark">
+          <span>Fat</span>
+          <svg viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,14 32,8 64,10" fill="none" stroke="var(--warning)" stroke-width="2"/></svg>
+          <span class="avg" style="color:var(--warning)">4</span>
+        </div>
+      </div>
+    </div>
+    <table class="day-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Pain</th>
+          <th>Fat</th>
+          <th>Coffee</th>
+          <th>Area</th>
+          <th>Symptoms</th>
+          <th>Note</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="time">14:30</td>
+          <td class="pain-cell high">7</td>
+          <td class="fat-cell mid">5</td>
+          <td>2</td>
+          <td><span class="tag-mini">head</span><span class="tag-mini">neck</span></td>
+          <td><span class="tag-mini">nausea</span></td>
+          <td class="note-cell">Started after meeting</td>
+          <td class="actions">⋯</td>
+        </tr>
+        <tr>
+          <td class="time">09:00</td>
+          <td class="pain-cell mid">4</td>
+          <td class="fat-cell low">3</td>
+          <td>1</td>
+          <td><span class="tag-mini">back</span></td>
+          <td>—</td>
+          <td class="note-cell">—</td>
+          <td class="actions">⋯</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="day-block">
+    <div class="day-header">
+      <div class="info">
+        <h3>Yesterday · Apr 16</h3>
+        <span class="meta">1 entry</span>
+      </div>
+      <div class="sparklines">
+        <div class="spark">
+          <span>Pain</span>
+          <svg viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,8 64,8" fill="none" stroke="var(--warning)" stroke-width="2"/></svg>
+          <span class="avg" style="color:var(--warning)">6</span>
+        </div>
+        <div class="spark">
+          <span>Fat</span>
+          <svg viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,2 64,2" fill="none" stroke="var(--danger)" stroke-width="2"/></svg>
+          <span class="avg" style="color:var(--danger)">8</span>
+        </div>
+      </div>
+    </div>
+    <table class="day-table">
+      <tbody>
+        <tr>
+          <td class="time">20:15</td>
+          <td class="pain-cell mid">6</td>
+          <td class="fat-cell high">8</td>
+          <td>0</td>
+          <td><span class="tag-mini">shoulders</span><span class="tag-mini">head</span></td>
+          <td><span class="tag-mini">stiffness</span></td>
+          <td class="note-cell">Long day</td>
+          <td class="actions">⋯</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="day-block">
+    <div class="day-header">
+      <div class="info">
+        <h3>Apr 15</h3>
+        <span class="meta">2 entries</span>
+      </div>
+      <div class="sparklines">
+        <div class="spark">
+          <span>Pain</span>
+          <svg viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,14 64,8" fill="none" stroke="var(--warning)" stroke-width="2"/></svg>
+          <span class="avg" style="color:var(--warning)">4</span>
+        </div>
+        <div class="spark">
+          <span>Fat</span>
+          <svg viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,12 64,8" fill="none" stroke="var(--warning)" stroke-width="2"/></svg>
+          <span class="avg" style="color:var(--warning)">5</span>
+        </div>
+      </div>
+    </div>
+    <table class="day-table">
+      <tbody>
+        <tr>
+          <td class="time">10:00</td>
+          <td class="pain-cell low">3</td>
+          <td class="fat-cell mid">4</td>
+          <td>2</td>
+          <td><span class="tag-mini">tmj</span></td>
+          <td>—</td>
+          <td class="note-cell">—</td>
+          <td class="actions">⋯</td>
+        </tr>
+        <tr>
+          <td class="time">22:00</td>
+          <td class="pain-cell mid">5</td>
+          <td class="fat-cell mid">6</td>
+          <td>1</td>
+          <td><span class="tag-mini">abdomen</span></td>
+          <td><span class="tag-mini">cramps</span></td>
+          <td class="note-cell">After dinner</td>
+          <td class="actions">⋯</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

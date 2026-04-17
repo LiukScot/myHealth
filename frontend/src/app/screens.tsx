@@ -1,10 +1,25 @@
-import { type CSSProperties } from "react";
+import { type CSSProperties, useState } from "react";
 import type { ChartData, ChartOptions } from "chart.js";
 import { type UseFormReturn } from "react-hook-form";
 import { Chart as ChartJS, TimeScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { Line } from "react-chartjs-2";
-import type { CbtEntry, CbtFormValues, DashboardQuickRange, DbtEntry, DbtFormValues, DiaryEntry, DiaryFormValues, InlineMessage, PainEntry, PainFormValues, WellbeingSeries, WellbeingSeriesKey } from "./core";
+import {
+  csvToList,
+  type CbtEntry,
+  type CbtFormValues,
+  type DashboardQuickRange,
+  type DbtEntry,
+  type DbtFormValues,
+  type DiaryEntry,
+  type DiaryFormValues,
+  type InlineMessage,
+  type PainEntry,
+  type PainFieldKey,
+  type PainFormValues,
+  type WellbeingSeries,
+  type WellbeingSeriesKey,
+} from "./core";
 import { getErrorMessage } from "../lib";
 import type { useAuth } from "../hooks/use-auth";
 import {
@@ -21,6 +36,108 @@ import {
 } from "./core";
 
 ChartJS.register(TimeScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
+
+function formatEntrySummaryDate(entryDate: string, entryTime: string): string {
+  const time = entryTime.length >= 5 ? entryTime : `${entryTime}:00`;
+  const d = new Date(`${entryDate}T${time}`);
+  if (Number.isNaN(d.getTime())) return `${entryDate} ${entryTime}`;
+  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(d);
+}
+
+function bandNine(level: number | null | undefined): "low" | "mid" | "high" | "" {
+  if (level == null || Number.isNaN(Number(level))) return "";
+  const n = Math.round(Number(level));
+  if (n <= 3) return "low";
+  if (n <= 6) return "mid";
+  return "high";
+}
+
+function painPreview(entry: PainEntry): string {
+  const parts = [entry.area, entry.symptoms].filter((p) => p?.trim()).join(", ");
+  const note = entry.note?.trim();
+  if (parts && note) return `${parts} · ${note}`;
+  if (parts) return parts;
+  if (note) return note;
+  return "—";
+}
+
+function diaryPreview(entry: DiaryEntry): string {
+  const moodBits = [entry.positiveMoods, entry.negativeMoods, entry.generalMoods].map((s) => s?.trim()).filter(Boolean).join(", ");
+  const desc = entry.description?.trim();
+  if (moodBits && desc) return `${moodBits} · ${desc}`;
+  return moodBits || desc || "—";
+}
+
+function formatMetricDisplay(value: number | null | undefined, fractionDigits = 0): string {
+  if (value == null || Number.isNaN(Number(value))) return "—";
+  return Number(value).toLocaleString(undefined, { maximumFractionDigits: fractionDigits });
+}
+
+function BarMetric({
+  label,
+  value,
+  onChange,
+  fractionDigits = 0,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (next: number | null) => void;
+  fractionDigits?: number;
+}) {
+  const n =
+    value != null && !Number.isNaN(Number(value)) ? Math.min(9, Math.max(1, Math.round(Number(value)))) : null;
+  const band = bandNine(n);
+  return (
+    <div className="bar-metric">
+      <div className="bar-metric-label">
+        <span className="name">{label}</span>
+        <span className={["val", band].filter(Boolean).join(" ")}>{formatMetricDisplay(value, fractionDigits)}</span>
+      </div>
+      <div className="bars" role="group" aria-label={label}>
+        {Array.from({ length: 9 }, (_, i) => {
+          const slot = i + 1;
+          const filled = n != null && slot <= n;
+          const slotBand = slot <= 3 ? "low" : slot <= 6 ? "mid" : "high";
+          return (
+            <button
+              key={slot}
+              type="button"
+              className={["bar", filled ? "filled" : "", filled ? slotBand : ""].filter(Boolean).join(" ")}
+              aria-label={`${label} ${slot} of 9`}
+              aria-pressed={n === slot}
+              onClick={() => {
+                if (n != null && slot === n) onChange(null);
+                else onChange(slot);
+              }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CoffeeStepper({ value, onChange }: { value: number | null; onChange: (next: number | null) => void }) {
+  const n = value != null && !Number.isNaN(Number(value)) ? Math.min(50, Math.max(0, Math.floor(Number(value)))) : 0;
+  return (
+    <div className="bar-metric">
+      <div className="bar-metric-label">
+        <span className="name">Coffee</span>
+      </div>
+      <div className="stepper-group">
+        <button type="button" aria-label="Decrease coffee count" onClick={() => onChange(Math.max(0, n - 1))}>
+          −
+        </button>
+        <span className="val" aria-live="polite">
+          {value != null ? n : "—"}
+        </span>
+        <button type="button" aria-label="Increase coffee count" onClick={() => onChange(Math.min(50, n + 1))}>
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
 
 type WellbeingChartView = {
   hasAnyData: boolean;
@@ -209,153 +326,259 @@ export function DiarySection({
   onDeleteClick: (id: number) => void;
   onDeleteBlur: () => void;
 }) {
+  const [moodTab, setMoodTab] = useState<"positive" | "negative" | "general">("positive");
+  const moodLevels = diaryForm.watch(["moodLevel", "depressionLevel", "anxietyLevel"]);
+  const [moodLevel, depressionLevel, anxietyLevel] = moodLevels;
+  const positiveMoods = diaryForm.watch("positiveMoods");
+  const negativeMoods = diaryForm.watch("negativeMoods");
+  const generalMoods = diaryForm.watch("generalMoods");
+
+  const moodTabs = [
+    { id: "positive" as const, label: "Positive", count: csvToList(positiveMoods).length },
+    { id: "negative" as const, label: "Negative", count: csvToList(negativeMoods).length },
+    { id: "general" as const, label: "General", count: csvToList(generalMoods).length },
+  ];
+
   return (
     <section className="panel">
       <h1 className="panel-title">Diary</h1>
-      <form className="form-grid" onSubmit={diaryForm.handleSubmit(onSubmit)}>
-        <label>
-          <span className="section-heading">Date/time</span>
-          <input type="datetime-local" {...diaryForm.register("dateTime")} />
-        </label>
-        <label>
-          <span className="section-heading">Mood (1-9)</span>
-          <input type="number" min={1} max={9} step={0.1} {...diaryForm.register("moodLevel", { valueAsNumber: true })} />
-        </label>
-        <label>
-          <span className="section-heading">Depression (1-9)</span>
-          <input type="number" min={1} max={9} {...diaryForm.register("depressionLevel", { valueAsNumber: true })} />
-        </label>
-        <label>
-          <span className="section-heading">Anxiety (1-9)</span>
-          <input type="number" min={1} max={9} {...diaryForm.register("anxietyLevel", { valueAsNumber: true })} />
-        </label>
-        <div className="mood-tags-grid">
-          <MultiSelectField
-            label="Positive"
-            fieldKey="positive_moods"
-            value={diaryForm.watch("positiveMoods")}
-            options={moodFieldOptions.positive_moods}
-            onChange={(next) => diaryForm.setValue("positiveMoods", next, { shouldDirty: true })}
-            domain="mood"
+      <form className="dense-form-grid diary-dense-form" onSubmit={diaryForm.handleSubmit(onSubmit)}>
+        <div className="core-col">
+          <div className="dense-form-hidden-fields" aria-hidden="true">
+            <input type="hidden" {...diaryForm.register("moodLevel", { valueAsNumber: true })} />
+            <input type="hidden" {...diaryForm.register("depressionLevel", { valueAsNumber: true })} />
+            <input type="hidden" {...diaryForm.register("anxietyLevel", { valueAsNumber: true })} />
+          </div>
+          <h3 className="core-col-heading">Right now</h3>
+          <label className="field">
+            <span className="section-heading">Date/time</span>
+            <input type="datetime-local" {...diaryForm.register("dateTime")} />
+          </label>
+          <BarMetric
+            label="Mood"
+            value={moodLevel ?? null}
+            fractionDigits={1}
+            onChange={(next) => diaryForm.setValue("moodLevel", next, { shouldDirty: true })}
           />
-          <MultiSelectField
-            label="Negative"
-            fieldKey="negative_moods"
-            value={diaryForm.watch("negativeMoods")}
-            options={moodFieldOptions.negative_moods}
-            onChange={(next) => diaryForm.setValue("negativeMoods", next, { shouldDirty: true })}
-            domain="mood"
+          <BarMetric
+            label="Depression"
+            value={depressionLevel ?? null}
+            onChange={(next) => diaryForm.setValue("depressionLevel", next, { shouldDirty: true })}
           />
-          <MultiSelectField
-            label="General"
-            fieldKey="general_moods"
-            value={diaryForm.watch("generalMoods")}
-            options={moodFieldOptions.general_moods}
-            onChange={(next) => diaryForm.setValue("generalMoods", next, { shouldDirty: true })}
-            domain="mood"
+          <BarMetric
+            label="Anxiety"
+            value={anxietyLevel ?? null}
+            onChange={(next) => diaryForm.setValue("anxietyLevel", next, { shouldDirty: true })}
           />
+          <label className="field">
+            <span className="section-heading">Description</span>
+            <textarea {...diaryForm.register("description")} placeholder="Optional…" rows={3} />
+          </label>
+          <label className="field">
+            <span className="section-heading">Gratitude</span>
+            <textarea {...diaryForm.register("gratitude")} placeholder="Optional…" rows={2} />
+          </label>
+          <label className="field">
+            <span className="section-heading">Reflection</span>
+            <textarea {...diaryForm.register("reflection")} placeholder="Optional…" rows={2} />
+          </label>
+          {editingDiary ? (
+            <div className="dense-form-inline-actions">
+              <button type="button" onClick={onCancelEdit}>
+                Cancel edit
+              </button>
+            </div>
+          ) : null}
         </div>
-        <label>
-          <span className="section-heading">Description</span>
-          <input type="text" {...diaryForm.register("description")} />
-        </label>
-        <label>
-          <span className="section-heading">Gratitude</span>
-          <input type="text" {...diaryForm.register("gratitude")} />
-        </label>
-        <label>
-          <span className="section-heading">Reflection</span>
-          <input type="text" {...diaryForm.register("reflection")} />
-        </label>
-        <div className="row-actions">
-          <button type="submit" className={diaryMutationState.isSuccess ? "btn-check" : ""}>
-            {diaryMutationState.isSuccess ? "\u2713" : editingDiary ? "Update entry" : "Add entry"}
-          </button>
-          {editingDiary && (
-            <button type="button" onClick={onCancelEdit}>
-              Cancel
+
+        <div className="right-col">
+          <div className="tags-col">
+            <nav className="tag-tabs" role="tablist" aria-label="Mood categories">
+              {moodTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={moodTab === tab.id}
+                  className={moodTab === tab.id ? "active" : ""}
+                  onClick={() => setMoodTab(tab.id)}
+                >
+                  {tab.label}{" "}
+                  <span className="count">{tab.count}</span>
+                </button>
+              ))}
+            </nav>
+            <div className="tag-panel">
+              {moodTab === "positive" ? (
+                <MultiSelectField
+                  hideLabel
+                  label="Positive"
+                  fieldKey="positive_moods"
+                  value={positiveMoods}
+                  options={moodFieldOptions.positive_moods}
+                  onChange={(next) => diaryForm.setValue("positiveMoods", next, { shouldDirty: true })}
+                  domain="mood"
+                />
+              ) : null}
+              {moodTab === "negative" ? (
+                <MultiSelectField
+                  hideLabel
+                  label="Negative"
+                  fieldKey="negative_moods"
+                  value={negativeMoods}
+                  options={moodFieldOptions.negative_moods}
+                  onChange={(next) => diaryForm.setValue("negativeMoods", next, { shouldDirty: true })}
+                  domain="mood"
+                />
+              ) : null}
+              {moodTab === "general" ? (
+                <MultiSelectField
+                  hideLabel
+                  label="General"
+                  fieldKey="general_moods"
+                  value={generalMoods}
+                  options={moodFieldOptions.general_moods}
+                  onChange={(next) => diaryForm.setValue("generalMoods", next, { shouldDirty: true })}
+                  domain="mood"
+                />
+              ) : null}
+            </div>
+          </div>
+          <div className="save-section">
+            <button type="submit" className={`btn-primary save-cta${diaryMutationState.isSuccess ? " is-success-pulse" : ""}`}>
+              {diaryMutationState.isSuccess ? "\u2713 Saved" : editingDiary ? "Update entry" : "Save entry"}
             </button>
-          )}
+          </div>
         </div>
       </form>
 
       {isLoading && <p className="hint">Loading diary entries...</p>}
 
-      <div className="table-scroll diary-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Mood</th>
-              <th>Dep</th>
-              <th>Anx</th>
-              <th>Positive</th>
-              <th>Negative</th>
-              <th>General</th>
-              <th>Description</th>
-              <th>Gratitude</th>
-              <th>Reflection</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {diaryEntries.length === 0 ? (
-              <tr>
-                <td colSpan={12}>
-                  <EmptyState
-                    title="No diary entries yet"
-                    description="Use the form above to log your first mood entry. Once you save it, it will appear here."
-                    compact
-                  />
-                </td>
-              </tr>
-            ) : (
-              diaryEntries.map((entry) => (
-                <tr key={entry.id}>
-                  <td>{entry.entryDate}</td>
-                  <td>{entry.entryTime}</td>
-                  <td>{entry.moodLevel ?? "-"}</td>
-                  <td>{entry.depressionLevel ?? "-"}</td>
-                  <td>{entry.anxietyLevel ?? "-"}</td>
-                  <td>{entry.positiveMoods || "-"}</td>
-                  <td>{entry.negativeMoods || "-"}</td>
-                  <td>{entry.generalMoods || "-"}</td>
-                  <td>{entry.description || "-"}</td>
-                  <td>{entry.gratitude || "-"}</td>
-                  <td>{entry.reflection || "-"}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className={editingDiary?.id === entry.id ? "active is-editing" : editingDiary ? "is-editing" : undefined}
-                      onClick={() => {
-                        if (editingDiary) {
-                          onCancelEdit();
-                          return;
-                        }
-                        onStartEdit(entry);
-                      }}
-                    >
-                      <AnimatedEditingLabel active={Boolean(editingDiary)} />
-                    </button>
-                    <button
-                      type="button"
-                      className={confirmDeleteDiary === entry.id ? "btn-delete-confirm" : ""}
-                      onClick={() => onDeleteClick(entry.id)}
-                      onBlur={onDeleteBlur}
-                    >
-                      {confirmDeleteDiary === entry.id ? "Delete?" : "Delete"}
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <h2 className="entries-heading">Past entries</h2>
+      {diaryEntries.length === 0 ? (
+        <EmptyState
+          title="No diary entries yet"
+          description="Use the form above to log your first mood entry. Once you save it, it will appear here."
+        />
+      ) : (
+        diaryEntries.map((entry) => {
+          const moodBand = bandNine(entry.moodLevel ?? undefined);
+          return (
+            <details key={entry.id} className="entry-row">
+              <summary>
+                <span className="date">{formatEntrySummaryDate(entry.entryDate, entry.entryTime)}</span>
+                {entry.moodLevel != null ? (
+                  <span className={`pain-badge sm${moodBand ? ` ${moodBand}` : ""}`}>{entry.moodLevel}</span>
+                ) : (
+                  <span className="pain-badge sm muted">—</span>
+                )}
+                <span className="preview">{diaryPreview(entry)}</span>
+                <span />
+                <span className="chevron" aria-hidden="true">
+                  ▶
+                </span>
+              </summary>
+              <div className="entry-expanded">
+                <div className="detail-group">
+                  <span className="label">Mood · Dep · Anx</span>
+                  <span className="value">
+                    {entry.moodLevel ?? "—"} · {entry.depressionLevel ?? "—"} · {entry.anxietyLevel ?? "—"}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Positive</span>
+                  <span className="value">
+                    {csvToList(entry.positiveMoods).length ? (
+                      csvToList(entry.positiveMoods).map((t) => (
+                        <span key={t} className="tag-mini">
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      "—"
+                    )}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Negative</span>
+                  <span className="value">
+                    {csvToList(entry.negativeMoods).length ? (
+                      csvToList(entry.negativeMoods).map((t) => (
+                        <span key={t} className="tag-mini">
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      "—"
+                    )}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">General</span>
+                  <span className="value">
+                    {csvToList(entry.generalMoods).length ? (
+                      csvToList(entry.generalMoods).map((t) => (
+                        <span key={t} className="tag-mini">
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      "—"
+                    )}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Description</span>
+                  <span className="value">{entry.description || "—"}</span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Gratitude</span>
+                  <span className="value">{entry.gratitude || "—"}</span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Reflection</span>
+                  <span className="value">{entry.reflection || "—"}</span>
+                </div>
+                <div className="detail-actions">
+                  <button
+                    type="button"
+                    className={editingDiary?.id === entry.id ? "active is-editing" : editingDiary ? "is-editing" : undefined}
+                    onClick={() => {
+                      if (editingDiary) {
+                        onCancelEdit();
+                        return;
+                      }
+                      onStartEdit(entry);
+                    }}
+                  >
+                    <AnimatedEditingLabel active={Boolean(editingDiary)} />
+                  </button>
+                  <button
+                    type="button"
+                    className={confirmDeleteDiary === entry.id ? "btn-delete-confirm" : ""}
+                    onClick={() => onDeleteClick(entry.id)}
+                    onBlur={onDeleteBlur}
+                  >
+                    {confirmDeleteDiary === entry.id ? "Delete?" : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </details>
+          );
+        })
+      )}
     </section>
   );
 }
+
+const PAIN_TABS: { id: PainFieldKey; label: string }[] = [
+  { id: "area", label: "Area" },
+  { id: "symptoms", label: "Symptoms" },
+  { id: "activities", label: "Activities" },
+  { id: "medicines", label: "Medicines" },
+  { id: "habits", label: "Habits" },
+  { id: "other", label: "Other" },
+];
 
 export function PainSection({
   painForm,
@@ -386,131 +609,296 @@ export function PainSection({
   onDeleteClick: (id: number) => void;
   onDeleteBlur: () => void;
 }) {
+  const [painTab, setPainTab] = useState<PainFieldKey>("area");
+  const [painLevel, fatigueLevel, coffeeCount] = painForm.watch(["painLevel", "fatigueLevel", "coffeeCount"]);
+
+  const painTabCounts: Record<PainFieldKey, number> = {
+    area: csvToList(watchedValues.area).length,
+    symptoms: csvToList(watchedValues.symptoms).length,
+    activities: csvToList(watchedValues.activities).length,
+    medicines: csvToList(watchedValues.medicines).length,
+    habits: csvToList(watchedValues.habits).length,
+    other: csvToList(watchedValues.other).length,
+  };
+
+  const painOptionsForTab = (id: PainFieldKey) => painFieldOptions[id];
+
   return (
     <section className="panel">
       <h1 className="panel-title">Pain</h1>
-      <form className="stack pain-form" onSubmit={painForm.handleSubmit(onSubmit)}>
-        <div className="pain-core-grid">
-          <label>
+      <form className="dense-form-grid pain-dense-form" onSubmit={painForm.handleSubmit(onSubmit)}>
+        <div className="core-col">
+          <div className="dense-form-hidden-fields" aria-hidden="true">
+            <input type="hidden" {...painForm.register("painLevel", { valueAsNumber: true })} />
+            <input type="hidden" {...painForm.register("fatigueLevel", { valueAsNumber: true })} />
+            <input type="hidden" {...painForm.register("coffeeCount", { valueAsNumber: true })} />
+          </div>
+          <h3 className="core-col-heading">Right now</h3>
+          <label className="field">
             <span className="section-heading">Date/time</span>
             <input type="datetime-local" {...painForm.register("dateTime")} />
           </label>
-          <label>
-            <span className="section-heading">Pain (1-9)</span>
-            <input type="number" min={1} max={9} {...painForm.register("painLevel", { valueAsNumber: true })} />
+          <BarMetric
+            label="Pain level"
+            value={painLevel ?? null}
+            onChange={(next) => painForm.setValue("painLevel", next, { shouldDirty: true })}
+          />
+          <BarMetric
+            label="Fatigue"
+            value={fatigueLevel ?? null}
+            onChange={(next) => painForm.setValue("fatigueLevel", next, { shouldDirty: true })}
+          />
+          <CoffeeStepper value={coffeeCount ?? null} onChange={(next) => painForm.setValue("coffeeCount", next, { shouldDirty: true })} />
+          <label className="field">
+            <span className="section-heading">Note</span>
+            <textarea {...painForm.register("note")} placeholder="Optional note…" rows={4} />
           </label>
-          <label>
-            <span className="section-heading">Fatigue (1-9)</span>
-            <input type="number" min={1} max={9} {...painForm.register("fatigueLevel", { valueAsNumber: true })} />
-          </label>
-          <label>
-            <span className="section-heading">Coffee</span>
-            <input type="number" min={0} max={50} {...painForm.register("coffeeCount", { valueAsNumber: true })} />
-          </label>
+          {editingPain ? (
+            <div className="dense-form-inline-actions">
+              <button type="button" onClick={onCancelEdit}>
+                Cancel edit
+              </button>
+            </div>
+          ) : null}
         </div>
 
-        <div className="pain-tags-grid">
-          <MultiSelectField label="Area" fieldKey="area" value={watchedValues.area} options={painFieldOptions.area} onChange={(next) => painForm.setValue("area", next, { shouldDirty: true })} />
-          <MultiSelectField label="Symptoms" fieldKey="symptoms" value={watchedValues.symptoms} options={painFieldOptions.symptoms} onChange={(next) => painForm.setValue("symptoms", next, { shouldDirty: true })} />
-          <MultiSelectField label="Activities" fieldKey="activities" value={watchedValues.activities} options={painFieldOptions.activities} onChange={(next) => painForm.setValue("activities", next, { shouldDirty: true })} />
-          <MultiSelectField label="Medicines" fieldKey="medicines" value={watchedValues.medicines} options={painFieldOptions.medicines} onChange={(next) => painForm.setValue("medicines", next, { shouldDirty: true })} />
-          <MultiSelectField label="Habits" fieldKey="habits" value={watchedValues.habits} options={painFieldOptions.habits} onChange={(next) => painForm.setValue("habits", next, { shouldDirty: true })} />
-          <MultiSelectField label="Other" fieldKey="other" value={watchedValues.other} options={painFieldOptions.other} onChange={(next) => painForm.setValue("other", next, { shouldDirty: true })} />
-        </div>
-
-        <label className="pain-note-field">
-          <span className="section-heading">Notes</span>
-          <input type="text" {...painForm.register("note")} />
-        </label>
-
-        <div className="row-actions">
-          <button type="submit" className={painMutationState.isSuccess ? "btn-check" : ""}>
-            {painMutationState.isSuccess ? "\u2713" : editingPain ? "Update entry" : "Add entry"}
-          </button>
-          {editingPain && (
-            <button type="button" onClick={onCancelEdit}>
-              Cancel
+        <div className="right-col">
+          <div className="tags-col">
+            <nav className="tag-tabs" role="tablist" aria-label="Pain categories">
+              {PAIN_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={painTab === tab.id}
+                  className={painTab === tab.id ? "active" : ""}
+                  onClick={() => setPainTab(tab.id)}
+                >
+                  {tab.label}{" "}
+                  <span className="count">{painTabCounts[tab.id]}</span>
+                </button>
+              ))}
+            </nav>
+            <div className="tag-panel">
+              {painTab === "area" ? (
+                <MultiSelectField
+                  hideLabel
+                  label="Area"
+                  fieldKey="area"
+                  value={watchedValues.area}
+                  options={painOptionsForTab("area")}
+                  onChange={(next) => painForm.setValue("area", next, { shouldDirty: true })}
+                />
+              ) : null}
+              {painTab === "symptoms" ? (
+                <MultiSelectField
+                  hideLabel
+                  label="Symptoms"
+                  fieldKey="symptoms"
+                  value={watchedValues.symptoms}
+                  options={painOptionsForTab("symptoms")}
+                  onChange={(next) => painForm.setValue("symptoms", next, { shouldDirty: true })}
+                />
+              ) : null}
+              {painTab === "activities" ? (
+                <MultiSelectField
+                  hideLabel
+                  label="Activities"
+                  fieldKey="activities"
+                  value={watchedValues.activities}
+                  options={painOptionsForTab("activities")}
+                  onChange={(next) => painForm.setValue("activities", next, { shouldDirty: true })}
+                />
+              ) : null}
+              {painTab === "medicines" ? (
+                <MultiSelectField
+                  hideLabel
+                  label="Medicines"
+                  fieldKey="medicines"
+                  value={watchedValues.medicines}
+                  options={painOptionsForTab("medicines")}
+                  onChange={(next) => painForm.setValue("medicines", next, { shouldDirty: true })}
+                />
+              ) : null}
+              {painTab === "habits" ? (
+                <MultiSelectField
+                  hideLabel
+                  label="Habits"
+                  fieldKey="habits"
+                  value={watchedValues.habits}
+                  options={painOptionsForTab("habits")}
+                  onChange={(next) => painForm.setValue("habits", next, { shouldDirty: true })}
+                />
+              ) : null}
+              {painTab === "other" ? (
+                <MultiSelectField
+                  hideLabel
+                  label="Other"
+                  fieldKey="other"
+                  value={watchedValues.other}
+                  options={painOptionsForTab("other")}
+                  onChange={(next) => painForm.setValue("other", next, { shouldDirty: true })}
+                />
+              ) : null}
+            </div>
+          </div>
+          <div className="save-section">
+            <button type="submit" className={`btn-primary save-cta${painMutationState.isSuccess ? " is-success-pulse" : ""}`}>
+              {painMutationState.isSuccess ? "\u2713 Saved" : editingPain ? "Update entry" : "Save entry"}
             </button>
-          )}
+          </div>
         </div>
       </form>
 
       {isLoading && <p className="hint">Loading pain entries...</p>}
 
-      <div className="table-scroll pain-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Pain</th>
-              <th>Fatigue</th>
-              <th>Coffee</th>
-              <th>Area</th>
-              <th>Symptoms</th>
-              <th>Activities</th>
-              <th>Medicines</th>
-              <th>Habits</th>
-              <th>Other</th>
-              <th>Notes</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {painEntries.length === 0 ? (
-              <tr>
-                <td colSpan={13}>
-                  <EmptyState
-                    title="No pain entries yet"
-                    description="Track your first session with the form above. Your pain history will show up here once you save it."
-                    compact
-                  />
-                </td>
-              </tr>
-            ) : (
-              painEntries.map((entry) => (
-                <tr key={entry.id}>
-                  <td>{entry.entryDate}</td>
-                  <td>{entry.entryTime}</td>
-                  <td>{entry.painLevel ?? "-"}</td>
-                  <td>{entry.fatigueLevel ?? "-"}</td>
-                  <td>{entry.coffeeCount ?? "-"}</td>
-                  <td>{entry.area || "-"}</td>
-                  <td>{entry.symptoms || "-"}</td>
-                  <td>{entry.activities || "-"}</td>
-                  <td>{entry.medicines || "-"}</td>
-                  <td>{entry.habits || "-"}</td>
-                  <td>{entry.other || "-"}</td>
-                  <td>{entry.note || "-"}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className={editingPain?.id === entry.id ? "active is-editing" : editingPain ? "is-editing" : undefined}
-                      onClick={() => {
-                        if (editingPain) {
-                          onCancelEdit();
-                          return;
-                        }
-                        onStartEdit(entry);
-                      }}
-                    >
-                      <AnimatedEditingLabel active={Boolean(editingPain)} />
-                    </button>
-                    <button
-                      type="button"
-                      className={confirmDeletePain === entry.id ? "btn-delete-confirm" : ""}
-                      onClick={() => onDeleteClick(entry.id)}
-                      onBlur={onDeleteBlur}
-                    >
-                      {confirmDeletePain === entry.id ? "Delete?" : "Delete"}
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <h2 className="entries-heading">Past entries</h2>
+      {painEntries.length === 0 ? (
+        <EmptyState
+          title="No pain entries yet"
+          description="Track your first session with the form above. Your pain history will show up here once you save it."
+        />
+      ) : (
+        painEntries.map((entry) => {
+          const painBand = bandNine(entry.painLevel ?? undefined);
+          return (
+            <details key={entry.id} className="entry-row">
+              <summary>
+                <span className="date">{formatEntrySummaryDate(entry.entryDate, entry.entryTime)}</span>
+                {entry.painLevel != null ? (
+                  <span className={`pain-badge sm${painBand ? ` ${painBand}` : ""}`}>{entry.painLevel}</span>
+                ) : (
+                  <span className="pain-badge sm muted">—</span>
+                )}
+                <span className="preview">{painPreview(entry)}</span>
+                <span />
+                <span className="chevron" aria-hidden="true">
+                  ▶
+                </span>
+              </summary>
+              <div className="entry-expanded">
+                <div className="detail-group">
+                  <span className="label">Pain · Fatigue · Coffee</span>
+                  <span className="value">
+                    {entry.painLevel ?? "—"} · {entry.fatigueLevel ?? "—"} · {entry.coffeeCount ?? "—"}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Area</span>
+                  <span className="value">
+                    {csvToList(entry.area).length ? (
+                      csvToList(entry.area).map((t) => (
+                        <span key={t} className="tag-mini">
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      "—"
+                    )}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Symptoms</span>
+                  <span className="value">
+                    {csvToList(entry.symptoms).length ? (
+                      csvToList(entry.symptoms).map((t) => (
+                        <span key={t} className="tag-mini">
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      "—"
+                    )}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Activities</span>
+                  <span className="value">
+                    {csvToList(entry.activities).length ? (
+                      csvToList(entry.activities).map((t) => (
+                        <span key={t} className="tag-mini">
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      "—"
+                    )}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Medicines</span>
+                  <span className="value">
+                    {csvToList(entry.medicines).length ? (
+                      csvToList(entry.medicines).map((t) => (
+                        <span key={t} className="tag-mini">
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      "—"
+                    )}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Habits</span>
+                  <span className="value">
+                    {csvToList(entry.habits).length ? (
+                      csvToList(entry.habits).map((t) => (
+                        <span key={t} className="tag-mini">
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      "—"
+                    )}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Other</span>
+                  <span className="value">
+                    {csvToList(entry.other).length ? (
+                      csvToList(entry.other).map((t) => (
+                        <span key={t} className="tag-mini">
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      "—"
+                    )}
+                  </span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Note</span>
+                  <span className="value">{entry.note || "—"}</span>
+                </div>
+                <div className="detail-actions">
+                  <button
+                    type="button"
+                    className={editingPain?.id === entry.id ? "active is-editing" : editingPain ? "is-editing" : undefined}
+                    onClick={() => {
+                      if (editingPain) {
+                        onCancelEdit();
+                        return;
+                      }
+                      onStartEdit(entry);
+                    }}
+                  >
+                    <AnimatedEditingLabel active={Boolean(editingPain)} />
+                  </button>
+                  <button
+                    type="button"
+                    className={confirmDeletePain === entry.id ? "btn-delete-confirm" : ""}
+                    onClick={() => onDeleteClick(entry.id)}
+                    onBlur={onDeleteBlur}
+                  >
+                    {confirmDeletePain === entry.id ? "Delete?" : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </details>
+          );
+        })
+      )}
     </section>
   );
 }
