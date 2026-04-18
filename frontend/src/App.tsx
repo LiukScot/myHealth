@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth, useDiary, usePain, useCbt, useDbt, useDashboard, useSettings } from "./hooks";
 import { LoginScreen } from "./app/LoginScreen";
 import { Sidebar } from "./app/Sidebar";
-import { CbtSection, DbtSection, DashboardSection, DiarySection, PainSection, SettingsSection } from "./app/screens";
+import { CbtSection, DbtSection, DashboardSection, DesignSystemSection, DiarySection, PainSection, SettingsSection } from "./app/screens";
 import { formatDocumentTitle, navLabels, type NavItem } from "./app/core";
 
 function App() {
@@ -327,7 +327,23 @@ function App() {
             onImportXlsx={settings.onImportXlsx} backupFeedback={settings.backupFeedback}
           />
         )}
+
+        {nav === "design-system" && <DesignSystemSection />}
       </main>
+
+      <button
+        type="button"
+        className="design-system-fab"
+        aria-label="Open design system"
+        onClick={() => setNav("design-system")}
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+      </button>
     </div>
   );
 }

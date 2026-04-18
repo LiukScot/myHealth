@@ -202,7 +202,7 @@ export type PainFormValues = z.infer<typeof painFormSchema>;
 export type CbtFormValues = z.infer<typeof cbtFormSchema>;
 export type DbtFormValues = z.infer<typeof dbtFormSchema>;
 
-export const navItems = ["dashboard", "diary", "pain", "cbt", "dbt", "settings"] as const;
+export const navItems = ["dashboard", "diary", "pain", "cbt", "dbt", "settings", "design-system"] as const;
 export type NavItem = (typeof navItems)[number];
 
 export const appName = "Health";
@@ -214,6 +214,7 @@ export const navLabels: Record<NavItem, string> = {
   cbt: "CBT",
   dbt: "DBT",
   settings: "Settings",
+  "design-system": "Design System",
 };
 
 export function formatDocumentTitle(section?: string) {

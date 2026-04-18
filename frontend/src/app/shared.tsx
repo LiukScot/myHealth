@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { apiEnvelopeSchema, apiFetch } from "../lib";
@@ -338,7 +338,7 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
               aria-pressed={editOptionsMode}
               onClick={() => setEditOptionsMode((v) => !v)}
             >
-              <AnimatedEditingLabel active={editOptionsMode} idleLabel="edit" editingLabel="done" />
+              {editOptionsMode ? "done" : "edit"}
             </button>
           </>
         )}
@@ -390,4 +390,74 @@ export function PreferencesEditor({ value, onSave }: PreferencesEditorProps) {
       </button>
     </div>
   );
+}
+
+/** Small titled divider used to group sub-sections across pages. */
+export function SectionHead({ title, aside }: { title: string; aside?: ReactNode }) {
+  return (
+    <div className="section-head">
+      <span className="section-title">{title}</span>
+      {aside != null ? <span className="section-aside">{aside}</span> : null}
+    </div>
+  );
+}
+
+/**
+ * Caps the "past entries" column to the height of the form column and
+ * reports overflow, driving the "Show more" button used on Diary / Pain.
+ */
+// eslint-disable-next-line react-refresh/only-export-components
+export function useDiaryColumnCap<T>(entries: T[], isLoading: boolean) {
+  const pastEntriesBodyRef = useRef<HTMLDivElement>(null);
+  const pastColRef = useRef<HTMLDivElement>(null);
+  const leftColRef = useRef<HTMLDivElement>(null);
+  const [overflow, setOverflow] = useState(false);
+
+  const syncAndMeasure = useCallback(() => {
+    const col = pastColRef.current;
+    const left = leftColRef.current;
+    if (col && left) {
+      const h = Math.round(left.getBoundingClientRect().height);
+      if (h > 0) {
+        col.style.setProperty("--diary-past-col-max-h", `${h}px`);
+      }
+    }
+    const body = pastEntriesBodyRef.current;
+    if (!body || entries.length === 0) {
+      setOverflow(false);
+      return;
+    }
+    setOverflow(body.scrollHeight > body.clientHeight + 1);
+  }, [entries.length]);
+
+  useLayoutEffect(() => {
+    let raf = 0;
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        syncAndMeasure();
+      });
+    };
+    schedule();
+
+    const body = pastEntriesBodyRef.current;
+    const left = leftColRef.current;
+    const hasRO = typeof ResizeObserver !== "undefined";
+    const ro = hasRO ? new ResizeObserver(schedule) : null;
+    if (ro) {
+      if (body) ro.observe(body);
+      if (left) ro.observe(left);
+    }
+    const onToggle = () => schedule();
+    body?.addEventListener("toggle", onToggle, true);
+    window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+      body?.removeEventListener("toggle", onToggle, true);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [syncAndMeasure, entries, isLoading]);
+
+  return { leftColRef, pastColRef, pastEntriesBodyRef, overflow };
 }

@@ -26,8 +26,11 @@ import {
   AnimatedEditingLabel,
   InlineFeedback,
   MultiSelectField,
+  SectionHead,
+  useDiaryColumnCap,
 } from "./shared";
 import { McpAccessSection } from "./McpAccessSection";
+import { SettingsVariantA, SettingsVariantB, SettingsVariantC } from "./settings-mockups";
 import {
   calcDeltaPercent,
   dashboardQuickRanges,
@@ -247,6 +250,7 @@ export function DashboardSection({
             />
           ) : null}
 
+          <SectionHead title="Averages" aside={`${dashboardCards.length} metrics`} />
           <div className="stats-grid stats-grid-dashboard">
             {dashboardCards.map((card) => {
               const deltaPct = calcDeltaPercent(card.value, card.previous);
@@ -272,9 +276,9 @@ export function DashboardSection({
             })}
           </div>
 
+          <SectionHead title="Metrics over time" aside="Toggle series" />
           <div className="chart-wrap chart-wrap-wide">
             <div className="graph-header">
-              <h3>Metrics over time</h3>
               <div className="graph-toggle-list">
                 {wellbeingSeries.map((series) => {
                   const checked = graphSelection[series.key] ?? true;
@@ -354,11 +358,18 @@ export function DiarySection({
     { id: "general" as const, label: "General", count: csvToList(generalMoods).length },
   ];
 
+  const {
+    leftColRef,
+    pastColRef,
+    pastEntriesBodyRef,
+    overflow: pastEntriesOverflow,
+  } = useDiaryColumnCap(diaryEntries, isLoading);
+
   return (
     <section className="panel">
       <h1 className="panel-title">Diary</h1>
-      <div className="panel-split">
-        <div className="panel-col">
+      <div className="panel-split panel-split--diary">
+        <div className="panel-col" ref={leftColRef}>
         <h2 className="entries-heading">New entry</h2>
         <form className="dense-form-grid diary-dense-form" onSubmit={diaryForm.handleSubmit(onSubmit)}>
         <div className="core-col">
@@ -490,20 +501,22 @@ export function DiarySection({
         </div>
       </form>
         </div>
-        <div className="panel-col">
-      {isLoading && <p className="hint">Loading diary entries...</p>}
+        <div className="panel-col diary-past-col" ref={pastColRef}>
+          {isLoading && <p className="hint">Loading diary entries...</p>}
 
-      <h2 className="entries-heading">Past entries</h2>
-      {diaryEntries.length === 0 ? (
-        <EmptyState
-          title="No diary entries yet"
-          description="Use the form above to log your first mood entry. Once you save it, it will appear here."
-        />
-      ) : (
-        diaryEntries.map((entry) => {
-          const moodBand = bandNine(entry.moodLevel ?? undefined, true);
-          return (
-            <details key={entry.id} className="entry-row">
+          <h2 className="entries-heading">Past entries</h2>
+          {diaryEntries.length === 0 ? (
+            <EmptyState
+              title="No diary entries yet"
+              description="Use the form above to log your first mood entry. Once you save it, it will appear here."
+            />
+          ) : (
+            <div className="diary-past-entries-stack">
+              <div className="diary-past-entries-body" ref={pastEntriesBodyRef}>
+                {diaryEntries.map((entry) => {
+                const moodBand = bandNine(entry.moodLevel ?? undefined, true);
+                return (
+                  <details key={entry.id} className="entry-row">
               <summary>
                 <span className="date">{formatEntrySummaryDate(entry.entryDate, entry.entryTime)}</span>
                 {entry.moodLevel != null ? (
@@ -598,10 +611,272 @@ export function DiarySection({
                   </button>
                 </div>
               </div>
+                  </details>
+                );
+              })}
+              </div>
+              <div
+                className={`save-section diary-past-footer-slot${pastEntriesOverflow ? " diary-past-more" : ""}`}
+                aria-hidden={!pastEntriesOverflow}
+              >
+                {!isLoading && pastEntriesOverflow ? (
+                  <button type="button" className="btn">
+                    Show more
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const DESIGN_COLOR_TOKENS: { name: string; varName: string; role: string }[] = [
+  { name: "Background", varName: "--bg", role: "App canvas" },
+  { name: "Card", varName: "--card", role: "Panels, inputs" },
+  { name: "Card strong", varName: "--card-strong", role: "Elevated surfaces" },
+  { name: "Card soft", varName: "--card-soft", role: "Subtle fills" },
+  { name: "Text", varName: "--text", role: "Primary text" },
+  { name: "Muted", varName: "--muted", role: "Secondary text" },
+  { name: "Muted soft", varName: "--muted-soft", role: "Tertiary text" },
+  { name: "Border", varName: "--border", role: "Dividers" },
+  { name: "Border soft", varName: "--border-soft", role: "Hairlines" },
+  { name: "Accent", varName: "--accent", role: "Primary action" },
+  { name: "Accent 2", varName: "--accent-2", role: "Accent hover" },
+  { name: "Success", varName: "--success", role: "Positive state" },
+  { name: "Warning", varName: "--warning", role: "Mid state" },
+  { name: "Danger", varName: "--danger", role: "Negative state" },
+];
+
+const DESIGN_SPACING_TOKENS: { varName: string; px: string }[] = [
+  { varName: "--space-1", px: "10px" },
+  { varName: "--space-2", px: "20px" },
+  { varName: "--space-3", px: "30px" },
+  { varName: "--space-4", px: "40px" },
+];
+
+const DESIGN_RADIUS_TOKENS: { varName: string; px: string }[] = [
+  { varName: "--radius-sm", px: "10px" },
+  { varName: "--radius-md", px: "12px" },
+  { varName: "--radius-lg", px: "16px" },
+];
+
+export function DesignSystemSection() {
+  const [moodDemo, setMoodDemo] = useState<number | null>(6);
+  const [painDemo, setPainDemo] = useState<number | null>(3);
+  const [coffeeDemo, setCoffeeDemo] = useState<number | null>(2);
+  const [tabDemo, setTabDemo] = useState<"positive" | "negative" | "general">("positive");
+
+  return (
+    <section className="panel">
+      <h1 className="panel-title">Design System</h1>
+      <p className="hint ds-lede">
+        Living reference for the tokens, primitives, and patterns the Diary page is built from.
+        Every example below uses the same classes as the real app &mdash; edit{" "}
+        <code>styles.css</code> and this page updates with it.
+      </p>
+
+      <div className="panel-split panel-split--diary">
+        <div className="panel-col ds-col">
+          <h2 className="entries-heading">Foundations</h2>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Colors</span>
+              <span className="section-aside">CSS custom properties</span>
+            </div>
+            <ul className="ds-swatches">
+              {DESIGN_COLOR_TOKENS.map((t) => (
+                <li key={t.varName} className="ds-swatch">
+                  <span className="ds-swatch-chip" style={{ background: `var(${t.varName})` }} />
+                  <div className="ds-swatch-meta">
+                    <span className="ds-swatch-name">{t.name}</span>
+                    <code className="ds-swatch-var">{t.varName}</code>
+                    <span className="ds-swatch-role">{t.role}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Typography</span>
+              <span className="section-aside">Manrope</span>
+            </div>
+            <dl className="ds-type-scale">
+              <div className="ds-type-row">
+                <dt style={{ font: "700 28px var(--font-body)" }}>Panel title</dt>
+                <dd>28 / 700</dd>
+              </div>
+              <div className="ds-type-row">
+                <dt style={{ font: "700 10px var(--font-body)", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--muted)" }}>
+                  Entries heading
+                </dt>
+                <dd>10 / 700 / 0.16em</dd>
+              </div>
+              <div className="ds-type-row">
+                <dt style={{ font: "500 14px var(--font-body)" }}>Body</dt>
+                <dd>14 / 500</dd>
+              </div>
+              <div className="ds-type-row">
+                <dt style={{ font: "500 12px var(--font-body)", color: "var(--muted)" }}>Hint</dt>
+                <dd>12 / 500 / muted</dd>
+              </div>
+              <div className="ds-type-row">
+                <dt style={{ font: "500 12px var(--font-mono, ui-monospace, Menlo, monospace)", fontVariantNumeric: "tabular-nums", color: "var(--muted)" }}>
+                  Entry date · Apr 18, 5:03 PM
+                </dt>
+                <dd>12 / mono / tabular</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Spacing</span>
+              <span className="section-aside">Base scale</span>
+            </div>
+            <ul className="ds-scale-list">
+              {DESIGN_SPACING_TOKENS.map((t) => (
+                <li key={t.varName} className="ds-scale-row">
+                  <code>{t.varName}</code>
+                  <span className="ds-scale-bar" style={{ width: `var(${t.varName})` }} />
+                  <span className="ds-scale-val">{t.px}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Radius</span>
+              <span className="section-aside">Rounded corners</span>
+            </div>
+            <ul className="ds-radius-list">
+              {DESIGN_RADIUS_TOKENS.map((t) => (
+                <li key={t.varName} className="ds-radius-item">
+                  <span className="ds-radius-chip" style={{ borderRadius: `var(${t.varName})` }} />
+                  <code>{t.varName}</code>
+                  <span className="ds-scale-val">{t.px}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Badges</span>
+              <span className="section-aside">9-point scale</span>
+            </div>
+            <div className="ds-badges">
+              <span className="pain-badge sm low">2</span>
+              <span className="pain-badge sm mid">5</span>
+              <span className="pain-badge sm high">8</span>
+              <span className="pain-badge sm muted">&mdash;</span>
+            </div>
+          </section>
+        </div>
+
+        <div className="panel-col ds-col">
+          <h2 className="entries-heading">Components</h2>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Buttons</span>
+              <span className="section-aside">Pill utility</span>
+            </div>
+            <div className="ds-btn-row">
+              <button type="button" className="btn">Default</button>
+              <button type="button" className="btn btn-primary">Primary</button>
+              <button type="button" className="btn btn-primary is-success-pulse">✓ Saved</button>
+              <button type="button" className="btn btn-danger">Danger</button>
+            </div>
+          </section>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Form fields</span>
+              <span className="section-aside">Field-line</span>
+            </div>
+            <div className="ds-fields">
+              <label className="field field-line">
+                <span className="field-line-label">Text</span>
+                <input type="text" defaultValue="Sample value" aria-label="Text" />
+              </label>
+              <label className="field field-line">
+                <span className="field-line-label">Date &amp; time</span>
+                <input type="datetime-local" defaultValue="2026-04-18T17:30" aria-label="Date/time" />
+              </label>
+              <label className="field field-line">
+                <span className="field-line-label">Description</span>
+                <textarea rows={2} placeholder="Free text area…" aria-label="Description" />
+              </label>
+            </div>
+          </section>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Metrics</span>
+              <span className="section-aside">BarMetric · Stepper</span>
+            </div>
+            <div className="ds-metrics">
+              <BarMetric label="Mood" value={moodDemo} fractionDigits={1} higherIsBetter onChange={setMoodDemo} />
+              <BarMetric label="Pain" value={painDemo} onChange={setPainDemo} />
+              <CoffeeStepper value={coffeeDemo} onChange={setCoffeeDemo} />
+            </div>
+          </section>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Tabs</span>
+              <span className="section-aside">Underline, accent</span>
+            </div>
+            <nav className="tag-tabs" role="tablist" aria-label="Demo tabs">
+              {(["positive", "negative", "general"] as const).map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={tabDemo === id}
+                  className={tabDemo === id ? "active" : ""}
+                  onClick={() => setTabDemo(id)}
+                >
+                  {id[0].toUpperCase() + id.slice(1)} <span className="count">0</span>
+                </button>
+              ))}
+            </nav>
+          </section>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Entry row</span>
+              <span className="section-aside">Collapsible details</span>
+            </div>
+            <details className="entry-row" open>
+              <summary>
+                <span className="date">Apr 18, 5:03 PM</span>
+                <span className="pain-badge sm mid">6</span>
+                <span className="preview">grateful · distracted, restless</span>
+                <span />
+                <span className="chevron" aria-hidden="true">▶</span>
+              </summary>
+              <div className="entry-expanded">
+                <div className="detail-group">
+                  <span className="label">Mood · Dep · Anx</span>
+                  <span className="value">6 · 4 · 4</span>
+                </div>
+                <div className="detail-group">
+                  <span className="label">Positive</span>
+                  <span className="value">
+                    <span className="tag-mini">grateful</span>
+                  </span>
+                </div>
+              </div>
             </details>
-          );
-        })
-      )}
+          </section>
         </div>
       </div>
     </section>
@@ -660,11 +935,18 @@ export function PainSection({
 
   const painOptionsForTab = (id: PainFieldKey) => painFieldOptions[id];
 
+  const {
+    leftColRef,
+    pastColRef,
+    pastEntriesBodyRef,
+    overflow: pastEntriesOverflow,
+  } = useDiaryColumnCap(painEntries, isLoading);
+
   return (
     <section className="panel">
       <h1 className="panel-title">Pain</h1>
-      <div className="panel-split">
-        <div className="panel-col">
+      <div className="panel-split panel-split--diary">
+        <div className="panel-col" ref={leftColRef}>
         <h2 className="entries-heading">New entry</h2>
         <form className="dense-form-grid pain-dense-form" onSubmit={painForm.handleSubmit(onSubmit)}>
         <div className="core-col">
@@ -808,7 +1090,7 @@ export function PainSection({
         </div>
       </form>
         </div>
-        <div className="panel-col">
+        <div className="panel-col diary-past-col" ref={pastColRef}>
       {isLoading && <p className="hint">Loading pain entries...</p>}
 
       <h2 className="entries-heading">Past entries</h2>
@@ -818,7 +1100,9 @@ export function PainSection({
           description="Track your first session with the form above. Your pain history will show up here once you save it."
         />
       ) : (
-        painEntries.map((entry) => {
+        <div className="diary-past-entries-stack">
+          <div className="diary-past-entries-body" ref={pastEntriesBodyRef}>
+            {painEntries.map((entry) => {
           const painBand = bandNine(entry.painLevel ?? undefined);
           return (
             <details key={entry.id} className="entry-row">
@@ -956,7 +1240,19 @@ export function PainSection({
               </div>
             </details>
           );
-        })
+            })}
+          </div>
+          <div
+            className={`save-section diary-past-footer-slot${pastEntriesOverflow ? " diary-past-more" : ""}`}
+            aria-hidden={!pastEntriesOverflow}
+          >
+            {!isLoading && pastEntriesOverflow ? (
+              <button type="button" className="btn">
+                Show more
+              </button>
+            ) : null}
+          </div>
+        </div>
       )}
         </div>
       </div>
@@ -989,138 +1285,161 @@ export function CbtSection({
   onDeleteClick: (id: number) => void;
   onDeleteBlur: () => void;
 }) {
+  const cbtFields: { key: keyof CbtFormValues; label: string; hint?: string; multiline?: boolean }[] = [
+    { key: "situation", label: "Situation", hint: "What's the situation?" },
+    {
+      key: "thoughts",
+      label: "Thoughts",
+      hint: "What thoughts are running through your mind? How much do you believe each one?",
+      multiline: true,
+    },
+    {
+      key: "helpfulReasoning",
+      label: "Helpful reasoning",
+      hint: "Any helpful reasoning to counter this thought pattern?",
+      multiline: true,
+    },
+    {
+      key: "mainUnhelpfulThought",
+      label: "Main unhelpful thought",
+      hint: "The single thought you want to work on.",
+    },
+    {
+      key: "effectOfBelieving",
+      label: "Effect of believing it",
+      hint: "What would change if you didn't believe it?",
+      multiline: true,
+    },
+    {
+      key: "evidenceForAgainst",
+      label: "Evidence for / against",
+      hint: "What supports or rejects this thought?",
+      multiline: true,
+    },
+    {
+      key: "alternativeExplanation",
+      label: "Alternative explanation",
+      hint: "Could there be another way to read the situation?",
+      multiline: true,
+    },
+    {
+      key: "worstBestScenario",
+      label: "Worst / best scenario",
+      hint: "What's the worst? Would you survive it? What's the best?",
+      multiline: true,
+    },
+    {
+      key: "friendAdvice",
+      label: "Advice to a friend",
+      hint: "What would you tell a friend in this situation?",
+      multiline: true,
+    },
+    {
+      key: "productiveResponse",
+      label: "Productive response",
+      hint: "Take a breath. What are your next steps?",
+      multiline: true,
+    },
+  ];
+
   return (
     <section className="panel">
       <h1 className="panel-title">CBT Thought Response</h1>
-      <form className="therapy-form" onSubmit={cbtForm.handleSubmit(onSubmit)}>
-        <label>
-          Date/time
-          <input type="datetime-local" {...cbtForm.register("dateTime")} />
-        </label>
-
-        <div className="therapy-section"><h2>Situation</h2></div>
-        <label>
-          What's the situation?
-          <input type="text" {...cbtForm.register("situation")} />
-        </label>
-
-        <div className="therapy-section"><h2>Thoughts</h2></div>
-        <label>
-          What thoughts are running through your mind? How much do you believe each one? Go beyond simple thoughts — ask: why would this be bad? What would it mean?
-          <input type="text" {...cbtForm.register("thoughts")} />
-        </label>
-        <label>
-          Do you have any helpful reasoning to counter this thought pattern?
-          <input type="text" {...cbtForm.register("helpfulReasoning")} />
-        </label>
-
-        <div className="therapy-section"><h2>Question your unhelpful thoughts</h2></div>
-        <label>
-          What is the main unhelpful thought?
-          <input type="text" {...cbtForm.register("mainUnhelpfulThought")} />
-        </label>
-        <label>
-          What is the effect of believing this? What would you be able to do if you didn't believe it?
-          <input type="text" {...cbtForm.register("effectOfBelieving")} />
-        </label>
-        <label>
-          What evidence supports or rejects this thought?
-          <input type="text" {...cbtForm.register("evidenceForAgainst")} />
-        </label>
-        <label>
-          Could there be an alternative explanation for the situation?
-          <input type="text" {...cbtForm.register("alternativeExplanation")} />
-        </label>
-        <label>
-          What's the worst that could happen? Would you survive it? How about the best scenario?
-          <input type="text" {...cbtForm.register("worstBestScenario")} />
-        </label>
-        <label>
-          Imagine your friend was in this situation. What advice would you give them?
-          <input type="text" {...cbtForm.register("friendAdvice")} />
-        </label>
-
-        <div className="therapy-section"><h2>A more productive response</h2></div>
-        <div className="therapy-callout">Take a deep breath and try to see the thoughts from an outside perspective. Is there a more productive and rational response to this situation?</div>
-        <label>
-          What are your next steps?
-          <input type="text" {...cbtForm.register("productiveResponse")} />
-        </label>
-
-        <div className="row-actions">
-          <button type="submit" className={cbtMutationState.isSuccess ? "btn-check" : ""}>
-            {cbtMutationState.isSuccess ? "\u2713" : editingCbt ? "Update entry" : "Add entry"}
+      <form className="dense-form-grid therapy-form" onSubmit={cbtForm.handleSubmit(onSubmit)}>
+        <div className="core-col">
+          <label className="field field-line">
+            <span className="field-line-label">Date &amp; time</span>
+            <input
+              type="datetime-local"
+              {...cbtForm.register("dateTime")}
+              aria-label="Date/time"
+              onClick={(e) => {
+                const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+                el.showPicker?.();
+              }}
+            />
+          </label>
+          <SectionHead title="Thought record" aside="CBT reframing" />
+          {cbtFields.map((f) => (
+            <label key={f.key} className="field field-line">
+              <span className="field-line-label">{f.label}</span>
+              {f.multiline ? (
+                <textarea rows={2} placeholder={f.hint} aria-label={f.label} {...cbtForm.register(f.key)} />
+              ) : (
+                <input type="text" placeholder={f.hint} aria-label={f.label} {...cbtForm.register(f.key)} />
+              )}
+            </label>
+          ))}
+          {editingCbt ? (
+            <div className="dense-form-inline-actions">
+              <button type="button" onClick={onCancelEdit}>
+                Cancel edit
+              </button>
+            </div>
+          ) : null}
+        </div>
+        <div className="save-section">
+          <button type="submit" className={`btn btn-primary${cbtMutationState.isSuccess ? " is-success-pulse" : ""}`}>
+            {cbtMutationState.isSuccess ? "\u2713 Saved" : editingCbt ? "Update entry" : "Save entry"}
           </button>
-          {editingCbt && (
-            <button type="button" onClick={onCancelEdit}>
-              Cancel
-            </button>
-          )}
         </div>
       </form>
 
       {isLoading && <p className="hint">Loading CBT entries...</p>}
 
-      <div className="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Situation</th>
-              <th>Main thought</th>
-              <th>Response</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cbtEntries.length === 0 ? (
-              <tr>
-                <td colSpan={6}>
-                  <EmptyState
-                    title="No CBT entries yet"
-                    description="Use the prompts above to record your first thought response. Completed reflections will appear here."
-                    compact
-                  />
-                </td>
-              </tr>
-            ) : (
-              cbtEntries.map((entry) => (
-                <tr key={entry.id}>
-                  <td>{entry.entryDate}</td>
-                  <td>{entry.entryTime}</td>
-                  <td>{entry.situation || "-"}</td>
-                  <td>{entry.mainUnhelpfulThought || "-"}</td>
-                  <td>{entry.productiveResponse || "-"}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className={editingCbt?.id === entry.id ? "active is-editing" : editingCbt ? "is-editing" : undefined}
-                      onClick={() => {
-                        if (editingCbt) {
-                          onCancelEdit();
-                          return;
-                        }
-                        onStartEdit(entry);
-                      }}
-                    >
-                      <AnimatedEditingLabel active={Boolean(editingCbt)} />
-                    </button>
-                    <button
-                      type="button"
-                      className={confirmDeleteCbt === entry.id ? "btn-delete-confirm" : ""}
-                      onClick={() => onDeleteClick(entry.id)}
-                      onBlur={onDeleteBlur}
-                    >
-                      {confirmDeleteCbt === entry.id ? "Delete?" : "Delete"}
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <h2 className="entries-heading">Past entries</h2>
+      {cbtEntries.length === 0 ? (
+        <EmptyState
+          title="No CBT entries yet"
+          description="Use the prompts above to record your first thought response. Completed reflections will appear here."
+        />
+      ) : (
+        cbtEntries.map((entry) => (
+          <details key={entry.id} className="entry-row">
+            <summary>
+              <span className="date">{formatEntrySummaryDate(entry.entryDate, entry.entryTime)}</span>
+              <span className="pain-badge sm muted">CBT</span>
+              <span className="preview">{entry.situation || entry.mainUnhelpfulThought || entry.productiveResponse || "—"}</span>
+              <span />
+              <span className="chevron" aria-hidden="true">▶</span>
+            </summary>
+            <div className="entry-expanded">
+              {cbtFields.map((f) => {
+                const v = entry[f.key as keyof CbtEntry] as unknown as string | null | undefined;
+                return (
+                  <div key={f.key} className="detail-group">
+                    <span className="label">{f.label}</span>
+                    <span className="value">{v || "—"}</span>
+                  </div>
+                );
+              })}
+              <div className="detail-actions">
+                <button
+                  type="button"
+                  className={editingCbt?.id === entry.id ? "active is-editing" : editingCbt ? "is-editing" : undefined}
+                  onClick={() => {
+                    if (editingCbt) {
+                      onCancelEdit();
+                      return;
+                    }
+                    onStartEdit(entry);
+                  }}
+                >
+                  <AnimatedEditingLabel active={Boolean(editingCbt)} />
+                </button>
+                <button
+                  type="button"
+                  className={confirmDeleteCbt === entry.id ? "btn-delete-confirm" : ""}
+                  onClick={() => onDeleteClick(entry.id)}
+                  onBlur={onDeleteBlur}
+                >
+                  {confirmDeleteCbt === entry.id ? "Delete?" : "Delete"}
+                </button>
+              </div>
+            </div>
+          </details>
+        ))
+      )}
     </section>
   );
 }
@@ -1150,126 +1469,182 @@ export function DbtSection({
   onDeleteClick: (id: number) => void;
   onDeleteBlur: () => void;
 }) {
+  type DbtGroup = {
+    title: string;
+    aside?: string;
+    callouts?: string[];
+    fields: { key: keyof DbtFormValues; label: string; hint?: string; multiline?: boolean }[];
+  };
+
+  const dbtGroups: DbtGroup[] = [
+    {
+      title: "Recognize the emotion",
+      aside: "Name and allow",
+      callouts: [
+        "Try naming a more intense form of your emotion — not just sad, maybe distraught; not just mad, maybe appalled.",
+      ],
+      fields: [
+        { key: "emotionName", label: "Emotion", hint: "What emotion are you feeling?" },
+        {
+          key: "allowAffirmation",
+          label: "Affirmation",
+          hint: "I can allow myself to feel this. I'm not bad because of it…",
+          multiline: true,
+        },
+      ],
+    },
+    {
+      title: "Watch the emotion",
+      aside: "Observe without grabbing",
+      callouts: [
+        "Watch the emotion and see what it does. It's a wave — float with it instead of getting caught.",
+      ],
+      fields: [
+        { key: "watchEmotion", label: "Call it what it is", hint: "Name the emotion plainly." },
+        { key: "bodyLocation", label: "Where in the body", hint: "Where do you notice it?" },
+        { key: "bodyFeeling", label: "Body sensation", hint: "What does it feel like physically?" },
+      ],
+    },
+    {
+      title: "Be present",
+      aside: "Five senses",
+      callouts: [
+        "Turn attention back to now. Use your five senses, or your breath, as the anchor.",
+      ],
+      fields: [
+        {
+          key: "presentMoment",
+          label: "Right now",
+          hint: "What can you feel, hear, see, smell, or taste?",
+          multiline: true,
+        },
+      ],
+    },
+  ];
+
   return (
     <section className="panel">
       <h1 className="panel-title">DBT Distress Tolerance</h1>
-      <form className="therapy-form" onSubmit={dbtForm.handleSubmit(onSubmit)}>
-        <label>
-          Date/time
-          <input type="datetime-local" {...dbtForm.register("dateTime")} />
-        </label>
-
-        <div className="therapy-section"><h2>Recognize and allow the emotion</h2></div>
-        <div className="therapy-callout">Try to think of a more intense form of your emotion. Instead of sad, maybe you are distraught or crushed. Instead of mad, you are disgusted or appalled.</div>
-        <label>
-          What emotion are you feeling?
-          <input type="text" {...dbtForm.register("emotionName")} />
-        </label>
-        <div className="therapy-callout">"I am feeling this emotion. It's ok, I can allow myself to feel this. I'm not bad because I have this feeling. I'm going to make space for it. I can control myself, so I don't need to get rid of this feeling."</div>
-        <label>
-          Write your own affirmation:
-          <input type="text" {...dbtForm.register("allowAffirmation")} />
-        </label>
-
-        <div className="therapy-section"><h2>Watch the emotion</h2></div>
-        <div className="therapy-callout">Let me watch this emotion and see what it does. I don't have to get caught up in it. My emotion is like an ocean wave — I'm going to float with it.</div>
-        <label>
-          Call the emotion what it is.
-          <input type="text" {...dbtForm.register("watchEmotion")} />
-        </label>
-        <label>
-          Where do you notice the emotion in your body?
-          <input type="text" {...dbtForm.register("bodyLocation")} />
-        </label>
-        <label>
-          What do you feel?
-          <input type="text" {...dbtForm.register("bodyFeeling")} />
-        </label>
-
-        <div className="therapy-section"><h2>Be present</h2></div>
-        <div className="therapy-callout">Turn your attention back to what you are doing now. Notice what's going on with all five senses, or focus on your breath as your anchor for the present moment.</div>
-        <label>
-          What can you feel, hear, see, smell, or taste right now?
-          <input type="text" {...dbtForm.register("presentMoment")} />
-        </label>
-
-        <div className="therapy-section"><h2>When the emotion comes back</h2></div>
-        <div className="therapy-callout">That's ok. Emotions come and go. Watch it again. Let it sit in the room with you, or float with it like an ocean wave.</div>
-
-        <div className="row-actions">
-          <button type="submit" className={dbtMutationState.isSuccess ? "btn-check" : ""}>
-            {dbtMutationState.isSuccess ? "\u2713" : editingDbt ? "Update entry" : "Add entry"}
+      <form className="dense-form-grid therapy-form" onSubmit={dbtForm.handleSubmit(onSubmit)}>
+        <div className="core-col">
+          <label className="field field-line">
+            <span className="field-line-label">Date &amp; time</span>
+            <input
+              type="datetime-local"
+              {...dbtForm.register("dateTime")}
+              aria-label="Date/time"
+              onClick={(e) => {
+                const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+                el.showPicker?.();
+              }}
+            />
+          </label>
+          {dbtGroups.map((g) => (
+            <div key={g.title} className="ds-section">
+              <SectionHead title={g.title} aside={g.aside} />
+              {g.callouts?.map((c, i) => (
+                <p key={i} className="hint therapy-callout">{c}</p>
+              ))}
+              {g.fields.map((f) => (
+                <label key={f.key} className="field field-line">
+                  <span className="field-line-label">{f.label}</span>
+                  {f.multiline ? (
+                    <textarea rows={2} placeholder={f.hint} aria-label={f.label} {...dbtForm.register(f.key)} />
+                  ) : (
+                    <input type="text" placeholder={f.hint} aria-label={f.label} {...dbtForm.register(f.key)} />
+                  )}
+                </label>
+              ))}
+            </div>
+          ))}
+          <p className="hint therapy-callout">
+            When the emotion comes back, that's ok. Emotions come and go — watch it again, float with the wave.
+          </p>
+          {editingDbt ? (
+            <div className="dense-form-inline-actions">
+              <button type="button" onClick={onCancelEdit}>
+                Cancel edit
+              </button>
+            </div>
+          ) : null}
+        </div>
+        <div className="save-section">
+          <button type="submit" className={`btn btn-primary${dbtMutationState.isSuccess ? " is-success-pulse" : ""}`}>
+            {dbtMutationState.isSuccess ? "\u2713 Saved" : editingDbt ? "Update entry" : "Save entry"}
           </button>
-          {editingDbt && (
-            <button type="button" onClick={onCancelEdit}>
-              Cancel
-            </button>
-          )}
         </div>
       </form>
 
       {isLoading && <p className="hint">Loading DBT entries...</p>}
 
-      <div className="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Emotion</th>
-              <th>Body location</th>
-              <th>Present moment</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dbtEntries.length === 0 ? (
-              <tr>
-                <td colSpan={6}>
-                  <EmptyState
-                    title="No DBT entries yet"
-                    description="Work through the steps above to log your first distress-tolerance practice. Saved entries will appear here."
-                    compact
-                  />
-                </td>
-              </tr>
-            ) : (
-              dbtEntries.map((entry) => (
-                <tr key={entry.id}>
-                  <td>{entry.entryDate}</td>
-                  <td>{entry.entryTime}</td>
-                  <td>{entry.emotionName || "-"}</td>
-                  <td>{entry.bodyLocation || "-"}</td>
-                  <td>{entry.presentMoment || "-"}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className={editingDbt?.id === entry.id ? "active is-editing" : editingDbt ? "is-editing" : undefined}
-                      onClick={() => {
-                        if (editingDbt) {
-                          onCancelEdit();
-                          return;
-                        }
-                        onStartEdit(entry);
-                      }}
-                    >
-                      <AnimatedEditingLabel active={Boolean(editingDbt)} />
-                    </button>
-                    <button
-                      type="button"
-                      className={confirmDeleteDbt === entry.id ? "btn-delete-confirm" : ""}
-                      onClick={() => onDeleteClick(entry.id)}
-                      onBlur={onDeleteBlur}
-                    >
-                      {confirmDeleteDbt === entry.id ? "Delete?" : "Delete"}
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <h2 className="entries-heading">Past entries</h2>
+      {dbtEntries.length === 0 ? (
+        <EmptyState
+          title="No DBT entries yet"
+          description="Work through the steps above to log your first distress-tolerance practice. Saved entries will appear here."
+        />
+      ) : (
+        dbtEntries.map((entry) => (
+          <details key={entry.id} className="entry-row">
+            <summary>
+              <span className="date">{formatEntrySummaryDate(entry.entryDate, entry.entryTime)}</span>
+              <span className="pain-badge sm muted">DBT</span>
+              <span className="preview">{entry.emotionName || entry.presentMoment || "—"}</span>
+              <span />
+              <span className="chevron" aria-hidden="true">▶</span>
+            </summary>
+            <div className="entry-expanded">
+              <div className="detail-group">
+                <span className="label">Emotion</span>
+                <span className="value">{entry.emotionName || "—"}</span>
+              </div>
+              <div className="detail-group">
+                <span className="label">Affirmation</span>
+                <span className="value">{entry.allowAffirmation || "—"}</span>
+              </div>
+              <div className="detail-group">
+                <span className="label">Watch</span>
+                <span className="value">{entry.watchEmotion || "—"}</span>
+              </div>
+              <div className="detail-group">
+                <span className="label">Body location</span>
+                <span className="value">{entry.bodyLocation || "—"}</span>
+              </div>
+              <div className="detail-group">
+                <span className="label">Body feeling</span>
+                <span className="value">{entry.bodyFeeling || "—"}</span>
+              </div>
+              <div className="detail-group">
+                <span className="label">Present moment</span>
+                <span className="value">{entry.presentMoment || "—"}</span>
+              </div>
+              <div className="detail-actions">
+                <button
+                  type="button"
+                  className={editingDbt?.id === entry.id ? "active is-editing" : editingDbt ? "is-editing" : undefined}
+                  onClick={() => {
+                    if (editingDbt) {
+                      onCancelEdit();
+                      return;
+                    }
+                    onStartEdit(entry);
+                  }}
+                >
+                  <AnimatedEditingLabel active={Boolean(editingDbt)} />
+                </button>
+                <button
+                  type="button"
+                  className={confirmDeleteDbt === entry.id ? "btn-delete-confirm" : ""}
+                  onClick={() => onDeleteClick(entry.id)}
+                  onBlur={onDeleteBlur}
+                >
+                  {confirmDeleteDbt === entry.id ? "Delete?" : "Delete"}
+                </button>
+              </div>
+            </div>
+          </details>
+        ))
+      )}
     </section>
   );
 }
@@ -1301,33 +1676,74 @@ export function SettingsSection({
   onImportXlsx: (file: File) => void;
   backupFeedback: InlineMessage | null;
 }) {
+  const [mockup, setMockup] = useState<"current" | "a" | "b" | "c">("current");
+  const variantProps = {
+    auth,
+    purgeConfirmArmed,
+    purgePending,
+    purgeError,
+    onPurgeArm,
+    onPurgeConfirm,
+    onPurgeCancel,
+    onExportJson,
+    onImportJson,
+    onExportXlsx,
+    onImportXlsx,
+    backupFeedback,
+  };
+  const mockupTabs: { id: typeof mockup; label: string }[] = [
+    { id: "current", label: "Current" },
+    { id: "a", label: "A · List" },
+    { id: "b", label: "B · Tabs" },
+    { id: "c", label: "C · Split" },
+  ];
   return (
     <section className="panel panel--frameless">
-      <h1 className="panel-title">Settings</h1>
+      <div className="settings-mockup-header">
+        <h1 className="panel-title">Settings</h1>
+        <nav className="tag-tabs settings-mockup-switcher" aria-label="Settings layout mockup">
+          {mockupTabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={mockup === t.id ? "active" : ""}
+              onClick={() => setMockup(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+      {mockup === "a" ? <SettingsVariantA {...variantProps} /> : null}
+      {mockup === "b" ? <SettingsVariantB {...variantProps} /> : null}
+      {mockup === "c" ? <SettingsVariantC {...variantProps} /> : null}
+      {mockup === "current" ? (
       <div className="settings-grid">
         <div className="settings-column">
           <article>
-            <h3>Account</h3>
+            <SectionHead title="Account" aside="Credentials" />
             <form
               className="stack"
               onFocus={auth.clearPasswordStatus}
               onSubmit={auth.changePasswordForm.handleSubmit((v) => auth.changePasswordMutation.mutate(v))}
             >
-              <label>
-                Current password
+              <label className="field field-line">
+                <span className="field-line-label">Current password</span>
                 <input type="password" autoComplete="current-password" {...auth.changePasswordForm.register("currentPassword")} />
               </label>
-              <label>
-                New password
+              <label className="field field-line">
+                <span className="field-line-label">New password</span>
                 <input type="password" autoComplete="new-password" {...auth.changePasswordForm.register("newPassword")} />
               </label>
-              <label>
-                Confirm
+              <label className="field field-line">
+                <span className="field-line-label">Confirm</span>
                 <input type="password" autoComplete="new-password" {...auth.changePasswordForm.register("confirmPassword")} />
               </label>
-              <button type="submit" disabled={auth.changePasswordMutation.isPending}>
-                Change password
-              </button>
+              <div className="save-section">
+                <button type="submit" className="btn btn-primary" disabled={auth.changePasswordMutation.isPending}>
+                  Change password
+                </button>
+              </div>
               <InlineFeedback
                 message={
                   auth.changePasswordMutation.error
@@ -1336,12 +1752,14 @@ export function SettingsSection({
                 }
               />
             </form>
-            <button onClick={() => auth.logoutMutation.mutate()} disabled={auth.logoutMutation.isPending} style={{ marginTop: 10 }}>
-              Log out
-            </button>
+            <div className="save-section settings-logout-row">
+              <button type="button" className="btn" onClick={() => auth.logoutMutation.mutate()} disabled={auth.logoutMutation.isPending}>
+                Log out
+              </button>
+            </div>
           </article>
           <article className="danger-zone">
-            <h3>Danger zone</h3>
+            <SectionHead title="Danger zone" aside="Irreversible" />
             {purgeConfirmArmed ? (
               <div className="inline-confirmation" role="group" aria-label="Confirm purge all data">
                 <InlineFeedback
@@ -1352,26 +1770,28 @@ export function SettingsSection({
                   }}
                 />
                 <div className="row-actions confirmation-actions">
-                  <button type="button" className="danger" onClick={onPurgeConfirm} disabled={purgePending}>
+                  <button type="button" className="btn btn-danger" onClick={onPurgeConfirm} disabled={purgePending}>
                     {purgePending ? "Purging..." : "Confirm purge all data"}
                   </button>
-                  <button type="button" onClick={onPurgeCancel} disabled={purgePending}>
+                  <button type="button" className="btn" onClick={onPurgeCancel} disabled={purgePending}>
                     Cancel
                   </button>
                 </div>
               </div>
             ) : (
-              <button type="button" className="danger" onClick={onPurgeArm}>
-                Purge all data
-              </button>
+              <div className="save-section">
+                <button type="button" className="btn btn-danger" onClick={onPurgeArm}>
+                  Purge all data
+                </button>
+              </div>
             )}
             <InlineFeedback message={purgeError} />
           </article>
         </div>
         <article>
-          <h3>Backup</h3>
+          <SectionHead title="Backup" aside="Export / import" />
           <div className="stack">
-            <button type="button" onClick={onExportJson}>
+            <button type="button" className="btn" onClick={onExportJson}>
               Export JSON
             </button>
             <label className="file-input">
@@ -1386,7 +1806,7 @@ export function SettingsSection({
                 }}
               />
             </label>
-            <button type="button" onClick={onExportXlsx}>
+            <button type="button" className="btn" onClick={onExportXlsx}>
               Export XLSX
             </button>
             <label className="file-input">
@@ -1406,6 +1826,7 @@ export function SettingsSection({
         </article>
         <McpAccessSection enabled />
       </div>
+      ) : null}
     </section>
   );
 }

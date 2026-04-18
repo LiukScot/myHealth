@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMcpTokens, type ExpiryChoice } from "../hooks/use-mcp-tokens";
-import { InlineFeedback } from "./shared";
+import { InlineFeedback, SectionHead } from "./shared";
 
 type ClientTab = "claude-desktop" | "claude-code" | "curl";
 
@@ -50,6 +50,10 @@ function formatExpiry(iso: string | null): string {
 /**
  * MCP Access settings section. Self-contained — uses the useMcpTokens hook
  * directly so the parent SettingsSection doesn't need to thread props.
+ *
+ * Visuals are aligned to the app's design system: SectionHead for titles,
+ * btn / btn-primary / btn-danger for actions, field-line for inputs,
+ * tag-tabs for the client picker, code-block for snippets.
  */
 export function McpAccessSection({ enabled }: { enabled: boolean }) {
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
@@ -71,14 +75,13 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
     try {
       await navigator.clipboard.writeText(text);
     } catch {
-      // Fallback: select text in a temporary textarea (rare modern-browser failure)
+      // Best-effort copy; on failure the user can still select the snippet.
     }
   };
 
   const handleTest = async (id: number) => {
     if (!tokens.justCreated || tokens.justCreated.id !== id) {
-      // Test only works while we still have the plaintext in memory
-      // (i.e. only the just-created token).
+      // Test only works while we still have the plaintext in memory.
       return;
     }
     const ok = await tokens.testConnection(tokens.justCreated.plaintext);
@@ -86,75 +89,62 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
   };
 
   return (
-    <article>
-      <h3>MCP Access</h3>
-      <p className="muted" style={{ marginTop: 0 }}>
+    <div className="mcp-access">
+      <SectionHead title="MCP access" aside="AI client tokens" />
+      <p className="mcp-intro">
         Connect an AI client (Claude Desktop, Claude Code, etc.) to your health data over MCP.
       </p>
 
-      {tokens.justCreated && (
-        <div className="mcp-just-created" style={{ marginBottom: 12 }}>
+      {tokens.justCreated ? (
+        <div className="mcp-just-created">
           <InlineFeedback
             message={{
               tone: "warning",
               text: "Copy this token now — it will not be shown again after you dismiss this panel.",
             }}
           />
-          <pre
-            style={{
-              background: "var(--color-card)",
-              padding: 10,
-              borderRadius: 8,
-              overflow: "auto",
-              marginTop: 8,
-            }}
-          >
-            {tokens.justCreated.plaintext}
-          </pre>
-          <div className="row-actions" style={{ marginTop: 8 }}>
-            <button type="button" onClick={() => handleCopy(tokens.justCreated!.plaintext)}>
+          <pre className="code-block">{tokens.justCreated.plaintext}</pre>
+          <div className="row-actions mcp-just-created-actions">
+            <button type="button" className="btn btn-primary" onClick={() => handleCopy(tokens.justCreated!.plaintext)}>
               Copy token
             </button>
-            <button type="button" onClick={() => handleTest(tokens.justCreated!.id)}>
+            <button type="button" className="btn" onClick={() => handleTest(tokens.justCreated!.id)}>
               Test connection
             </button>
-            {testStatus[tokens.justCreated.id] === "ok" && <span style={{ color: "var(--color-success)" }}>✓ connected</span>}
-            {testStatus[tokens.justCreated.id] === "fail" && <span style={{ color: "var(--color-danger)" }}>✗ failed</span>}
-            <button type="button" onClick={tokens.dismissJustCreated}>
+            {testStatus[tokens.justCreated.id] === "ok" ? (
+              <span className="mcp-test-status mcp-test-status--ok">✓ connected</span>
+            ) : null}
+            {testStatus[tokens.justCreated.id] === "fail" ? (
+              <span className="mcp-test-status mcp-test-status--fail">✗ failed</span>
+            ) : null}
+            <button type="button" className="btn" onClick={tokens.dismissJustCreated}>
               Dismiss
             </button>
           </div>
         </div>
-      )}
+      ) : null}
 
-      <h4 style={{ marginBottom: 6 }}>Active tokens</h4>
+      <SectionHead
+        title="Active tokens"
+        aside={tokens.isLoading ? "…" : `${tokens.tokens.length} total`}
+      />
       {tokens.isLoading ? (
-        <p className="muted">Loading…</p>
+        <p className="mcp-empty">Loading…</p>
       ) : tokens.tokens.length === 0 ? (
-        <p className="muted">No tokens yet. Create one below to connect an AI client.</p>
+        <p className="mcp-empty">No tokens yet. Create one below to connect an AI client.</p>
       ) : (
-        <ul className="mcp-token-list" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        <ul className="mcp-token-list">
           {tokens.tokens.map((t) => (
-            <li
-              key={t.id}
-              style={{
-                padding: "8px 0",
-                borderBottom: "1px solid var(--color-border, #2a2a2e)",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontWeight: 600 }}>{t.label || `Token #${t.id}`}</div>
-                <div className="muted" style={{ fontSize: "0.85em" }}>
+            <li key={t.id} className="mcp-token-row">
+              <div className="mcp-token-meta">
+                <div className="mcp-token-label">{t.label || `Token #${t.id}`}</div>
+                <div className="mcp-token-sub">
                   Created {t.createdAt.slice(0, 10)} · Last used {formatRelative(t.lastUsedAt)} · {formatExpiry(t.expiresAt)}
                 </div>
               </div>
               <button
                 type="button"
-                className="danger"
+                className="btn btn-danger"
                 onClick={() => tokens.onRevoke(t.id)}
                 disabled={tokens.revokePending}
               >
@@ -166,9 +156,10 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
       )}
 
       {showCreateForm ? (
-        <div className="mcp-create-form" style={{ marginTop: 12 }}>
-          <label>
-            Label
+        <div className="mcp-create-form">
+          <SectionHead title="New token" aside="Label and expiry" />
+          <label className="field field-line">
+            <span className="field-line-label">Label</span>
             <input
               type="text"
               value={newLabel}
@@ -177,8 +168,8 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
               maxLength={100}
             />
           </label>
-          <label>
-            Expiry
+          <label className="field field-line">
+            <span className="field-line-label">Expiry</span>
             <select value={newExpiry} onChange={(e) => setNewExpiry(e.target.value as ExpiryChoice)}>
               <option value="never">Never</option>
               <option value="30d">30 days</option>
@@ -186,44 +177,43 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
               <option value="1y">1 year</option>
             </select>
           </label>
-          <div className="row-actions" style={{ marginTop: 8 }}>
-            <button type="button" onClick={handleCreate} disabled={tokens.createPending}>
+          <div className="save-section">
+            <button type="button" className="btn btn-primary" onClick={handleCreate} disabled={tokens.createPending}>
               {tokens.createPending ? "Creating…" : "Create token"}
             </button>
-            <button type="button" onClick={() => setShowCreateForm(false)} disabled={tokens.createPending}>
+            <button type="button" className="btn" onClick={() => setShowCreateForm(false)} disabled={tokens.createPending}>
               Cancel
             </button>
           </div>
         </div>
       ) : (
-        <button type="button" onClick={() => setShowCreateForm(true)} style={{ marginTop: 12 }}>
-          + Create new token
-        </button>
+        <div className="save-section">
+          <button type="button" className="btn" onClick={() => setShowCreateForm(true)}>
+            + Create new token
+          </button>
+        </div>
       )}
 
       <InlineFeedback message={tokens.feedback} />
 
-      <h4 style={{ marginTop: 18, marginBottom: 6 }}>How to connect</h4>
-      <div className="mcp-tabs" role="tablist" style={{ display: "flex", gap: 4, marginBottom: 8 }}>
+      <SectionHead title="How to connect" aside="Pick a client" />
+      <nav className="tag-tabs mcp-client-tabs" role="tablist" aria-label="MCP client instructions">
         {(["claude-desktop", "claude-code", "curl"] as const).map((tab) => (
           <button
             key={tab}
             type="button"
             role="tab"
             aria-selected={activeTab === tab}
+            className={activeTab === tab ? "active" : ""}
             onClick={() => setActiveTab(tab)}
-            style={{
-              fontWeight: activeTab === tab ? 600 : 400,
-              opacity: activeTab === tab ? 1 : 0.7,
-            }}
           >
             {tab === "claude-desktop" ? "Claude Desktop" : tab === "claude-code" ? "Claude Code" : "Curl test"}
           </button>
         ))}
-      </div>
+      </nav>
 
       <McpClientInstructions tab={activeTab} baseUrl={baseUrl} onCopy={handleCopy} />
-    </article>
+    </div>
   );
 }
 
@@ -259,22 +249,13 @@ function McpClientInstructions({
 
   return (
     <div className="mcp-instructions">
-      <p className="muted" style={{ marginTop: 0, marginBottom: 6 }}>
-        {description}
-      </p>
-      <pre
-        style={{
-          background: "var(--color-card)",
-          padding: 10,
-          borderRadius: 8,
-          overflow: "auto",
-        }}
-      >
-        {snippet}
-      </pre>
-      <button type="button" onClick={() => onCopy(snippet)} style={{ marginTop: 6 }}>
-        Copy
-      </button>
+      <p className="mcp-intro">{description}</p>
+      <pre className="code-block">{snippet}</pre>
+      <div className="save-section">
+        <button type="button" className="btn" onClick={() => onCopy(snippet)}>
+          Copy
+        </button>
+      </div>
     </div>
   );
 }
