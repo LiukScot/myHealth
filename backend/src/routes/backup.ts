@@ -45,7 +45,7 @@ backup.get("/json", (c) => {
     entry_date: r.entryDate, entry_time: r.entryTime,
     mood_level: r.moodLevel, depression_level: r.depressionLevel, anxiety_level: r.anxietyLevel,
     positive_moods: r.positiveMoods, negative_moods: r.negativeMoods, general_moods: r.generalMoods,
-    description: r.description, gratitude: r.gratitude, reflection: r.reflection,
+    description: r.description, gratitude: r.gratitude,
   }));
   const painForBackup = painRows.map((r) => ({
     entry_date: r.entryDate, entry_time: r.entryTime,
@@ -188,7 +188,7 @@ backup.get("/xlsx", (c) => {
     entry_date: r.entryDate, entry_time: r.entryTime,
     mood_level: r.moodLevel, depression_level: r.depressionLevel, anxiety_level: r.anxietyLevel,
     positive_moods: r.positiveMoods, negative_moods: r.negativeMoods, general_moods: r.generalMoods,
-    description: r.description, gratitude: r.gratitude, reflection: r.reflection,
+    description: r.description, gratitude: r.gratitude,
   }));
   const painForBackup = painRows.map((r) => ({
     entry_date: r.entryDate, entry_time: r.entryTime,

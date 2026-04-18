@@ -46,7 +46,6 @@ export function useDiary(enabled: boolean) {
       generalMoods: "",
       description: "",
       gratitude: "",
-      reflection: "",
     },
   });
 
@@ -65,16 +64,18 @@ export function useDiary(enabled: boolean) {
         generalMoods: parsedValues.generalMoods,
         description: parsedValues.description,
         gratitude: parsedValues.gratitude,
-        reflection: parsedValues.reflection,
       };
       if (editingDiary) {
         return apiFetch(`/api/v1/diary/${editingDiary.id}`, { method: "PUT", body: JSON.stringify(payload) }, (raw) =>
           apiEnvelopeSchema(z.object({ ok: z.boolean() })).parse(raw).data,
         );
       }
-      return apiFetch("/api/v1/diary", { method: "POST", body: JSON.stringify(payload) }, (raw) =>
-        apiEnvelopeSchema(z.object({ id: z.number() })).parse(raw).data,
-      );
+      return apiFetch(
+        "/api/v1/diary",
+        { method: "POST", body: JSON.stringify({ ...payload, reflection: "" }) },
+        (raw) =>
+          apiEnvelopeSchema(z.object({ id: z.number() })).parse(raw).data,
+        );
     },
     onSuccess: async () => {
       setEditingDiary(null);
@@ -88,7 +89,6 @@ export function useDiary(enabled: boolean) {
         generalMoods: "",
         description: "",
         gratitude: "",
-        reflection: "",
       });
       await queryClient.invalidateQueries({ queryKey: ["diary"] });
       setTimeout(() => diaryMutation.reset(), 3000);
@@ -117,7 +117,6 @@ export function useDiary(enabled: boolean) {
       generalMoods: "",
       description: "",
       gratitude: "",
-      reflection: "",
     });
   };
 
@@ -133,7 +132,6 @@ export function useDiary(enabled: boolean) {
       generalMoods: entry.generalMoods,
       description: entry.description,
       gratitude: entry.gratitude,
-      reflection: entry.reflection,
     });
   };
 

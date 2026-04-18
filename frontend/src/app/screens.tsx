@@ -44,9 +44,14 @@ function formatEntrySummaryDate(entryDate: string, entryTime: string): string {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(d);
 }
 
-function bandNine(level: number | null | undefined): "low" | "mid" | "high" | "" {
+function bandNine(level: number | null | undefined, higherIsBetter = false): "low" | "mid" | "high" | "" {
   if (level == null || Number.isNaN(Number(level))) return "";
   const n = Math.round(Number(level));
+  if (higherIsBetter) {
+    if (n <= 3) return "high";
+    if (n <= 6) return "mid";
+    return "low";
+  }
   if (n <= 3) return "low";
   if (n <= 6) return "mid";
   return "high";
@@ -78,26 +83,36 @@ function BarMetric({
   value,
   onChange,
   fractionDigits = 0,
+  higherIsBetter = false,
 }: {
   label: string;
   value: number | null;
   onChange: (next: number | null) => void;
   fractionDigits?: number;
+  /** When true, higher scores use success styling and lower scores use warning/danger (e.g. mood). */
+  higherIsBetter?: boolean;
 }) {
   const n =
     value != null && !Number.isNaN(Number(value)) ? Math.min(9, Math.max(1, Math.round(Number(value)))) : null;
-  const band = bandNine(n);
+  const band = bandNine(n, higherIsBetter);
   return (
     <div className="bar-metric">
-      <div className="bar-metric-label">
-        <span className="name">{label}</span>
-        <span className={["val", band].filter(Boolean).join(" ")}>{formatMetricDisplay(value, fractionDigits)}</span>
-      </div>
+      <span className="name">{label}</span>
       <div className="bars" role="group" aria-label={label}>
         {Array.from({ length: 9 }, (_, i) => {
           const slot = i + 1;
           const filled = n != null && slot <= n;
-          const slotBand = slot <= 3 ? "low" : slot <= 6 ? "mid" : "high";
+          const slotBand = higherIsBetter
+            ? slot <= 3
+              ? "high"
+              : slot <= 6
+                ? "mid"
+                : "low"
+            : slot <= 3
+              ? "low"
+              : slot <= 6
+                ? "mid"
+                : "high";
           return (
             <button
               key={slot}
@@ -113,6 +128,7 @@ function BarMetric({
           );
         })}
       </div>
+      <span className={["val", band].filter(Boolean).join(" ")}>{formatMetricDisplay(value, fractionDigits)}</span>
     </div>
   );
 }
@@ -120,10 +136,9 @@ function BarMetric({
 function CoffeeStepper({ value, onChange }: { value: number | null; onChange: (next: number | null) => void }) {
   const n = value != null && !Number.isNaN(Number(value)) ? Math.min(50, Math.max(0, Math.floor(Number(value)))) : 0;
   return (
-    <div className="bar-metric">
-      <div className="bar-metric-label">
-        <span className="name">Coffee</span>
-      </div>
+    <div className="bar-metric bar-metric-stepper">
+      <span className="name">Coffee</span>
+      <span aria-hidden="true" className="bar-metric-spacer" />
       <div className="stepper-group">
         <button type="button" aria-label="Decrease coffee count" onClick={() => onChange(Math.max(0, n - 1))}>
           −
@@ -342,22 +357,36 @@ export function DiarySection({
   return (
     <section className="panel">
       <h1 className="panel-title">Diary</h1>
-      <form className="dense-form-grid diary-dense-form" onSubmit={diaryForm.handleSubmit(onSubmit)}>
+      <div className="panel-split">
+        <div className="panel-col">
+        <h2 className="entries-heading">New entry</h2>
+        <form className="dense-form-grid diary-dense-form" onSubmit={diaryForm.handleSubmit(onSubmit)}>
         <div className="core-col">
           <div className="dense-form-hidden-fields" aria-hidden="true">
             <input type="hidden" {...diaryForm.register("moodLevel", { valueAsNumber: true })} />
             <input type="hidden" {...diaryForm.register("depressionLevel", { valueAsNumber: true })} />
             <input type="hidden" {...diaryForm.register("anxietyLevel", { valueAsNumber: true })} />
           </div>
-          <h3 className="core-col-heading">Right now</h3>
-          <label className="field">
-            <span className="section-heading">Date/time</span>
-            <input type="datetime-local" {...diaryForm.register("dateTime")} />
+          <label className="field field-line">
+            <span className="field-line-label">Date &amp; time</span>
+            <input
+              type="datetime-local"
+              {...diaryForm.register("dateTime")}
+              aria-label="Date/time"
+              onClick={(e) => {
+                const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+                el.showPicker?.();
+              }}
+            />
           </label>
+          <div className="field field-line metric-group-label">
+            <span className="field-line-label">Values</span>
+          </div>
           <BarMetric
             label="Mood"
             value={moodLevel ?? null}
             fractionDigits={1}
+            higherIsBetter
             onChange={(next) => diaryForm.setValue("moodLevel", next, { shouldDirty: true })}
           />
           <BarMetric
@@ -370,17 +399,23 @@ export function DiarySection({
             value={anxietyLevel ?? null}
             onChange={(next) => diaryForm.setValue("anxietyLevel", next, { shouldDirty: true })}
           />
-          <label className="field">
-            <span className="section-heading">Description</span>
-            <textarea {...diaryForm.register("description")} placeholder="Optional…" rows={3} />
+          <label className="field field-line">
+            <span className="field-line-label">Description</span>
+            <textarea
+              {...diaryForm.register("description")}
+              placeholder="What happened today? How did it feel?"
+              rows={2}
+              aria-label="Description"
+            />
           </label>
-          <label className="field">
-            <span className="section-heading">Gratitude</span>
-            <textarea {...diaryForm.register("gratitude")} placeholder="Optional…" rows={2} />
-          </label>
-          <label className="field">
-            <span className="section-heading">Reflection</span>
-            <textarea {...diaryForm.register("reflection")} placeholder="Optional…" rows={2} />
+          <label className="field field-line">
+            <span className="field-line-label">Gratitude</span>
+            <textarea
+              {...diaryForm.register("gratitude")}
+              placeholder="One small thing you're glad about…"
+              rows={2}
+              aria-label="Gratitude"
+            />
           </label>
           {editingDiary ? (
             <div className="dense-form-inline-actions">
@@ -393,6 +428,9 @@ export function DiarySection({
 
         <div className="right-col">
           <div className="tags-col">
+            <div className="section-head">
+              <span className="section-title">Emotions</span>
+            </div>
             <nav className="tag-tabs" role="tablist" aria-label="Mood categories">
               {moodTabs.map((tab) => (
                 <button
@@ -445,13 +483,14 @@ export function DiarySection({
             </div>
           </div>
           <div className="save-section">
-            <button type="submit" className={`btn-primary save-cta${diaryMutationState.isSuccess ? " is-success-pulse" : ""}`}>
+            <button type="submit" className={`btn btn-primary${diaryMutationState.isSuccess ? " is-success-pulse" : ""}`}>
               {diaryMutationState.isSuccess ? "\u2713 Saved" : editingDiary ? "Update entry" : "Save entry"}
             </button>
           </div>
         </div>
       </form>
-
+        </div>
+        <div className="panel-col">
       {isLoading && <p className="hint">Loading diary entries...</p>}
 
       <h2 className="entries-heading">Past entries</h2>
@@ -462,7 +501,7 @@ export function DiarySection({
         />
       ) : (
         diaryEntries.map((entry) => {
-          const moodBand = bandNine(entry.moodLevel ?? undefined);
+          const moodBand = bandNine(entry.moodLevel ?? undefined, true);
           return (
             <details key={entry.id} className="entry-row">
               <summary>
@@ -535,10 +574,6 @@ export function DiarySection({
                   <span className="label">Gratitude</span>
                   <span className="value">{entry.gratitude || "—"}</span>
                 </div>
-                <div className="detail-group">
-                  <span className="label">Reflection</span>
-                  <span className="value">{entry.reflection || "—"}</span>
-                </div>
                 <div className="detail-actions">
                   <button
                     type="button"
@@ -567,6 +602,8 @@ export function DiarySection({
           );
         })
       )}
+        </div>
+      </div>
     </section>
   );
 }
@@ -626,18 +663,31 @@ export function PainSection({
   return (
     <section className="panel">
       <h1 className="panel-title">Pain</h1>
-      <form className="dense-form-grid pain-dense-form" onSubmit={painForm.handleSubmit(onSubmit)}>
+      <div className="panel-split">
+        <div className="panel-col">
+        <h2 className="entries-heading">New entry</h2>
+        <form className="dense-form-grid pain-dense-form" onSubmit={painForm.handleSubmit(onSubmit)}>
         <div className="core-col">
           <div className="dense-form-hidden-fields" aria-hidden="true">
             <input type="hidden" {...painForm.register("painLevel", { valueAsNumber: true })} />
             <input type="hidden" {...painForm.register("fatigueLevel", { valueAsNumber: true })} />
             <input type="hidden" {...painForm.register("coffeeCount", { valueAsNumber: true })} />
           </div>
-          <h3 className="core-col-heading">Right now</h3>
-          <label className="field">
-            <span className="section-heading">Date/time</span>
-            <input type="datetime-local" {...painForm.register("dateTime")} />
+          <label className="field field-line">
+            <span className="field-line-label">Date &amp; time</span>
+            <input
+              type="datetime-local"
+              {...painForm.register("dateTime")}
+              aria-label="Date/time"
+              onClick={(e) => {
+                const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+                el.showPicker?.();
+              }}
+            />
           </label>
+          <div className="field field-line metric-group-label">
+            <span className="field-line-label">Values</span>
+          </div>
           <BarMetric
             label="Pain level"
             value={painLevel ?? null}
@@ -649,9 +699,14 @@ export function PainSection({
             onChange={(next) => painForm.setValue("fatigueLevel", next, { shouldDirty: true })}
           />
           <CoffeeStepper value={coffeeCount ?? null} onChange={(next) => painForm.setValue("coffeeCount", next, { shouldDirty: true })} />
-          <label className="field">
-            <span className="section-heading">Note</span>
-            <textarea {...painForm.register("note")} placeholder="Optional note…" rows={4} />
+          <label className="field field-line">
+            <span className="field-line-label">Note</span>
+            <textarea
+              {...painForm.register("note")}
+              placeholder="Anything worth remembering about this flare…"
+              rows={2}
+              aria-label="Note"
+            />
           </label>
           {editingPain ? (
             <div className="dense-form-inline-actions">
@@ -664,6 +719,9 @@ export function PainSection({
 
         <div className="right-col">
           <div className="tags-col">
+            <div className="section-head">
+              <span className="section-title">Factors</span>
+            </div>
             <nav className="tag-tabs" role="tablist" aria-label="Pain categories">
               {PAIN_TABS.map((tab) => (
                 <button
@@ -743,13 +801,14 @@ export function PainSection({
             </div>
           </div>
           <div className="save-section">
-            <button type="submit" className={`btn-primary save-cta${painMutationState.isSuccess ? " is-success-pulse" : ""}`}>
+            <button type="submit" className={`btn btn-primary${painMutationState.isSuccess ? " is-success-pulse" : ""}`}>
               {painMutationState.isSuccess ? "\u2713 Saved" : editingPain ? "Update entry" : "Save entry"}
             </button>
           </div>
         </div>
       </form>
-
+        </div>
+        <div className="panel-col">
       {isLoading && <p className="hint">Loading pain entries...</p>}
 
       <h2 className="entries-heading">Past entries</h2>
@@ -899,6 +958,8 @@ export function PainSection({
           );
         })
       )}
+        </div>
+      </div>
     </section>
   );
 }

@@ -21,7 +21,7 @@ export const diarySchema = z.object({
   generalMoods: z.string().optional().default(""),
   description: z.string().optional().default(""),
   gratitude: z.string().optional().default(""),
-  reflection: z.string().optional().default("")
+  reflection: z.string().optional()
 });
 
 export const painValueSchema = z.union([z.string(), z.array(z.string())]).optional();

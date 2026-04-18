@@ -16,7 +16,7 @@ is to give an AI assistant the context it needs to interpret values correctly
 - **positive_moods**, **negative_moods**, **general_moods**: comma-separated tags.
 - **description**: free text describing the day.
 - **gratitude**: free text gratitude note.
-- **reflection**: free text reflection.
+- **reflection**: legacy column still stored and FTS-indexed for old data; not returned by the web API or MCP list/search tools.
 - One or more entries per day are possible (entry_time captures sub-day granularity).
 
 ### pain_entries — physical pain & symptoms log

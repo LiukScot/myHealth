@@ -17,7 +17,7 @@ export function registerDiaryTools(server: McpServer, ctx: McpToolContext): void
     {
       title: "List diary entries",
       description:
-        "Returns diary entries for the authenticated user, optionally filtered by date range, mood level, anxiety, or depression. Each entry includes mood/anxiety/depression scores and free-text fields (description, gratitude, reflection).",
+        "Returns diary entries for the authenticated user, optionally filtered by date range, mood level, anxiety, or depression. Each entry includes mood/anxiety/depression scores and free-text fields (description, gratitude).",
       inputSchema: {
         from: z
           .string()
@@ -63,7 +63,6 @@ export function registerDiaryTools(server: McpServer, ctx: McpToolContext): void
           generalMoods: diaryEntries.generalMoods,
           description: diaryEntries.description,
           gratitude: diaryEntries.gratitude,
-          reflection: diaryEntries.reflection,
         })
         .from(diaryEntries)
         .where(and(...conditions))
@@ -83,7 +82,7 @@ export function registerDiaryTools(server: McpServer, ctx: McpToolContext): void
     {
       title: "Full-text search diary entries",
       description:
-        "Searches the description and reflection fields of diary entries using SQLite FTS5. Supports natural language queries; matching is case-insensitive and accent-insensitive (e.g. 'ansia' matches 'ánsia'). Results are ranked by FTS5 bm25 relevance.",
+        "Searches diary entry text (description plus legacy reflection text still indexed in FTS) using SQLite FTS5. Matching is case-insensitive and accent-insensitive. Result rows omit reflection content. Results are ranked by FTS5 bm25 relevance.",
       inputSchema: {
         query: z.string().min(1).describe("Search query (one or more words)."),
         limit: z.number().int().min(1).max(200).optional().default(30),
@@ -104,7 +103,6 @@ export function registerDiaryTools(server: McpServer, ctx: McpToolContext): void
         anxiety_level: number | null;
         depression_level: number | null;
         description: string | null;
-        reflection: string | null;
         rank: number;
       };
 
@@ -113,7 +111,7 @@ export function registerDiaryTools(server: McpServer, ctx: McpToolContext): void
           `SELECT
              d.id, d.entry_date, d.entry_time,
              d.mood_level, d.anxiety_level, d.depression_level,
-             d.description, d.reflection,
+             d.description,
              diary_fts.rank AS rank
            FROM diary_fts
            JOIN diary_entries d ON d.id = diary_fts.rowid

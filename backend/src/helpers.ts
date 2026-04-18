@@ -177,7 +177,7 @@ export function rowsToHealthBackup(diaryRows: any[], painRows: any[]): { diary: 
   const diary = {
     source: "health-backend",
     imported_at: new Date().toISOString(),
-    headers: ["date", "hour", "mood level", "depression", "anxiety", "positive moods", "negative moods", "general moods", "description", "gratitude", "reflection"],
+    headers: ["date", "hour", "mood level", "depression", "anxiety", "positive moods", "negative moods", "general moods", "description", "gratitude"],
     rows: diaryRows.map((row) => ({
       date: row.entry_date,
       hour: row.entry_time,
@@ -188,8 +188,7 @@ export function rowsToHealthBackup(diaryRows: any[], painRows: any[]): { diary: 
       "negative moods": row.negative_moods ?? "",
       "general moods": row.general_moods ?? "",
       description: row.description ?? "",
-      gratitude: row.gratitude ?? "",
-      reflection: row.reflection ?? ""
+      gratitude: row.gratitude ?? ""
     }))
   };
 

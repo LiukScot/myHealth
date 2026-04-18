@@ -55,7 +55,6 @@ diary.get("/", (c) => {
       generalMoods: row.generalMoods ?? "",
       description: row.description ?? "",
       gratitude: row.gratitude ?? "",
-      reflection: row.reflection ?? "",
       createdAt: row.createdAt,
       updatedAt: row.updatedAt
     }))
@@ -105,7 +104,7 @@ diary.put("/:id", async (c) => {
       generalMoods: body.generalMoods ?? "",
       description: body.description ?? "",
       gratitude: body.gratitude ?? "",
-      reflection: body.reflection ?? "",
+      ...(body.reflection !== undefined ? { reflection: body.reflection } : {}),
       updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(and(eq(diaryEntries.id, id), eq(diaryEntries.userId, userId)))

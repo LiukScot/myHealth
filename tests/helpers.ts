@@ -50,7 +50,6 @@ export async function seedDiaryEntry(
     generalMoods: string;
     description: string;
     gratitude: string;
-    reflection: string;
   }> = {},
   password = e2eUser.password,
 ) {
@@ -67,7 +66,6 @@ export async function seedDiaryEntry(
       generalMoods: "tired",
       description: uniqueText("dashboard-diary"),
       gratitude: "coffee",
-      reflection: "steady",
       ...overrides,
     },
   });

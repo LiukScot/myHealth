@@ -29,7 +29,6 @@ test("creates, edits, and deletes a diary entry", async ({ page }) => {
   await page.locator(".multi-option-chip", { hasText: "tired" }).click();
   await page.getByLabel("Description").fill(description);
   await page.getByLabel("Gratitude").fill("warm shower");
-  await page.getByLabel("Reflection").fill("kept a steady pace");
   await page.locator(".form-grid button[type='submit']").click();
   
   // Wait for entry to appear in table

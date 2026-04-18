@@ -95,8 +95,10 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
   }, [options, selectedValues, hiddenSet, selectedSet]);
   const [customValue, setCustomValue] = useState("");
   const [editOptionsMode, setEditOptionsMode] = useState(false);
+  const [addingOption, setAddingOption] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
   const addSuccessTimerRef = useRef<number | null>(null);
+  const addInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (pendingRemovalKey) {
@@ -108,6 +110,8 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
     if (!editOptionsMode) {
       setPendingRemovalKey(null);
       setCustomValue("");
+    } else {
+      setAddingOption(false);
     }
   }, [editOptionsMode]);
 
@@ -127,6 +131,46 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
       : [...selectedValues, option];
 
     onChange(listToCsv(nextValues));
+  };
+
+  const commitCustomValue = () => {
+    const clean = customValue.trim();
+    if (!clean) return;
+    const nextValues = mergeOptions(selectedValues, [clean]);
+    onChange(listToCsv(nextValues));
+    setAddSuccess(true);
+    if (addSuccessTimerRef.current !== null) {
+      window.clearTimeout(addSuccessTimerRef.current);
+    }
+    addSuccessTimerRef.current = window.setTimeout(() => {
+      setAddSuccess(false);
+      addSuccessTimerRef.current = null;
+    }, 900);
+    setCustomValue("");
+    setHiddenSet((current) => {
+      const key = clean.toLowerCase();
+      if (!current.has(key)) return current;
+      const next = new Set(current);
+      next.delete(key);
+      return next;
+    });
+    setPendingRemovalKey((current) => (current === clean.toLowerCase() ? null : current));
+    addInputRef.current?.focus();
+    void (async () => {
+      try {
+        await apiFetch(
+          `${apiBase}/restore`,
+          {
+            method: "POST",
+            body: JSON.stringify({ field: fieldKey, value: clean }),
+          },
+          (raw) => apiEnvelopeSchema(z.object({ ok: z.boolean() })).parse(raw).data,
+        );
+        await queryClient.invalidateQueries({ queryKey: [queryKeyName] });
+      } catch {
+        // ignore failure: option already restored locally
+      }
+    })();
   };
 
   const permanentlyRemoveOption = async (option: string) => {
@@ -235,65 +279,69 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
           );
         })}
       </div>
-      <div className="row-actions multi-option-actions">
-        <input
-          type="text"
-          placeholder={`Add ${label.toLowerCase()} option`}
-          value={customValue}
-          onChange={(event) => setCustomValue(event.target.value)}
-        />
-        <button
-          type="button"
-          className={addSuccess ? "btn-check" : ""}
-          onClick={() => {
-            const clean = customValue.trim();
-            if (!clean) return;
-            const nextValues = mergeOptions(selectedValues, [clean]);
-            onChange(listToCsv(nextValues));
-            setAddSuccess(true);
-            if (addSuccessTimerRef.current !== null) {
-              window.clearTimeout(addSuccessTimerRef.current);
-            }
-            addSuccessTimerRef.current = window.setTimeout(() => {
-              setAddSuccess(false);
-              addSuccessTimerRef.current = null;
-            }, 900);
-            setCustomValue("");
-            setHiddenSet((current) => {
-              const key = clean.toLowerCase();
-              if (!current.has(key)) return current;
-              const next = new Set(current);
-              next.delete(key);
-              return next;
-            });
-            setPendingRemovalKey((current) => (current === clean.toLowerCase() ? null : current));
-            void (async () => {
-              try {
-                await apiFetch(
-                  `${apiBase}/restore`,
-                  {
-                    method: "POST",
-                    body: JSON.stringify({ field: fieldKey, value: clean }),
-                  },
-                  (raw) => apiEnvelopeSchema(z.object({ ok: z.boolean() })).parse(raw).data,
-                );
-                await queryClient.invalidateQueries({ queryKey: [queryKeyName] });
-              } catch {
-                // ignore failure: option already restored locally
-              }
-            })();
-          }}
-        >
-          {addSuccess ? "\u2713" : "Add"}
-        </button>
-        <button
-          type="button"
-          className={editOptionsMode ? "multi-option-edit active is-editing" : "multi-option-edit"}
-          aria-pressed={editOptionsMode}
-          onClick={() => setEditOptionsMode((v) => !v)}
-        >
-          <AnimatedEditingLabel active={editOptionsMode} />
-        </button>
+      <div className="multi-option-actions">
+        {addingOption ? (
+          <form
+            className="multi-option-adder"
+            onSubmit={(event) => {
+              event.preventDefault();
+              commitCustomValue();
+            }}
+          >
+            <input
+              ref={addInputRef}
+              autoFocus
+              type="text"
+              placeholder={`New ${label.toLowerCase()}`}
+              value={customValue}
+              onChange={(event) => setCustomValue(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  setAddingOption(false);
+                  setCustomValue("");
+                }
+              }}
+            />
+            <button
+              type="submit"
+              className={`multi-option-adder-confirm${addSuccess ? " is-success" : ""}`}
+              aria-label="Save option"
+            >
+              {addSuccess ? "\u2713" : "Add"}
+            </button>
+            <button
+              type="button"
+              className="multi-option-adder-cancel"
+              aria-label="Cancel"
+              onClick={() => {
+                setAddingOption(false);
+                setCustomValue("");
+              }}
+            >
+              Cancel
+            </button>
+          </form>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="multi-option-chip multi-option-chip-add"
+              onClick={() => setAddingOption(true)}
+              disabled={editOptionsMode}
+            >
+              + add option
+            </button>
+            <button
+              type="button"
+              className={`multi-option-edit-link${editOptionsMode ? " active is-editing" : ""}`}
+              aria-pressed={editOptionsMode}
+              onClick={() => setEditOptionsMode((v) => !v)}
+            >
+              <AnimatedEditingLabel active={editOptionsMode} idleLabel="edit" editingLabel="done" />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

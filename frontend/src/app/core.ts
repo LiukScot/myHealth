@@ -44,7 +44,7 @@ export const diaryEntrySchema = z.object({
   generalMoods: z.string(),
   description: z.string(),
   gratitude: z.string(),
-  reflection: z.string(),
+  reflection: z.string().optional().default(""),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -177,7 +177,6 @@ export const diaryFormSchema = z.object({
   generalMoods: z.string().default(""),
   description: z.string().default(""),
   gratitude: z.string().default(""),
-  reflection: z.string().default(""),
 });
 
 export const painFormSchema = z.object({
