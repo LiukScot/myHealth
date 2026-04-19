@@ -30,7 +30,7 @@ import {
   useDiaryColumnCap,
 } from "./shared";
 import { McpAccessSection } from "./McpAccessSection";
-import { SettingsVariantA, SettingsVariantB, SettingsVariantC } from "./settings-mockups";
+import { SettingsVariantB } from "./settings-mockups";
 import {
   calcDeltaPercent,
   dashboardQuickRanges,
@@ -250,7 +250,7 @@ export function DashboardSection({
             />
           ) : null}
 
-          <SectionHead title="Averages" aside={`${dashboardCards.length} metrics`} />
+          <SectionHead title="Averages" />
           <div className="stats-grid stats-grid-dashboard">
             {dashboardCards.map((card) => {
               const deltaPct = calcDeltaPercent(card.value, card.previous);
@@ -276,7 +276,7 @@ export function DashboardSection({
             })}
           </div>
 
-          <SectionHead title="Metrics over time" aside="Toggle series" />
+          <SectionHead title="Metrics over time" />
           <div className="chart-wrap chart-wrap-wide">
             <div className="graph-header">
               <div className="graph-toggle-list">
@@ -1342,59 +1342,72 @@ export function CbtSection({
     },
   ];
 
+  const {
+    leftColRef,
+    pastColRef,
+    pastEntriesBodyRef,
+    overflow: pastEntriesOverflow,
+  } = useDiaryColumnCap(cbtEntries, isLoading);
+
   return (
     <section className="panel">
       <h1 className="panel-title">CBT Thought Response</h1>
-      <form className="dense-form-grid therapy-form" onSubmit={cbtForm.handleSubmit(onSubmit)}>
-        <div className="core-col">
-          <label className="field field-line">
-            <span className="field-line-label">Date &amp; time</span>
-            <input
-              type="datetime-local"
-              {...cbtForm.register("dateTime")}
-              aria-label="Date/time"
-              onClick={(e) => {
-                const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
-                el.showPicker?.();
-              }}
-            />
-          </label>
-          <SectionHead title="Thought record" aside="CBT reframing" />
-          {cbtFields.map((f) => (
-            <label key={f.key} className="field field-line">
-              <span className="field-line-label">{f.label}</span>
-              {f.multiline ? (
-                <textarea rows={2} placeholder={f.hint} aria-label={f.label} {...cbtForm.register(f.key)} />
-              ) : (
-                <input type="text" placeholder={f.hint} aria-label={f.label} {...cbtForm.register(f.key)} />
-              )}
-            </label>
-          ))}
-          {editingCbt ? (
-            <div className="dense-form-inline-actions">
-              <button type="button" onClick={onCancelEdit}>
-                Cancel edit
+      <div className="panel-split panel-split--diary">
+        <div className="panel-col" ref={leftColRef}>
+          <h2 className="entries-heading">New entry</h2>
+          <form className="dense-form-grid therapy-form" onSubmit={cbtForm.handleSubmit(onSubmit)}>
+            <div className="core-col">
+              <label className="field field-line">
+                <span className="field-line-label">Date &amp; time</span>
+                <input
+                  type="datetime-local"
+                  {...cbtForm.register("dateTime")}
+                  aria-label="Date/time"
+                  onClick={(e) => {
+                    const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+                    el.showPicker?.();
+                  }}
+                />
+              </label>
+              <SectionHead title="Thought record" />
+              {cbtFields.map((f) => (
+                <label key={f.key} className="field field-line">
+                  <span className="field-line-label">{f.label}</span>
+                  {f.multiline ? (
+                    <textarea rows={2} placeholder={f.hint} aria-label={f.label} {...cbtForm.register(f.key)} />
+                  ) : (
+                    <input type="text" placeholder={f.hint} aria-label={f.label} {...cbtForm.register(f.key)} />
+                  )}
+                </label>
+              ))}
+              {editingCbt ? (
+                <div className="dense-form-inline-actions">
+                  <button type="button" onClick={onCancelEdit}>
+                    Cancel edit
+                  </button>
+                </div>
+              ) : null}
+            </div>
+            <div className="save-section">
+              <button type="submit" className={`btn btn-primary${cbtMutationState.isSuccess ? " is-success-pulse" : ""}`}>
+                {cbtMutationState.isSuccess ? "\u2713 Saved" : editingCbt ? "Update entry" : "Save entry"}
               </button>
             </div>
-          ) : null}
+          </form>
         </div>
-        <div className="save-section">
-          <button type="submit" className={`btn btn-primary${cbtMutationState.isSuccess ? " is-success-pulse" : ""}`}>
-            {cbtMutationState.isSuccess ? "\u2713 Saved" : editingCbt ? "Update entry" : "Save entry"}
-          </button>
-        </div>
-      </form>
+        <div className="panel-col diary-past-col" ref={pastColRef}>
+          {isLoading && <p className="hint">Loading CBT entries...</p>}
 
-      {isLoading && <p className="hint">Loading CBT entries...</p>}
-
-      <h2 className="entries-heading">Past entries</h2>
-      {cbtEntries.length === 0 ? (
-        <EmptyState
-          title="No CBT entries yet"
-          description="Use the prompts above to record your first thought response. Completed reflections will appear here."
-        />
-      ) : (
-        cbtEntries.map((entry) => (
+          <h2 className="entries-heading">Past entries</h2>
+          {cbtEntries.length === 0 ? (
+            <EmptyState
+              title="No CBT entries yet"
+              description="Use the prompts above to record your first thought response. Completed reflections will appear here."
+            />
+          ) : (
+            <div className="diary-past-entries-stack">
+              <div className="diary-past-entries-body" ref={pastEntriesBodyRef}>
+            {cbtEntries.map((entry) => (
           <details key={entry.id} className="entry-row">
             <summary>
               <span className="date">{formatEntrySummaryDate(entry.entryDate, entry.entryTime)}</span>
@@ -1438,8 +1451,22 @@ export function CbtSection({
               </div>
             </div>
           </details>
-        ))
-      )}
+        ))}
+              </div>
+              <div
+                className={`save-section diary-past-footer-slot${pastEntriesOverflow ? " diary-past-more" : ""}`}
+                aria-hidden={!pastEntriesOverflow}
+              >
+                {!isLoading && pastEntriesOverflow ? (
+                  <button type="button" className="btn">
+                    Show more
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }
@@ -1522,9 +1549,19 @@ export function DbtSection({
     },
   ];
 
+  const {
+    leftColRef,
+    pastColRef,
+    pastEntriesBodyRef,
+    overflow: pastEntriesOverflow,
+  } = useDiaryColumnCap(dbtEntries, isLoading);
+
   return (
     <section className="panel">
       <h1 className="panel-title">DBT Distress Tolerance</h1>
+      <div className="panel-split panel-split--diary">
+        <div className="panel-col" ref={leftColRef}>
+          <h2 className="entries-heading">New entry</h2>
       <form className="dense-form-grid therapy-form" onSubmit={dbtForm.handleSubmit(onSubmit)}>
         <div className="core-col">
           <label className="field field-line">
@@ -1541,7 +1578,7 @@ export function DbtSection({
           </label>
           {dbtGroups.map((g) => (
             <div key={g.title} className="ds-section">
-              <SectionHead title={g.title} aside={g.aside} />
+              <SectionHead title={g.title} />
               {g.callouts?.map((c, i) => (
                 <p key={i} className="hint therapy-callout">{c}</p>
               ))}
@@ -1574,6 +1611,8 @@ export function DbtSection({
           </button>
         </div>
       </form>
+        </div>
+        <div className="panel-col diary-past-col" ref={pastColRef}>
 
       {isLoading && <p className="hint">Loading DBT entries...</p>}
 
@@ -1584,7 +1623,9 @@ export function DbtSection({
           description="Work through the steps above to log your first distress-tolerance practice. Saved entries will appear here."
         />
       ) : (
-        dbtEntries.map((entry) => (
+        <div className="diary-past-entries-stack">
+          <div className="diary-past-entries-body" ref={pastEntriesBodyRef}>
+        {dbtEntries.map((entry) => (
           <details key={entry.id} className="entry-row">
             <summary>
               <span className="date">{formatEntrySummaryDate(entry.entryDate, entry.entryTime)}</span>
@@ -1643,8 +1684,22 @@ export function DbtSection({
               </div>
             </div>
           </details>
-        ))
+        ))}
+          </div>
+          <div
+            className={`save-section diary-past-footer-slot${pastEntriesOverflow ? " diary-past-more" : ""}`}
+            aria-hidden={!pastEntriesOverflow}
+          >
+            {!isLoading && pastEntriesOverflow ? (
+              <button type="button" className="btn">
+                Show more
+              </button>
+            ) : null}
+          </div>
+        </div>
       )}
+        </div>
+      </div>
     </section>
   );
 }
@@ -1676,7 +1731,6 @@ export function SettingsSection({
   onImportXlsx: (file: File) => void;
   backupFeedback: InlineMessage | null;
 }) {
-  const [mockup, setMockup] = useState<"current" | "a" | "b" | "c">("current");
   const variantProps = {
     auth,
     purgeConfirmArmed,
@@ -1691,142 +1745,10 @@ export function SettingsSection({
     onImportXlsx,
     backupFeedback,
   };
-  const mockupTabs: { id: typeof mockup; label: string }[] = [
-    { id: "current", label: "Current" },
-    { id: "a", label: "A · List" },
-    { id: "b", label: "B · Tabs" },
-    { id: "c", label: "C · Split" },
-  ];
   return (
     <section className="panel panel--frameless">
-      <div className="settings-mockup-header">
-        <h1 className="panel-title">Settings</h1>
-        <nav className="tag-tabs settings-mockup-switcher" aria-label="Settings layout mockup">
-          {mockupTabs.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={mockup === t.id ? "active" : ""}
-              onClick={() => setMockup(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-      {mockup === "a" ? <SettingsVariantA {...variantProps} /> : null}
-      {mockup === "b" ? <SettingsVariantB {...variantProps} /> : null}
-      {mockup === "c" ? <SettingsVariantC {...variantProps} /> : null}
-      {mockup === "current" ? (
-      <div className="settings-grid">
-        <div className="settings-column">
-          <article>
-            <SectionHead title="Account" aside="Credentials" />
-            <form
-              className="stack"
-              onFocus={auth.clearPasswordStatus}
-              onSubmit={auth.changePasswordForm.handleSubmit((v) => auth.changePasswordMutation.mutate(v))}
-            >
-              <label className="field field-line">
-                <span className="field-line-label">Current password</span>
-                <input type="password" autoComplete="current-password" {...auth.changePasswordForm.register("currentPassword")} />
-              </label>
-              <label className="field field-line">
-                <span className="field-line-label">New password</span>
-                <input type="password" autoComplete="new-password" {...auth.changePasswordForm.register("newPassword")} />
-              </label>
-              <label className="field field-line">
-                <span className="field-line-label">Confirm</span>
-                <input type="password" autoComplete="new-password" {...auth.changePasswordForm.register("confirmPassword")} />
-              </label>
-              <div className="save-section">
-                <button type="submit" className="btn btn-primary" disabled={auth.changePasswordMutation.isPending}>
-                  Change password
-                </button>
-              </div>
-              <InlineFeedback
-                message={
-                  auth.changePasswordMutation.error
-                    ? { tone: "error", text: getErrorMessage(auth.changePasswordMutation.error) }
-                    : auth.passwordFeedback
-                }
-              />
-            </form>
-            <div className="save-section settings-logout-row">
-              <button type="button" className="btn" onClick={() => auth.logoutMutation.mutate()} disabled={auth.logoutMutation.isPending}>
-                Log out
-              </button>
-            </div>
-          </article>
-          <article className="danger-zone">
-            <SectionHead title="Danger zone" aside="Irreversible" />
-            {purgeConfirmArmed ? (
-              <div className="inline-confirmation" role="group" aria-label="Confirm purge all data">
-                <InlineFeedback
-                  className="confirmation-copy"
-                  message={{
-                    tone: "warning",
-                    text: "This permanently deletes all diary, pain, and preference data for this account.",
-                  }}
-                />
-                <div className="row-actions confirmation-actions">
-                  <button type="button" className="btn btn-danger" onClick={onPurgeConfirm} disabled={purgePending}>
-                    {purgePending ? "Purging..." : "Confirm purge all data"}
-                  </button>
-                  <button type="button" className="btn" onClick={onPurgeCancel} disabled={purgePending}>
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="save-section">
-                <button type="button" className="btn btn-danger" onClick={onPurgeArm}>
-                  Purge all data
-                </button>
-              </div>
-            )}
-            <InlineFeedback message={purgeError} />
-          </article>
-        </div>
-        <article>
-          <SectionHead title="Backup" aside="Export / import" />
-          <div className="stack">
-            <button type="button" className="btn" onClick={onExportJson}>
-              Export JSON
-            </button>
-            <label className="file-input">
-              Import JSON
-              <input
-                type="file"
-                accept=".json"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) onImportJson(file);
-                  e.target.value = "";
-                }}
-              />
-            </label>
-            <button type="button" className="btn" onClick={onExportXlsx}>
-              Export XLSX
-            </button>
-            <label className="file-input">
-              Import XLSX
-              <input
-                type="file"
-                accept=".xlsx,.xls"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) onImportXlsx(file);
-                  e.target.value = "";
-                }}
-              />
-            </label>
-            <InlineFeedback message={backupFeedback} />
-          </div>
-        </article>
-        <McpAccessSection enabled />
-      </div>
-      ) : null}
+      <h1 className="panel-title">Settings</h1>
+      <SettingsVariantB {...variantProps} />
     </section>
   );
 }

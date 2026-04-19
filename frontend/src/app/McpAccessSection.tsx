@@ -2,7 +2,17 @@ import { useState } from "react";
 import { useMcpTokens, type ExpiryChoice } from "../hooks/use-mcp-tokens";
 import { InlineFeedback, SectionHead } from "./shared";
 
-type ClientTab = "claude-desktop" | "claude-code" | "curl";
+type ClientTab = "generic" | "claude-desktop" | "claude-code" | "curl";
+
+function buildGenericInstructions(baseUrl: string, plaintext: string): string {
+  return `Endpoint  ${baseUrl}/mcp
+Transport HTTP (streamable)
+Header    Authorization: Bearer ${plaintext}
+
+Works with any MCP-compliant client (Cline, Continue, Cursor,
+custom clients, etc.). Point your client at the endpoint above and
+pass the bearer token in the Authorization header.`;
+}
 
 function buildClaudeDesktopConfig(baseUrl: string, plaintext: string): string {
   return JSON.stringify(
@@ -61,7 +71,7 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [newExpiry, setNewExpiry] = useState<ExpiryChoice>("never");
-  const [activeTab, setActiveTab] = useState<ClientTab>("claude-desktop");
+  const [activeTab, setActiveTab] = useState<ClientTab>("generic");
   const [testStatus, setTestStatus] = useState<Record<number, "idle" | "ok" | "fail">>({});
 
   const handleCreate = () => {
@@ -90,9 +100,9 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
 
   return (
     <div className="mcp-access">
-      <SectionHead title="MCP access" aside="AI client tokens" />
+      <SectionHead title="MCP access" />
       <p className="mcp-intro">
-        Connect an AI client (Claude Desktop, Claude Code, etc.) to your health data over MCP.
+        Connect any MCP-compliant AI client (Cline, Continue, Cursor, Claude Desktop, Claude Code, or your own) to your health data over HTTP.
       </p>
 
       {tokens.justCreated ? (
@@ -124,10 +134,7 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
         </div>
       ) : null}
 
-      <SectionHead
-        title="Active tokens"
-        aside={tokens.isLoading ? "…" : `${tokens.tokens.length} total`}
-      />
+      <SectionHead title="Active tokens" />
       {tokens.isLoading ? (
         <p className="mcp-empty">Loading…</p>
       ) : tokens.tokens.length === 0 ? (
@@ -157,7 +164,7 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
 
       {showCreateForm ? (
         <div className="mcp-create-form">
-          <SectionHead title="New token" aside="Label and expiry" />
+          <SectionHead title="New token" />
           <label className="field field-line">
             <span className="field-line-label">Label</span>
             <input
@@ -196,9 +203,9 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
 
       <InlineFeedback message={tokens.feedback} />
 
-      <SectionHead title="How to connect" aside="Pick a client" />
+      <SectionHead title="How to connect" />
       <nav className="tag-tabs mcp-client-tabs" role="tablist" aria-label="MCP client instructions">
-        {(["claude-desktop", "claude-code", "curl"] as const).map((tab) => (
+        {(["generic", "claude-desktop", "claude-code", "curl"] as const).map((tab) => (
           <button
             key={tab}
             type="button"
@@ -207,7 +214,7 @@ export function McpAccessSection({ enabled }: { enabled: boolean }) {
             className={activeTab === tab ? "active" : ""}
             onClick={() => setActiveTab(tab)}
           >
-            {tab === "claude-desktop" ? "Claude Desktop" : tab === "claude-code" ? "Claude Code" : "Curl test"}
+            {tab === "generic" ? "Any client" : tab === "claude-desktop" ? "Claude Desktop" : tab === "claude-code" ? "Claude Code" : "Curl test"}
           </button>
         ))}
       </nav>
@@ -233,6 +240,10 @@ function McpClientInstructions({
   let snippet: string;
   let description: string;
   switch (tab) {
+    case "generic":
+      snippet = buildGenericInstructions(baseUrl, placeholder);
+      description = "Any MCP-compliant client over HTTP: use this endpoint + bearer token. Config format varies per client.";
+      break;
     case "claude-desktop":
       snippet = buildClaudeDesktopConfig(baseUrl, placeholder);
       description = "Add this block to your claude_desktop_config.json under the existing mcpServers entry.";

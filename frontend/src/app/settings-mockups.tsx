@@ -71,41 +71,47 @@ function BackupBlock({
 }: Pick<SettingsSectionProps, "onExportJson" | "onImportJson" | "onExportXlsx" | "onImportXlsx" | "backupFeedback">) {
   return (
     <div className="settings-backup">
-      <SectionHead title="JSON" aside="Full database" />
-      <div className="backup-pair">
-        <button type="button" className="btn" onClick={onExportJson}>
-          Export JSON
-        </button>
-        <label className="file-input">
-          Import JSON
-          <input
-            type="file"
-            accept=".json"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) onImportJson(file);
-              e.target.value = "";
-            }}
-          />
-        </label>
+      <div className="backup-row">
+        <div className="backup-row-head">
+          <span className="backup-row-title">JSON</span>
+          <span className="backup-row-meta">Full database</span>
+        </div>
+        <div className="backup-row-actions">
+          <button type="button" className="btn" onClick={onExportJson}>Export</button>
+          <label className="btn file-input-btn">
+            Import
+            <input
+              type="file"
+              accept=".json"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onImportJson(file);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        </div>
       </div>
-      <SectionHead title="XLSX" aside="Spreadsheet" />
-      <div className="backup-pair">
-        <button type="button" className="btn" onClick={onExportXlsx}>
-          Export XLSX
-        </button>
-        <label className="file-input">
-          Import XLSX
-          <input
-            type="file"
-            accept=".xlsx,.xls"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) onImportXlsx(file);
-              e.target.value = "";
-            }}
-          />
-        </label>
+      <div className="backup-row">
+        <div className="backup-row-head">
+          <span className="backup-row-title">XLSX</span>
+          <span className="backup-row-meta">Spreadsheet</span>
+        </div>
+        <div className="backup-row-actions">
+          <button type="button" className="btn" onClick={onExportXlsx}>Export</button>
+          <label className="btn file-input-btn">
+            Import
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onImportXlsx(file);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        </div>
       </div>
       <InlineFeedback message={backupFeedback} />
     </div>
@@ -177,11 +183,11 @@ export function SettingsVariantA(props: SettingsSectionProps) {
     <div className="settings-mock settings-mock-a">
       <AccountIdentity auth={props.auth} />
       <section className="settings-mock-section">
-        <SectionHead title="Account" aside="Credentials" />
+        <SectionHead title="Account" />
         <AccountBlock auth={props.auth} />
       </section>
       <section className="settings-mock-section">
-        <SectionHead title="Backup" aside="Export / import" />
+        <SectionHead title="Backup" />
         <BackupBlock
           onExportJson={props.onExportJson}
           onImportJson={props.onImportJson}
@@ -194,7 +200,7 @@ export function SettingsVariantA(props: SettingsSectionProps) {
         <McpAccessSection enabled />
       </section>
       <section className="settings-mock-section settings-mock-section--danger">
-        <SectionHead title="Danger zone" aside="Irreversible" />
+        <SectionHead title="Danger zone" />
         <DangerBlock
           purgeConfirmArmed={props.purgeConfirmArmed}
           purgePending={props.purgePending}
@@ -267,11 +273,11 @@ export function SettingsVariantC(props: SettingsSectionProps) {
     <div className="panel-split panel-split--diary settings-mock settings-mock-c">
       <div className="panel-col settings-mock-c-left">
         <section>
-          <SectionHead title="Account" aside="Credentials" />
+          <SectionHead title="Account" />
           <AccountBlock auth={props.auth} />
         </section>
         <section>
-          <SectionHead title="Backup" aside="Export / import" />
+          <SectionHead title="Backup" />
           <BackupBlock
             onExportJson={props.onExportJson}
             onImportJson={props.onImportJson}
@@ -281,7 +287,7 @@ export function SettingsVariantC(props: SettingsSectionProps) {
           />
         </section>
         <section className="settings-mock-section--danger">
-          <SectionHead title="Danger zone" aside="Irreversible" />
+          <SectionHead title="Danger zone" />
           <DangerBlock
             purgeConfirmArmed={props.purgeConfirmArmed}
             purgePending={props.purgePending}
@@ -293,7 +299,7 @@ export function SettingsVariantC(props: SettingsSectionProps) {
         </section>
       </div>
       <div className="panel-col settings-mock-c-right">
-        <SectionHead title="Status" aside="This account" />
+        <SectionHead title="Status" />
         <AccountIdentity auth={props.auth} />
         <section className="settings-mock-receipts">
           <SectionHead title="Recent activity" />
