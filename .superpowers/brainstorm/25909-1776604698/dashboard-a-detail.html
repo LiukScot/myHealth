@@ -1,0 +1,463 @@
+<style>
+  :root {
+    --bg: #1f1f23;
+    --panel: #0b0b0d;
+    --card: #1f1f23;
+    --card-strong: #26262b;
+    --card-soft: #2a2a30;
+    --text: #f5f5f7;
+    --muted: #a1a1ad;
+    --muted-soft: #6d6d78;
+    --border: #48484f;
+    --accent: #ff5e8a;
+    --success: #6fe1b0;
+    --warning: #f5a623;
+    --radius-lg: 16px;
+    --radius-md: 12px;
+    --radius-sm: 10px;
+    --font: "Manrope", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: var(--font); }
+  .layout {
+    display: grid;
+    grid-template-columns: 1.55fr 0.95fr;
+    gap: 18px;
+    align-items: start;
+  }
+  .mockup {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .mockup-body {
+    background: var(--bg);
+    padding: 14px;
+  }
+  .app {
+    display: grid;
+    grid-template-columns: 86px 1fr;
+    min-height: 760px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .nav {
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    padding: 10px 8px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 10px;
+  }
+  .nav-brand {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-heart {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--accent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .nav-item {
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    margin-bottom: 6px;
+  }
+  .nav-item.active {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+  .main {
+    padding: 16px;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+  .topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .meta {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .filter {
+    display: grid;
+    gap: 6px;
+  }
+  .eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field, .chip, .toggle {
+    background: var(--card-soft);
+    border: 1px solid var(--border);
+    min-height: 30px;
+    border-radius: 10px;
+  }
+  .field { width: 108px; }
+  .chip-row, .toggle-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    width: 46px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text) 5%, transparent);
+    border: 0;
+  }
+  .chip.active {
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+  .hero {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border-radius: var(--radius-md);
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .hero-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: start;
+  }
+  .hero-copy strong {
+    display: block;
+    font-size: 17px;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+  .hero-copy span {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .hero-pill {
+    padding: 5px 9px;
+    border-radius: 999px;
+    color: var(--success);
+    border: 1px solid color-mix(in srgb, var(--success) 38%, transparent);
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .section {
+    display: grid;
+    gap: 10px;
+  }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .section-head .aside {
+    color: var(--muted-soft);
+    font-size: 11px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .stat {
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: grid;
+    gap: 6px;
+  }
+  .stat strong {
+    font-size: 18px;
+    letter-spacing: -0.02em;
+  }
+  .delta {
+    justify-self: start;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .delta.good { color: var(--success); }
+  .delta.warn { color: #ff8fb1; }
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1.45fr 0.95fr;
+    gap: 10px;
+  }
+  .box {
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: grid;
+    gap: 10px;
+  }
+  .chart {
+    height: 188px;
+    border-radius: 10px;
+    background:
+      linear-gradient(transparent 96%, rgba(255,255,255,0.06) 96%) 0 0 / 100% 25%,
+      linear-gradient(90deg, transparent 93%, rgba(255,255,255,0.04) 93%) 0 0 / 20% 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  .chart::before {
+    content: "";
+    position: absolute;
+    inset: 14px 10px 16px;
+    background: linear-gradient(180deg, transparent 34%, rgba(255,94,138,0.14) 34%, rgba(255,94,138,0.14) 70%, transparent 70%);
+    clip-path: polygon(0% 74%, 10% 61%, 20% 63%, 31% 52%, 42% 57%, 55% 30%, 69% 38%, 83% 26%, 100% 12%, 100% 100%, 0% 100%);
+    border-bottom: 2px solid rgba(255,94,138,0.9);
+  }
+  .chart::after {
+    content: "";
+    position: absolute;
+    inset: 18px 10px 16px;
+    background: linear-gradient(180deg, transparent 38%, rgba(111,225,176,0.1) 38%, rgba(111,225,176,0.1) 73%, transparent 73%);
+    clip-path: polygon(0% 84%, 14% 70%, 28% 68%, 40% 60%, 54% 48%, 68% 42%, 82% 22%, 100% 28%, 100% 100%, 0% 100%);
+    border-bottom: 2px solid rgba(111,225,176,0.82);
+  }
+  .mini-list {
+    display: grid;
+    gap: 8px;
+  }
+  .mini-item {
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: grid;
+    gap: 2px;
+  }
+  .mini-item:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .mini-item strong {
+    font-size: 12px;
+  }
+  .mini-item span {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .annotation {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    display: grid;
+    gap: 12px;
+  }
+  .annotation h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+  .annotation p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .step {
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .step strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+  .step span {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .question {
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--accent) 7%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+    color: var(--text);
+    font-size: 13px;
+  }
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+</style>
+
+<h2>Direction A: detailed anatomy</h2>
+<p class="subtitle">ELI5: same dashboard, but each row answers one question: what changed, what are numbers, what are trends, what needs action.</p>
+
+<div class="layout">
+  <div class="mockup">
+    <div class="mockup-header">Preview: Refined Dashboard</div>
+    <div class="mockup-body">
+      <div class="app">
+        <div class="nav">
+          <div class="nav-brand">
+            <div class="nav-heart"></div>
+            <div class="eyebrow">Health</div>
+          </div>
+          <div>
+            <div class="nav-item active"></div>
+            <div class="nav-item"></div>
+            <div class="nav-item"></div>
+            <div class="nav-item"></div>
+            <div class="nav-item"></div>
+          </div>
+        </div>
+        <div class="main">
+          <div class="topline">
+            <div class="title">Dashboard</div>
+            <div class="meta">30-day snapshot</div>
+          </div>
+
+          <div class="filters">
+            <div class="filter"><div class="eyebrow">From</div><div class="field"></div></div>
+            <div class="filter"><div class="eyebrow">To</div><div class="field"></div></div>
+            <div class="filter"><div class="eyebrow">Range</div><div class="chip-row"><div class="chip"></div><div class="chip active"></div><div class="chip"></div><div class="chip"></div></div></div>
+          </div>
+
+          <div class="hero">
+            <div class="hero-head">
+              <div class="hero-copy">
+                <strong>Overall trend slightly improving</strong>
+                <span>Small summary sentence. Pulls key change into plain English before user reads detailed cards and chart.</span>
+              </div>
+              <div class="hero-pill">7-day streak</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <div class="eyebrow">Averages</div>
+              <div class="aside">current range vs previous range</div>
+            </div>
+            <div class="stats">
+              <div class="stat"><div class="meta">Mood</div><strong>7.2</strong><div class="delta good">+11%</div></div>
+              <div class="stat"><div class="meta">Pain</div><strong>3.8</strong><div class="delta good">-9%</div></div>
+              <div class="stat"><div class="meta">Fatigue</div><strong>4.1</strong><div class="delta good">-6%</div></div>
+              <div class="stat"><div class="meta">Entries</div><strong>18</strong><div class="delta warn">4 gaps</div></div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <div class="eyebrow">Metrics over time</div>
+              <div class="aside">toggle series on/off</div>
+            </div>
+            <div class="content-grid">
+              <div class="box">
+                <div class="toggle-row">
+                  <div class="toggle" style="width:84px;"></div>
+                  <div class="toggle" style="width:74px;"></div>
+                  <div class="toggle" style="width:92px;"></div>
+                </div>
+                <div class="chart"></div>
+              </div>
+              <div class="box">
+                <div class="eyebrow">Insights rail</div>
+                <div class="mini-list">
+                  <div class="mini-item"><strong>Best streak</strong><span>7 days with at least one entry</span></div>
+                  <div class="mini-item"><strong>Biggest shift</strong><span>Pain down most on lower-fatigue days</span></div>
+                  <div class="mini-item"><strong>Missing data</strong><span>No pain logs on Tue and Thu</span></div>
+                  <div class="mini-item"><strong>Quick add</strong><span>Diary, pain, CBT shortcuts live here</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <div class="eyebrow">Consistency + context</div>
+              <div class="aside">new expansion zone</div>
+            </div>
+            <div class="bottom-grid">
+              <div class="box">
+                <div class="eyebrow">Weekly consistency</div>
+                <div class="mini-list">
+                  <div class="mini-item"><strong>Diary</strong><span>5 of 7 days logged</span></div>
+                  <div class="mini-item"><strong>Pain</strong><span>3 of 7 days logged</span></div>
+                  <div class="mini-item"><strong>CBT / DBT</strong><span>1 of 7 days logged</span></div>
+                </div>
+              </div>
+              <div class="box">
+                <div class="eyebrow">Recent notable entries</div>
+                <div class="mini-list">
+                  <div class="mini-item"><strong>Diary</strong><span>“Walk helped me calm down.”</span></div>
+                  <div class="mini-item"><strong>Pain</strong><span>Back pain spike after poor sleep.</span></div>
+                  <div class="mini-item"><strong>CBT</strong><span>Work stress pattern surfaced again.</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <h3>Why this shape</h3>
+    <p>It preserves current dashboard muscle memory. Expansion happens by adding useful side and bottom blocks, not by inventing new navigation or flashy surfaces.</p>
+
+    <div class="step">
+      <strong>1. Top stays familiar</strong>
+      <span>Keep title + date controls. New piece is one plain-English summary card.</span>
+    </div>
+
+    <div class="step">
+      <strong>2. Middle stays analytical</strong>
+      <span>Averages and main chart remain core. This is still dashboard, not journal page.</span>
+    </div>
+
+    <div class="step">
+      <strong>3. Right rail adds usefulness</strong>
+      <span>Put streaks, gaps, strongest changes, quick-add actions in one compact place.</span>
+    </div>
+
+    <div class="step">
+      <strong>4. Bottom adds expansion</strong>
+      <span>Consistency blocks and recent notable entries make issue #63 feel like real growth, not only polish.</span>
+    </div>
+
+    <div class="question">
+      Question: does this feel right as dashboard shape, or do you want it even simpler with no bottom row?
+    </div>
+  </div>
+</div>

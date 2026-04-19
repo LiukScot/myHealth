@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "../lib";
 import {
+  calcDeltaPercent,
   average,
   buildDailyAverages,
   defaultWellbeingSelection,
@@ -15,8 +16,197 @@ import {
   previousRange,
   wellbeingGraphId,
 } from "../app/core";
-import type { DashboardCard, DashboardQuickRange, WellbeingSeries, WellbeingSeriesKey } from "../app/core";
+import type {
+  DashboardCard,
+  DashboardConnection,
+  DashboardInsight,
+  DashboardQuickRange,
+  DiaryEntry,
+  PainEntry,
+  WellbeingSeries,
+  WellbeingSeriesKey,
+} from "../app/core";
 import { usePrefs } from "./use-settings";
+
+type DashboardDay = {
+  date: string;
+  diaryCount: number;
+  painCount: number;
+  mood: number | null;
+  depression: number | null;
+  anxiety: number | null;
+  pain: number | null;
+  fatigue: number | null;
+  coffee: number | null;
+};
+
+type NumericDashboardKey = "mood" | "depression" | "anxiety" | "pain" | "fatigue" | "coffee";
+
+function buildDashboardDays(diaryEntries: DiaryEntry[], painEntries: PainEntry[]): DashboardDay[] {
+  const dates = new Set<string>();
+  diaryEntries.forEach((entry) => dates.add(entry.entryDate));
+  painEntries.forEach((entry) => dates.add(entry.entryDate));
+
+  return Array.from(dates)
+    .sort()
+    .map((date) => {
+      const diaryForDate = diaryEntries.filter((entry) => entry.entryDate === date);
+      const painForDate = painEntries.filter((entry) => entry.entryDate === date);
+      return {
+        date,
+        diaryCount: diaryForDate.length,
+        painCount: painForDate.length,
+        mood: average(diaryForDate.map((entry) => entry.moodLevel)),
+        depression: average(diaryForDate.map((entry) => entry.depressionLevel)),
+        anxiety: average(diaryForDate.map((entry) => entry.anxietyLevel)),
+        pain: average(painForDate.map((entry) => entry.painLevel)),
+        fatigue: average(painForDate.map((entry) => entry.fatigueLevel)),
+        coffee: average(painForDate.map((entry) => entry.coffeeCount)),
+      };
+    });
+}
+
+function getLongestEntryStreak(days: DashboardDay[]) {
+  if (!days.length) return 0;
+  let best = 1;
+  let current = 1;
+  for (let index = 1; index < days.length; index += 1) {
+    const previous = new Date(`${days[index - 1].date}T00:00:00`);
+    const next = new Date(`${days[index].date}T00:00:00`);
+    const diffDays = Math.round((next.getTime() - previous.getTime()) / (24 * 60 * 60 * 1000));
+    if (diffDays === 1) {
+      current += 1;
+      best = Math.max(best, current);
+    } else {
+      current = 1;
+    }
+  }
+  return best;
+}
+
+function describeLargestShift(cards: DashboardCard[]) {
+  const candidates = cards
+    .filter((card) => card.previous !== null)
+    .map((card) => ({ card, delta: calcDeltaPercent(card.value, card.previous) }))
+    .filter((item): item is { card: DashboardCard; delta: number } => item.delta !== null)
+    .sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta));
+
+  const strongest = candidates[0];
+  if (!strongest) return "Need previous-range data to compare trends.";
+  const direction = strongest.delta > 0 ? "up" : strongest.delta < 0 ? "down" : "flat";
+  return `${strongest.card.label} changed most vs previous range (${direction} ${Math.abs(Math.round(strongest.delta))}%).`;
+}
+
+function describeMissingData(days: DashboardDay[]) {
+  const missingPain = days.filter((day) => day.diaryCount > 0 && day.painCount === 0).length;
+  const missingDiary = days.filter((day) => day.painCount > 0 && day.diaryCount === 0).length;
+  if (missingPain === 0 && missingDiary === 0) {
+    return "Diary and pain are both present on every tracked day.";
+  }
+  if (missingPain >= missingDiary) {
+    return `Pain missing on ${missingPain} tracked day${missingPain === 1 ? "" : "s"}.`;
+  }
+  return `Diary missing on ${missingDiary} tracked day${missingDiary === 1 ? "" : "s"}.`;
+}
+
+function buildInsightRail(days: DashboardDay[], cards: DashboardCard[]): DashboardInsight[] {
+  const streak = getLongestEntryStreak(days);
+  return [
+    {
+      title: "Best streak",
+      detail:
+        streak === 0
+          ? "No tracked days in this range yet."
+          : `${streak} day${streak === 1 ? "" : "s"} with at least one diary or pain entry.`,
+    },
+    {
+      title: "Biggest shift",
+      detail: describeLargestShift(cards),
+    },
+    {
+      title: "Missing data",
+      detail: describeMissingData(days),
+    },
+  ];
+}
+
+function pearsonCorrelation(values: Array<[number, number]>) {
+  if (values.length < 5) return null;
+  const xs = values.map(([x]) => x);
+  const ys = values.map(([, y]) => y);
+  const xMean = xs.reduce((sum, value) => sum + value, 0) / xs.length;
+  const yMean = ys.reduce((sum, value) => sum + value, 0) / ys.length;
+  const numerator = values.reduce((sum, [x, y]) => sum + (x - xMean) * (y - yMean), 0);
+  const xVariance = xs.reduce((sum, value) => sum + (value - xMean) ** 2, 0);
+  const yVariance = ys.reduce((sum, value) => sum + (value - yMean) ** 2, 0);
+  const denominator = Math.sqrt(xVariance * yVariance);
+  if (!denominator) return null;
+  return numerator / denominator;
+}
+
+function getPairValues(days: DashboardDay[], leftKey: NumericDashboardKey, rightKey: NumericDashboardKey) {
+  return days.flatMap((day) => {
+    const left = day[leftKey];
+    const right = day[rightKey];
+    if (left === null || right === null) return [];
+    return [[left, right] as [number, number]];
+  });
+}
+
+function getConfidence(correlation: number, sampleSize: number): DashboardConnection["confidence"] {
+  const score = Math.abs(correlation);
+  if (sampleSize >= 6 && score >= 0.7) return "strong";
+  if (sampleSize >= 4 && score >= 0.35) return "medium";
+  return "weak";
+}
+
+function buildConnections(days: DashboardDay[]): DashboardConnection[] {
+  const configs: Array<{
+    title: string;
+    leftKey: NumericDashboardKey;
+    rightKey: NumericDashboardKey;
+    positiveSummary: string;
+    negativeSummary: string;
+    detail: string;
+  }> = [
+    {
+      title: "Pain x fatigue",
+      leftKey: "fatigue",
+      rightKey: "pain",
+      positiveSummary: "Higher fatigue days often match higher pain.",
+      negativeSummary: "Higher fatigue days sometimes match lower pain.",
+      detail: "Compared same-day fatigue and pain averages from pain entries.",
+    },
+    {
+      title: "Coffee x anxiety",
+      leftKey: "coffee",
+      rightKey: "anxiety",
+      positiveSummary: "Days with more coffee tend to show higher anxiety.",
+      negativeSummary: "Days with more coffee tend to show lower anxiety.",
+      detail: "Compared coffee counts and diary anxiety scores on overlapping dates.",
+    },
+    {
+      title: "Mood x pain",
+      leftKey: "mood",
+      rightKey: "pain",
+      positiveSummary: "Mood and pain moved together (unusual — double-check entries).",
+      negativeSummary: "Higher mood days tend to have lower pain (expected pattern).",
+      detail: "Compared diary mood scores and pain averages on overlapping dates.",
+    },
+  ];
+
+  return configs.flatMap((config) => {
+    const pairs = getPairValues(days, config.leftKey, config.rightKey);
+    const correlation = pearsonCorrelation(pairs);
+    if (correlation === null) return [];
+    return [{
+      title: config.title,
+      summary: correlation >= 0 ? config.positiveSummary : config.negativeSummary,
+      detail: `${config.detail} ${pairs.length} overlapping day${pairs.length === 1 ? "" : "s"} in range.`,
+      confidence: getConfidence(correlation, pairs.length),
+    }];
+  });
+}
 
 export function useDashboard(enabled: boolean) {
   const { prefsQuery, savePrefsPatch } = usePrefs(enabled);
@@ -76,6 +266,10 @@ export function useDashboard(enabled: boolean) {
 
   const hasEntriesOverall = (diaryQuery.data?.length ?? 0) > 0 || (painQuery.data?.length ?? 0) > 0;
   const hasEntriesInRange = filteredDiary.length > 0 || filteredPain.length > 0;
+  const dashboardDays = useMemo(
+    () => buildDashboardDays(filteredDiary, filteredPain),
+    [filteredDiary, filteredPain],
+  );
 
   const prevBounds = useMemo(() => previousRange(dashboardFrom, dashboardTo), [dashboardFrom, dashboardTo]);
   const prevFrom = prevBounds?.from ?? "";
@@ -156,7 +350,12 @@ export function useDashboard(enabled: boolean) {
         scales: {
           x: {
             type: "time" as const,
-            time: { parser: "yyyy-MM-dd", tooltipFormat: "dd MMM yyyy", unit: undefined },
+            time: {
+              parser: "yyyy-MM-dd",
+              tooltipFormat: "dd MMM yyyy",
+              minUnit: "day" as const,
+              displayFormats: { day: "dd MMM", week: "dd MMM", month: "MMM yyyy" },
+            },
             ticks: { color: "#a1a1ad", maxTicksLimit: 12 },
             grid: { color: "rgba(255,255,255,0.08)" },
           },
@@ -182,6 +381,16 @@ export function useDashboard(enabled: boolean) {
     });
   };
 
+  const dashboardInsights = useMemo(
+    () => buildInsightRail(dashboardDays, dashboardCards),
+    [dashboardDays, dashboardCards],
+  );
+
+  const dashboardConnections = useMemo(
+    () => buildConnections(dashboardDays),
+    [dashboardDays],
+  );
+
   return {
     dashboardFrom,
     dashboardTo,
@@ -192,6 +401,8 @@ export function useDashboard(enabled: boolean) {
     handleDateChange,
     applyQuickRange,
     dashboardCards,
+    dashboardInsights,
+    dashboardConnections,
     wellbeingSeries,
     graphSelection,
     handleGraphToggle,

@@ -270,7 +270,9 @@ function App() {
             activeQuickRange={dashboard.activeQuickRange} isLoading={dashboard.isLoading}
             hasEntriesInRange={dashboard.hasEntriesInRange} hasEntriesOverall={dashboard.hasEntriesOverall}
             onDateChange={dashboard.handleDateChange}
-            onQuickRange={dashboard.applyQuickRange} dashboardCards={dashboard.dashboardCards}
+            onQuickRange={dashboard.applyQuickRange}
+            dashboardCards={dashboard.dashboardCards} dashboardInsights={dashboard.dashboardInsights}
+            dashboardConnections={dashboard.dashboardConnections}
             wellbeingSeries={dashboard.wellbeingSeries} graphSelection={dashboard.graphSelection}
             onGraphToggle={dashboard.handleGraphToggle} wellbeingChart={dashboard.wellbeingChart}
           />

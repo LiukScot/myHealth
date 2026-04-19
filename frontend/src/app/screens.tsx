@@ -8,6 +8,8 @@ import {
   csvToList,
   type CbtEntry,
   type CbtFormValues,
+  type DashboardConnection,
+  type DashboardInsight,
   type DashboardQuickRange,
   type DbtEntry,
   type DbtFormValues,
@@ -178,6 +180,8 @@ function EmptyState({
   );
 }
 
+// Dashboard wrapper class (`panel--dashboard`) enables scoped overrides of section-head
+// typography without affecting Pain/Diary/CBT panels.
 export function DashboardSection({
   dashboardFrom,
   dashboardTo,
@@ -188,6 +192,8 @@ export function DashboardSection({
   onDateChange,
   onQuickRange,
   dashboardCards,
+  dashboardInsights,
+  dashboardConnections,
   wellbeingSeries,
   graphSelection,
   onGraphToggle,
@@ -202,22 +208,24 @@ export function DashboardSection({
   onDateChange: (field: "from" | "to", value: string) => void;
   onQuickRange: (range: DashboardQuickRange) => void;
   dashboardCards: Array<{ label: string; emoji: string; value: number | null; formattedValue: string; previous: number | null; invertDelta?: boolean }>;
+  dashboardInsights: DashboardInsight[];
+  dashboardConnections: DashboardConnection[];
   wellbeingSeries: WellbeingSeries[];
   graphSelection: Record<WellbeingSeriesKey, boolean>;
   onGraphToggle: (key: WellbeingSeriesKey, checked: boolean) => void;
   wellbeingChart: WellbeingChartView;
 }) {
   return (
-    <section className="panel">
+    <section className="panel panel--dashboard">
       <h1 className="panel-title">Dashboard</h1>
 
       <div className="dashboard-filters">
-        <label>
-          From
+        <label className="field field-line">
+          <span className="field-line-label">From</span>
           <input type="date" value={dashboardFrom} onChange={(event) => onDateChange("from", event.target.value)} />
         </label>
-        <label>
-          To
+        <label className="field field-line">
+          <span className="field-line-label">To</span>
           <input type="date" value={dashboardTo} onChange={(event) => onDateChange("to", event.target.value)} />
         </label>
         <div className="dashboard-quick-ranges">
@@ -263,11 +271,13 @@ export function DashboardSection({
                     {card.label}
                   </h3>
                   <strong>{card.formattedValue}</strong>
-                  {delta ? (
-                    <span className={`delta ${delta.className}`} style={deltaStyle}>
-                      {delta.text}
-                    </span>
-                  ) : null}
+                  <span className="delta-slot" aria-hidden={delta ? undefined : true}>
+                    {delta ? (
+                      <span className={`delta ${delta.className}`} style={deltaStyle}>
+                        {delta.text}
+                      </span>
+                    ) : null}
+                  </span>
                 </article>
               );
             })}
@@ -308,6 +318,41 @@ export function DashboardSection({
                 {wellbeingChart.hasAnyData ? "Toggle on a metric to see it." : hasEntriesOverall ? "No chart data in this date range." : "No chart data yet. Add a diary or pain entry to get started."}
               </p>
             )}
+          </div>
+
+          <div className="dashboard-pattern-grid">
+            <section className="dashboard-pattern-block">
+              <SectionHead title="At a glance" />
+              <div className="dashboard-insight-list">
+                {dashboardInsights.map((insight) => (
+                  <div key={insight.title} className="dashboard-insight-row">
+                    <strong>{insight.title}</strong>
+                    <p>{insight.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="dashboard-pattern-block">
+              <SectionHead title="Patterns" />
+              {dashboardConnections.length > 0 ? (
+                <div className="dashboard-connection-stack">
+                  {dashboardConnections.map((connection) => (
+                    <article key={connection.title} className="dashboard-connection-card">
+                      <span className="dashboard-connection-label">{connection.title}</span>
+                      <strong>{connection.summary}</strong>
+                      <p>{connection.detail}</p>
+                      <span className={`dashboard-confidence dashboard-confidence-${connection.confidence}`}>{connection.confidence} confidence</span>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state empty-state-compact">
+                  <p className="empty-state-title">No connection signals yet</p>
+                  <p className="empty-state-copy">Log more overlapping diary and pain entries to unlock pattern cards here.</p>
+                </div>
+              )}
+            </section>
           </div>
         </>
       )}

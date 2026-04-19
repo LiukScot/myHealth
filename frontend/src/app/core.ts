@@ -266,6 +266,20 @@ export type DashboardCard = {
   invertDelta?: boolean;
 };
 
+export type DashboardInsight = {
+  title: string;
+  detail: string;
+};
+
+export type DashboardConnectionConfidence = "weak" | "medium" | "strong";
+
+export type DashboardConnection = {
+  title: string;
+  summary: string;
+  detail: string;
+  confidence: DashboardConnectionConfidence;
+};
+
 export type SeriesPoint = { date: string; value: number };
 export type WellbeingSeries = {
   key: WellbeingSeriesKey;
