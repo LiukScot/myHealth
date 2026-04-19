@@ -20,16 +20,13 @@ import {
   type WellbeingSeries,
   type WellbeingSeriesKey,
 } from "./core";
-import { getErrorMessage } from "../lib";
 import type { useAuth } from "../hooks/use-auth";
 import {
   AnimatedEditingLabel,
-  InlineFeedback,
   MultiSelectField,
   SectionHead,
   useDiaryColumnCap,
 } from "./shared";
-import { McpAccessSection } from "./McpAccessSection";
 import { SettingsVariantB } from "./settings-mockups";
 import {
   calcDeltaPercent,

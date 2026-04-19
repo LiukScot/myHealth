@@ -2288,6 +2288,7 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
 
 /* ── Variant B — tabs ── */
 .settings-mock-b .settings-mock-tabs {
+  margin-bottom: -10px;
   padding-bottom: 6px;
 }
 .settings-mock-b .settings-mock-tab--danger { color: var(--danger); }
@@ -2332,6 +2333,7 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
 /* Account block: password + session live side-by-side inside the tab panel. */
 .settings-account-block { display: flex; flex-direction: column; gap: 8px; }
 .settings-account-block .section-head:first-child { margin-top: 0; }
+.settings-account-block .btn-primary { margin-top: 12px; }
 
 /* Backup block: per-format SectionHead rhythm + paired export/import grid. */
 .settings-backup {
