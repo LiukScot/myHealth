@@ -43,22 +43,6 @@ export function splitDateTime(localDateTime: string): { entryDate: string; entry
   return { entryDate: iso.slice(0, 10), entryTime: iso.slice(11, 16) };
 }
 
-export function csvToArray(input?: string): string[] {
-  if (!input) return [];
-  return Array.from(
-    new Set(
-      input
-        .split(",")
-        .map((v) => v.trim())
-        .filter(Boolean)
-    )
-  );
-}
-
-export function arrayToCsv(values?: string[]): string {
-  return (values ?? []).join(", ");
-}
-
 export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;

@@ -2,10 +2,10 @@ import { useState } from "react";
 import type { InlineMessage } from "./core";
 import type { useAuth } from "../hooks/use-auth";
 import { getErrorMessage } from "../lib";
-import { InlineFeedback, SectionHead } from "./shared";
+import { InlineFeedback } from "./shared";
 import { McpAccessSection } from "./McpAccessSection";
 
-export type SettingsSectionProps = {
+type SettingsSectionProps = {
   auth: ReturnType<typeof useAuth>;
   purgeConfirmArmed: boolean;
   purgePending: boolean;
@@ -177,43 +177,6 @@ function AccountIdentity({ auth }: Pick<SettingsSectionProps, "auth">) {
   );
 }
 
-/* ── Variant A — Single-column list ── */
-export function SettingsVariantA(props: SettingsSectionProps) {
-  return (
-    <div className="settings-mock settings-mock-a">
-      <AccountIdentity auth={props.auth} />
-      <section className="settings-mock-section">
-        <SectionHead title="Account" />
-        <AccountBlock auth={props.auth} />
-      </section>
-      <section className="settings-mock-section">
-        <SectionHead title="Backup" />
-        <BackupBlock
-          onExportJson={props.onExportJson}
-          onImportJson={props.onImportJson}
-          onExportXlsx={props.onExportXlsx}
-          onImportXlsx={props.onImportXlsx}
-          backupFeedback={props.backupFeedback}
-        />
-      </section>
-      <section className="settings-mock-section">
-        <McpAccessSection enabled />
-      </section>
-      <section className="settings-mock-section settings-mock-section--danger">
-        <SectionHead title="Danger zone" />
-        <DangerBlock
-          purgeConfirmArmed={props.purgeConfirmArmed}
-          purgePending={props.purgePending}
-          purgeError={props.purgeError}
-          onPurgeArm={props.onPurgeArm}
-          onPurgeConfirm={props.onPurgeConfirm}
-          onPurgeCancel={props.onPurgeCancel}
-        />
-      </section>
-    </div>
-  );
-}
-
 /* ── Variant B — Sub-tabs ── */
 type SettingsTab = "account" | "backup" | "mcp" | "danger";
 const settingsTabs: { id: SettingsTab; label: string; danger?: boolean }[] = [
@@ -262,56 +225,6 @@ export function SettingsVariantB(props: SettingsSectionProps) {
             onPurgeCancel={props.onPurgeCancel}
           />
         ) : null}
-      </div>
-    </div>
-  );
-}
-
-/* ── Variant C — Diary-style split ── */
-export function SettingsVariantC(props: SettingsSectionProps) {
-  return (
-    <div className="panel-split panel-split--diary settings-mock settings-mock-c">
-      <div className="panel-col settings-mock-c-left">
-        <section>
-          <SectionHead title="Account" />
-          <AccountBlock auth={props.auth} />
-        </section>
-        <section>
-          <SectionHead title="Backup" />
-          <BackupBlock
-            onExportJson={props.onExportJson}
-            onImportJson={props.onImportJson}
-            onExportXlsx={props.onExportXlsx}
-            onImportXlsx={props.onImportXlsx}
-            backupFeedback={props.backupFeedback}
-          />
-        </section>
-        <section className="settings-mock-section--danger">
-          <SectionHead title="Danger zone" />
-          <DangerBlock
-            purgeConfirmArmed={props.purgeConfirmArmed}
-            purgePending={props.purgePending}
-            purgeError={props.purgeError}
-            onPurgeArm={props.onPurgeArm}
-            onPurgeConfirm={props.onPurgeConfirm}
-            onPurgeCancel={props.onPurgeCancel}
-          />
-        </section>
-      </div>
-      <div className="panel-col settings-mock-c-right">
-        <SectionHead title="Status" />
-        <AccountIdentity auth={props.auth} />
-        <section className="settings-mock-receipts">
-          <SectionHead title="Recent activity" />
-          {props.backupFeedback ? (
-            <InlineFeedback message={props.backupFeedback} />
-          ) : (
-            <p className="settings-mock-empty">Export and import receipts will appear here.</p>
-          )}
-        </section>
-        <section className="settings-mock-mcp-aside">
-          <McpAccessSection enabled />
-        </section>
       </div>
     </div>
   );

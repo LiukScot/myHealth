@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "../lib";
 import {
   calcDeltaPercent,
   average,
   buildDailyAverages,
-  defaultWellbeingSelection,
   diaryListSchema,
   extractWellbeingSelection,
   formatNumber,
@@ -210,11 +209,9 @@ function buildConnections(days: DashboardDay[]): DashboardConnection[] {
 
 export function useDashboard(enabled: boolean) {
   const { prefsQuery, savePrefsPatch } = usePrefs(enabled);
-  const [dashboardFrom, setDashboardFrom] = useState("");
-  const [dashboardTo, setDashboardTo] = useState("");
-  const [activeQuickRange, setActiveQuickRange] = useState<DashboardQuickRange>("all");
-  const [graphSelection, setGraphSelection] = useState({ ...defaultWellbeingSelection });
-  const [bootstrapped, setBootstrapped] = useState(false);
+  const [dashboardBoundsOverride, setDashboardBoundsOverride] = useState<{ from: string; to: string } | null>(null);
+  const [activeQuickRangeOverride, setActiveQuickRangeOverride] = useState<DashboardQuickRange | null>(null);
+  const [graphSelectionOverride, setGraphSelectionOverride] = useState<Record<WellbeingSeriesKey, boolean> | null>(null);
 
   const diaryQuery = useQuery({
     queryKey: ["diary"],
@@ -228,29 +225,26 @@ export function useDashboard(enabled: boolean) {
     queryFn: async () => apiFetch("/api/v1/pain", { method: "GET" }, (raw) => painListSchema.parse(raw).data),
   });
 
-  useEffect(() => {
-    if (!prefsQuery.data || bootstrapped) return;
-    const restoredRange = normalizeQuickRange(prefsQuery.data.lastRange);
-    const bounds = getQuickRangeBounds(restoredRange);
-    setDashboardFrom(bounds.from);
-    setDashboardTo(bounds.to);
-    setActiveQuickRange(restoredRange);
-    setGraphSelection(extractWellbeingSelection(prefsQuery.data.graphSelection));
-    setBootstrapped(true);
-  }, [prefsQuery.data, bootstrapped]);
+  const restoredRange = normalizeQuickRange(prefsQuery.data?.lastRange);
+  const restoredBounds = getQuickRangeBounds(restoredRange);
+  const dashboardFrom = dashboardBoundsOverride?.from ?? restoredBounds.from;
+  const dashboardTo = dashboardBoundsOverride?.to ?? restoredBounds.to;
+  const activeQuickRange = activeQuickRangeOverride ?? restoredRange;
+  const graphSelection = graphSelectionOverride ?? extractWellbeingSelection(prefsQuery.data?.graphSelection);
 
   const applyQuickRange = (range: DashboardQuickRange, persist = true) => {
     const bounds = getQuickRangeBounds(range);
-    setDashboardFrom(bounds.from);
-    setDashboardTo(bounds.to);
-    setActiveQuickRange(range);
+    setDashboardBoundsOverride(bounds);
+    setActiveQuickRangeOverride(range);
     if (persist) savePrefsPatch({ lastRange: range });
   };
 
   const handleDateChange = (field: "from" | "to", value: string) => {
-    if (field === "from") setDashboardFrom(value);
-    else setDashboardTo(value);
-    setActiveQuickRange("all");
+    setDashboardBoundsOverride((current) => ({
+      from: field === "from" ? value : current?.from ?? dashboardFrom,
+      to: field === "to" ? value : current?.to ?? dashboardTo,
+    }));
+    setActiveQuickRangeOverride("all");
     savePrefsPatch({ lastRange: "all" });
   };
 
@@ -372,7 +366,7 @@ export function useDashboard(enabled: boolean) {
 
   const handleGraphToggle = (key: WellbeingSeriesKey, checked: boolean) => {
     const nextSelection = { ...graphSelection, [key]: checked };
-    setGraphSelection(nextSelection);
+    setGraphSelectionOverride(nextSelection);
     savePrefsPatch({
       graphSelection: {
         ...(prefsQuery.data?.graphSelection ?? {}),

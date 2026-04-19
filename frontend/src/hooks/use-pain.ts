@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiEnvelopeSchema, apiFetch, splitDateTime, toLocalDateTimeValue } from "../lib";
@@ -60,8 +60,11 @@ export function usePain(enabled: boolean) {
     defaultValues: createDefaultPainFormValues(),
   });
 
-  const [watchedArea, watchedSymptoms, watchedActivities, watchedMedicines, watchedHabits, watchedOther] =
-    painForm.watch(["area", "symptoms", "activities", "medicines", "habits", "other"]);
+  const [watchedArea = "", watchedSymptoms = "", watchedActivities = "", watchedMedicines = "", watchedHabits = "", watchedOther = ""] =
+    useWatch({
+      control: painForm.control,
+      name: ["area", "symptoms", "activities", "medicines", "habits", "other"],
+    });
 
   useEffect(() => {
     if (editingPain || painForm.formState.isDirty) return;

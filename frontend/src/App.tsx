@@ -236,7 +236,6 @@ function App() {
     };
     // Empty dep array — handlers read live state via mobileSidebarOpenRef so
     // we only need to attach the listeners once at mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!auth.user) {

@@ -33,12 +33,7 @@ export function AnimatedEditingLabel({
   const [dotsCount, setDotsCount] = useState(1);
 
   useEffect(() => {
-    if (!active) {
-      setDotsCount(1);
-      return;
-    }
-
-    setDotsCount(1);
+    if (!active) return;
     const timer = window.setInterval(() => {
       setDotsCount((count) => (count % 3) + 1);
     }, 500);
@@ -105,15 +100,6 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
       confirmRemoveRef.current?.focus();
     }
   }, [pendingRemovalKey]);
-
-  useEffect(() => {
-    if (!editOptionsMode) {
-      setPendingRemovalKey(null);
-      setCustomValue("");
-    } else {
-      setAddingOption(false);
-    }
-  }, [editOptionsMode]);
 
   useEffect(() => () => {
     if (addSuccessTimerRef.current !== null) {
@@ -202,6 +188,16 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
     }
   };
 
+  const setEditMode = (next: boolean) => {
+    setEditOptionsMode(next);
+    if (next) {
+      setAddingOption(false);
+      return;
+    }
+    setPendingRemovalKey(null);
+    setCustomValue("");
+  };
+
   return (
     <div className={editOptionsMode ? "multi-select-field editing-options" : "multi-select-field"}>
       {hideLabel ? null : <span className="section-heading">{label}</span>}
@@ -281,13 +277,7 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
       </div>
       <div className="multi-option-actions">
         {addingOption ? (
-          <form
-            className="multi-option-adder"
-            onSubmit={(event) => {
-              event.preventDefault();
-              commitCustomValue();
-            }}
-          >
+          <div className="multi-option-adder">
             <input
               ref={addInputRef}
               autoFocus
@@ -296,6 +286,11 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
               value={customValue}
               onChange={(event) => setCustomValue(event.target.value)}
               onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  commitCustomValue();
+                  return;
+                }
                 if (event.key === "Escape") {
                   event.preventDefault();
                   setAddingOption(false);
@@ -304,9 +299,10 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
               }}
             />
             <button
-              type="submit"
+              type="button"
               className={`multi-option-adder-confirm${addSuccess ? " is-success" : ""}`}
               aria-label="Save option"
+              onClick={commitCustomValue}
             >
               {addSuccess ? "\u2713" : "Add"}
             </button>
@@ -321,7 +317,7 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
             >
               Cancel
             </button>
-          </form>
+          </div>
         ) : (
           <>
             <button
@@ -336,58 +332,13 @@ export function MultiSelectField({ label, fieldKey, value, options, onChange, do
               type="button"
               className={`multi-option-edit-link${editOptionsMode ? " active is-editing" : ""}`}
               aria-pressed={editOptionsMode}
-              onClick={() => setEditOptionsMode((v) => !v)}
+              onClick={() => setEditMode(!editOptionsMode)}
             >
               {editOptionsMode ? "done" : "edit"}
             </button>
           </>
         )}
       </div>
-    </div>
-  );
-}
-
-type PreferencesValue = {
-  model: string;
-  chatRange: string;
-  lastRange: string;
-  graphSelection: Record<string, unknown>;
-};
-
-type PreferencesEditorProps = {
-  value: PreferencesValue;
-  onSave: (value: PreferencesValue) => void;
-};
-
-export function PreferencesEditor({ value, onSave }: PreferencesEditorProps) {
-  const [lastRange, setLastRange] = useState(value.lastRange);
-
-  return (
-    <div className="stack">
-      <label>
-        Last dashboard range
-        <select value={lastRange} onChange={(e) => setLastRange(e.target.value)}>
-          <option value="all">all</option>
-          <option value="7">7 days</option>
-          <option value="30">30 days</option>
-          <option value="90">90 days</option>
-          <option value="180">180 days</option>
-          <option value="365">365 days</option>
-          <option value="1095">1095 days</option>
-        </select>
-      </label>
-      <button
-        onClick={() =>
-          onSave({
-            model: value.model,
-            chatRange: value.chatRange,
-            lastRange,
-            graphSelection: value.graphSelection ?? {},
-          })
-        }
-      >
-        Save prefs
-      </button>
     </div>
   );
 }

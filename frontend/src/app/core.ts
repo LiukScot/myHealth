@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { z } from "zod";
 import { apiEnvelopeSchema } from "../lib";
 
-export type User = { id: number; email: string; name: string | null };
+type User = { id: number; email: string; name: string | null };
 type AuthState = { user: User | null; setUser: (user: User | null) => void };
 export const useAuthStore = create<AuthState>((set) => ({ user: null, setUser: (user) => set({ user }) }));
 
@@ -205,7 +205,7 @@ export type DbtFormValues = z.infer<typeof dbtFormSchema>;
 export const navItems = ["dashboard", "diary", "pain", "cbt", "dbt", "settings", "design-system"] as const;
 export type NavItem = (typeof navItems)[number];
 
-export const appName = "Health";
+const appName = "Health";
 
 export const navLabels: Record<NavItem, string> = {
   dashboard: "Dashboard",
@@ -220,9 +220,6 @@ export const navLabels: Record<NavItem, string> = {
 export function formatDocumentTitle(section?: string) {
   return section ? `${section} - ${appName}` : appName;
 }
-
-export const newEntryItems: NavItem[] = ["pain", "diary", "cbt", "dbt"];
-export const therapyItems: NavItem[] = ["diary", "cbt", "dbt"];
 
 export const dashboardQuickRanges = [
   { value: "7", label: "1 week" },

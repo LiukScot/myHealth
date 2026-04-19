@@ -248,33 +248,6 @@ body {
 
 .auth-card { width: min(560px, 94vw); }
 
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.app-header h1 {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.app-header p {
-  margin: 4px 0 0;
-  color: var(--muted);
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
 details summary {
   list-style: none;
 }
@@ -556,34 +529,6 @@ h3.section-heading {
 
 .feedback-message.is-info {
   color: var(--muted);
-}
-
-.settings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 10px;
-  align-items: stretch;
-}
-
-.settings-column {
-  display: grid;
-  gap: 10px;
-  align-content: start;
-  height: 100%;
-}
-
-.settings-column > article,
-.settings-grid > article {
-  padding: 14px;
-  background: color-mix(in srgb, var(--card-strong) 75%, var(--card));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-}
-
-.settings-column > article.danger-zone {
-  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
-  background: color-mix(in srgb, var(--danger) 7%, var(--card-strong));
 }
 
 .danger {
@@ -1908,9 +1853,6 @@ tbody tr:hover {
   .app-main { padding: 10px; }
   .app-screen { width: 100%; }
   .panel { min-width: 0; }
-  .app-header { flex-direction: column; }
-  .app-header h1 { font-size: 22px; }
-  .header-actions { width: 100%; }
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -1923,12 +1865,6 @@ tbody tr:hover {
   }
   .stats-grid {
     grid-template-columns: 1fr;
-  }
-  .settings-grid {
-    grid-template-columns: 1fr;
-  }
-  .settings-column {
-    gap: 10px;
   }
   .dashboard-filters {
     grid-template-columns: 1fr;
@@ -2097,13 +2033,6 @@ tbody tr:hover {
 /* Metrics */
 .ds-metrics { display: flex; flex-direction: column; gap: 10px; }
 
-
-/* Settings: align buttons with the rest of the system. */
-.settings-column article .save-section { justify-content: flex-start; padding-top: 0; }
-.settings-column .settings-logout-row { margin-top: 8px; }
-.settings-column > article.danger-zone { border-left: 2px solid color-mix(in srgb, var(--danger) 55%, transparent); padding-left: 14px; }
-.settings-grid > article .save-section { justify-content: flex-start; padding-top: 0; }
-.settings-grid .file-input { cursor: pointer; }
 
 /* Dashboard: align filter/quick-range chrome with token typography. */
 .dashboard-filters {
@@ -2438,18 +2367,6 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Variant A — list ── */
-.settings-mock-a { max-width: 640px; margin: 0 auto; width: 100%; }
-.settings-mock-a .settings-mock-section { display: flex; flex-direction: column; gap: 10px; }
-.settings-mock-a .settings-mock-section + .settings-mock-section {
-  border-top: 1px solid var(--border-soft);
-  padding-top: 14px;
-}
-.settings-mock-a .settings-mock-section--danger {
-  border-top-color: color-mix(in srgb, var(--danger) 45%, transparent);
-}
-.settings-mock-a .save-section { justify-content: flex-start; padding-top: 0; gap: 8px; }
-
 /* ── Variant B — tabs ── */
 .settings-mock-b .settings-mock-tabs {
   margin-bottom: -10px;
@@ -2462,36 +2379,6 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-/* ── Variant C — split ── */
-.panel-split--diary.settings-mock-c { align-items: start; }
-.settings-mock-c .settings-mock-c-left,
-.settings-mock-c .settings-mock-c-right {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-.settings-mock-c .settings-mock-c-right {
-  padding: 12px 14px;
-  background: color-mix(in srgb, var(--card-strong) 75%, var(--card));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-}
-.settings-mock-c .settings-mock-c-left section { display: flex; flex-direction: column; gap: 10px; }
-.settings-mock-c .settings-mock-section--danger { }
-.settings-mock-c .settings-mock-empty {
-  margin: 0;
-  color: var(--muted-soft);
-  font-size: 12.5px;
-  line-height: 1.45;
-}
-.settings-mock-c .settings-mock-receipts,
-.settings-mock-c .settings-mock-mcp-aside {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 /* Account block: password + session live side-by-side inside the tab panel. */

@@ -24,8 +24,7 @@ const createdTokenSchema = apiEnvelopeSchema(
   })
 );
 
-export type TokenSummary = z.infer<typeof tokenSummarySchema>;
-export type CreatedToken = z.infer<typeof createdTokenSchema>["data"];
+type CreatedToken = z.infer<typeof createdTokenSchema>["data"];
 
 export type ExpiryChoice = "never" | "30d" | "90d" | "1y";
 
