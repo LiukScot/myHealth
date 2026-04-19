@@ -29,11 +29,19 @@ For day-to-day development, use the root dev command:
 bun run dev
 ```
 
-This starts the backend in Docker using the dev override and runs the frontend with Vite locally for fast hot reload. Open [http://localhost:5555](http://localhost:5555) and keep using that URL while you edit both backend and frontend files.
+This starts both the backend and frontend locally with file watching for the fastest edit loop. Open [http://localhost:5555](http://localhost:5555) and keep using that URL while you edit both backend and frontend files.
 
 The frontend dev server still binds locally on port `5173` for Vite's internal HMR connection, but you do not need to browse to that port during normal development.
 
-To stop the backend container after a dev session:
+If you want Docker parity for the backend instead, use:
+
+```bash
+bun run dev:docker
+```
+
+That keeps the frontend local for fast HMR, but runs the backend in Docker using the dev override.
+
+To stop the Docker backend container after a dev session:
 
 ```bash
 bun run dev:stop
