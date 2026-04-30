@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { eq, desc } from "drizzle-orm";
 import * as XLSX from "xlsx";
 import type { DrizzleDB } from "../db/index.ts";
-import { diaryEntries, painEntries, userPreferences, painRemovedOptions } from "../db/index.ts";
+import { diaryEntries, painEntries, userPreferences, painRemovedOptions, memorableDays } from "../db/index.ts";
 import type { SQLiteDB } from "../db.ts";
 import { toNullableInt, toNullableNumber } from "../db.ts";
 import {
@@ -38,6 +38,7 @@ backup.get("/json", (c) => {
     chatRange: userPreferences.chatRange,
     lastRange: userPreferences.lastRange,
     graphSelectionJson: userPreferences.graphSelectionJson,
+    birthday: userPreferences.birthday,
   }).from(userPreferences).where(eq(userPreferences.userId, userId)).limit(1).get();
 
   // Map Drizzle rows to the format rowsToHealthBackup expects (snake_case)
@@ -74,7 +75,8 @@ backup.get("/json", (c) => {
         model: prefs?.model ?? "mistral-small-latest",
         chatRange: prefs?.chatRange ?? "all",
         lastRange: prefs?.lastRange ?? "all",
-        graphSelection: prefs?.graphSelectionJson ? JSON.parse(prefs.graphSelectionJson) : {}
+        graphSelection: prefs?.graphSelectionJson ? JSON.parse(prefs.graphSelectionJson) : {},
+        birthday: prefs?.birthday ?? null,
       }
     }
   });
@@ -300,6 +302,7 @@ backup.post("/purge", async (c) => {
     rawDb.query(`DELETE FROM diary_entries WHERE user_id = ?`).run(userId);
     rawDb.query(`DELETE FROM cbt_entries WHERE user_id = ?`).run(userId);
     rawDb.query(`DELETE FROM dbt_entries WHERE user_id = ?`).run(userId);
+    rawDb.query(`DELETE FROM memorable_days WHERE user_id = ?`).run(userId);
     rawDb.query(`DELETE FROM user_preferences WHERE user_id = ?`).run(userId);
   });
   tx();

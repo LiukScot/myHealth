@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { useAuth, useDiary, usePain, useCbt, useDbt, useDashboard, useSettings } from "./hooks";
+import { useAuth, useDiary, usePain, useCbt, useDbt, useDashboard, useMemorableDays, useSettings } from "./hooks";
 import { LoginScreen } from "./app/LoginScreen";
 import { Sidebar } from "./app/Sidebar";
 import { CbtSection, DbtSection, DashboardSection, DesignSystemSection, DiarySection, PainSection, SettingsSection } from "./app/screens";
+import { MemorableDaysSection } from "./app/memorable-days";
 import { formatDocumentTitle, navLabels, type NavItem } from "./app/core";
 
 function App() {
@@ -85,6 +86,7 @@ function App() {
   const cbt = useCbt(loggedIn);
   const dbt = useDbt(loggedIn);
   const dashboard = useDashboard(loggedIn);
+  const memorable = useMemorableDays(loggedIn);
   const settings = useSettings(loggedIn);
 
   // Interactive swipe gestures: the sidebar follows the finger 1:1 during
@@ -274,8 +276,11 @@ function App() {
             dashboardConnections={dashboard.dashboardConnections}
             wellbeingSeries={dashboard.wellbeingSeries} graphSelection={dashboard.graphSelection}
             onGraphToggle={dashboard.handleGraphToggle} wellbeingChart={dashboard.wellbeingChart}
+            anniversaryCards={memorable.todayItems}
           />
         )}
+
+        {nav === "memorable-days" && <MemorableDaysSection memorable={memorable} />}
 
         {nav === "diary" && (
           <DiarySection
@@ -320,6 +325,9 @@ function App() {
 
         {nav === "settings" && (
           <SettingsSection auth={auth}
+            birthday={settings.prefsValue.birthday ?? null}
+            birthdayPending={settings.prefsMutation.isPending}
+            onSaveBirthday={settings.onSaveBirthday}
             purgeConfirmArmed={settings.purgeConfirmArmed}
             purgePending={settings.purgePending} purgeError={settings.purgeError}
             onPurgeArm={settings.onPurgeArm} onPurgeConfirm={settings.onPurgeConfirm}

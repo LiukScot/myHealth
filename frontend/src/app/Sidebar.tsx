@@ -4,6 +4,9 @@ const navIcons: Record<string, React.ReactNode> = {
   dashboard: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   ),
+  "memorable-days": (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
+  ),
   pain: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z"/></svg>
   ),
@@ -30,7 +33,7 @@ type SidebarProps = {
   mobileOpen: boolean;
 };
 
-const items: NavItem[] = ["dashboard", "pain", "diary", "cbt", "dbt", "settings"];
+const items: NavItem[] = ["dashboard", "pain", "diary", "cbt", "dbt", "memorable-days", "settings"];
 
 export function Sidebar({ nav, onNav, collapsed, onToggle, onCloseMobile, mobileOpen }: SidebarProps) {
   return (

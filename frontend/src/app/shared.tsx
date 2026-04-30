@@ -412,3 +412,47 @@ export function useDiaryColumnCap<T>(entries: T[], isLoading: boolean) {
 
   return { leftColRef, pastColRef, pastEntriesBodyRef, overflow };
 }
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function useSplitColumnHeightSync(deps: ReadonlyArray<unknown> = []) {
+  const leftColRef = useRef<HTMLElement | null>(null);
+  const rightColRef = useRef<HTMLElement | null>(null);
+
+  const syncHeights = useCallback(() => {
+    const left = leftColRef.current;
+    const right = rightColRef.current;
+    if (!left || !right) return;
+    const height = Math.round(left.getBoundingClientRect().height);
+    if (height > 0) {
+      right.style.setProperty("--split-col-height", `${height}px`);
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    let raf = 0;
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(syncHeights);
+    };
+    schedule();
+
+    const left = leftColRef.current;
+    const right = rightColRef.current;
+    const hasRO = typeof ResizeObserver !== "undefined";
+    const ro = hasRO ? new ResizeObserver(schedule) : null;
+    if (ro) {
+      if (left) ro.observe(left);
+      if (right) ro.observe(right);
+    }
+    window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+      window.removeEventListener("resize", schedule);
+    };
+  // deps intentionally let caller re-sync when screen data changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncHeights, ...deps]);
+
+  return { leftColRef, rightColRef };
+}

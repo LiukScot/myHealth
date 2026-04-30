@@ -22,5 +22,6 @@ export {
   painOptions,
   moodOptions,
   moodRemovedOptions,
-  mcpTokens
+  mcpTokens,
+  memorableDays
 } from "./drizzle-schema.ts";

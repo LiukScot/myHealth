@@ -73,8 +73,28 @@ export const prefsSchema = apiEnvelopeSchema(
     chatRange: z.string(),
     lastRange: z.string(),
     graphSelection: z.record(z.string(), z.any()),
+    birthday: z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Birthday must be in YYYY-MM-DD format" }), z.null()]).nullable().optional().default(null),
   }),
 );
+
+export const memorableRepeatModeSchema = z.enum(["one-time", "monthly", "yearly"]);
+
+export const memorableDaySchema = z.object({
+  id: z.number(),
+  date: z.string(),
+  title: z.string(),
+  emoji: z.string(),
+  description: z.string(),
+  repeatMode: memorableRepeatModeSchema,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  locked: z.boolean(),
+  source: z.enum(["user", "birthday"]),
+  occurrenceLabel: z.string(),
+  occurrenceCount: z.number().nullable(),
+});
+
+export const memorableDayListSchema = apiEnvelopeSchema(z.array(memorableDaySchema));
 
 export const cbtEntrySchema = z.object({
   id: z.number(),
@@ -197,18 +217,21 @@ export type DiaryEntry = z.infer<typeof diaryEntrySchema>;
 export type PainEntry = z.infer<typeof painEntrySchema>;
 export type CbtEntry = z.infer<typeof cbtEntrySchema>;
 export type DbtEntry = z.infer<typeof dbtEntrySchema>;
+export type MemorableRepeatMode = z.infer<typeof memorableRepeatModeSchema>;
+export type MemorableDay = z.infer<typeof memorableDaySchema>;
 export type DiaryFormValues = z.infer<typeof diaryFormSchema>;
 export type PainFormValues = z.infer<typeof painFormSchema>;
 export type CbtFormValues = z.infer<typeof cbtFormSchema>;
 export type DbtFormValues = z.infer<typeof dbtFormSchema>;
 
-export const navItems = ["dashboard", "diary", "pain", "cbt", "dbt", "settings", "design-system"] as const;
+export const navItems = ["dashboard", "memorable-days", "diary", "pain", "cbt", "dbt", "settings", "design-system"] as const;
 export type NavItem = (typeof navItems)[number];
 
 const appName = "Health";
 
 export const navLabels: Record<NavItem, string> = {
   dashboard: "Dashboard",
+  "memorable-days": "Giorni memorabili",
   diary: "Diary",
   pain: "Pain",
   cbt: "CBT",
@@ -244,7 +267,21 @@ export const defaultPrefsValue = {
   chatRange: "all",
   lastRange: "all",
   graphSelection: {},
+  birthday: null,
 };
+
+export function formatMonthLabel(value: Date) {
+  return new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(value);
+}
+
+export function toDateKey(value: Date) {
+  return new Date(value.getTime() - value.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+}
+
+export function isSameMonth(anchorDate: string, monthDate: Date) {
+  const [year, month] = anchorDate.split("-").map(Number);
+  return year === monthDate.getFullYear() && month === monthDate.getMonth() + 1;
+}
 
 export const defaultWellbeingSelection: Record<WellbeingSeriesKey, boolean> = {
   pain: true,

@@ -83,7 +83,28 @@ export const prefsSchema = z.object({
   model: z.string().default("mistral-small-latest"),
   chatRange: z.string().default("all"),
   lastRange: z.string().default("all"),
-  graphSelection: z.record(z.string(), z.any()).default({})
+  graphSelection: z.record(z.string(), z.any()).default({}),
+  birthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((val) => {
+    const parsed = new Date(val);
+    if (isNaN(parsed.getTime())) return false;
+    const [year, month, day] = val.split('-').map(Number);
+    return parsed.getFullYear() === year && parsed.getMonth() + 1 === month && parsed.getDate() === day;
+  }, { message: "Invalid birthday: must be a valid calendar date in YYYY-MM-DD format" }).nullable().optional().default(null),
+});
+
+export const memorableRepeatModeSchema = z.enum(["one-time", "monthly", "yearly"]);
+
+export const memorableDaySchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((val) => {
+    const parsed = new Date(val);
+    if (isNaN(parsed.getTime())) return false;
+    const [year, month, day] = val.split('-').map(Number);
+    return parsed.getFullYear() === year && parsed.getMonth() + 1 === month && parsed.getDate() === day;
+  }, { message: "Invalid date: must be a valid calendar date in YYYY-MM-DD format" }),
+  title: z.string().trim().min(1).max(120),
+  emoji: z.string().trim().max(16).optional().default(""),
+  description: z.string().max(1000).optional().default(""),
+  repeatMode: memorableRepeatModeSchema,
 });
 
 export const mcpTokenCreateSchema = z.object({

@@ -1958,6 +1958,344 @@ tbody tr:hover {
   display: flex; align-items: baseline; justify-content: space-between;
   padding-bottom: 8px;
 }
+
+.memorable-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.memorable-layout {
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.9fr);
+  gap: 48px;
+}
+
+.memorable-calendar-panel,
+.memorable-list-panel {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.memorable-list-panel {
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  height: var(--split-col-height, auto);
+  max-height: var(--split-col-height, none);
+  min-height: 0;
+}
+
+.memorable-calendar-head,
+.memorable-weekdays,
+.memorable-modal-actions {
+  display: flex;
+  align-items: center;
+}
+
+.memorable-calendar-head {
+  justify-content: space-between;
+  gap: var(--space-1);
+  margin-bottom: 14px;
+}
+
+.memorable-month-nav {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.memorable-month-nav:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 16%, transparent);
+}
+
+.memorable-weekdays {
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.memorable-weekdays span {
+  flex: 1;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.memorable-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.memorable-day-cell {
+  min-height: 108px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 0;
+  background: var(--card-soft);
+  color: var(--text);
+  box-shadow: none;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.memorable-day-cell.is-outside {
+  opacity: 0.48;
+}
+
+.memorable-day-cell.is-today {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.memorable-day-top,
+.memorable-list-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.memorable-day-add {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-weight: 800;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.memorable-day-add:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.memorable-day-add.is-success {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+}
+
+.memorable-day-markers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.memorable-day-marker {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.memorable-day-cell:hover {
+  color: var(--text);
+}
+
+.memorable-day-marker:hover {
+  color: var(--accent);
+}
+
+.memorable-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  gap: 10px;
+}
+
+.memorable-list-item {
+  width: 100%;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 0;
+  background: var(--card-soft);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.memorable-list-item:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 4%, var(--card-soft));
+}
+
+.memorable-list-item:hover .memorable-list-body strong {
+  color: var(--text);
+}
+
+.memorable-list-item:hover .memorable-list-body span {
+  color: var(--muted);
+}
+
+.memorable-list-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.memorable-list-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.memorable-list-body strong {
+  font-size: 15px;
+}
+
+.memorable-list-body span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.memorable-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, #fff 15%), var(--accent));
+  color: #16080e;
+  font-size: 34px;
+  line-height: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  z-index: 45;
+}
+
+.memorable-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 7, 10, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 40;
+}
+
+.memorable-modal {
+  width: min(520px, 100%);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--card);
+  border: 0;
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+.memorable-modal-top-row {
+  display: grid;
+  grid-template-columns: 168px 88px;
+  gap: 12px;
+  align-items: start;
+  justify-content: start;
+}
+
+.memorable-emoji-field {
+  width: 88px;
+}
+
+.memorable-emoji-field input {
+  text-align: center;
+  font-size: 24px;
+  padding-inline: 0;
+}
+
+.memorable-modal-actions {
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.memorable-lock-slot {
+  color: var(--muted);
+}
+
+.memorable-list-panel .section-head {
+  margin-bottom: 18px;
+}
+
+.memorable-modal-cancel {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.memorable-modal-cancel:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 16%, transparent);
+}
+
+@media (max-width: 980px) {
+  .memorable-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .memorable-calendar-panel {
+    padding-bottom: 14px;
+  }
+
+  .memorable-list-panel {
+    height: auto;
+    max-height: none;
+    padding-left: 0;
+    padding-top: 14px;
+    border-left: 0;
+  }
+
+  .memorable-list {
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .memorable-list-panel {
+    height: auto;
+    max-height: none;
+  }
+
+  .memorable-calendar-panel {
+    display: none;
+  }
+
+  .memorable-modal-top-row {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .memorable-list {
+    max-height: none;
+  }
+
+  .memorable-fab {
+    display: inline-flex;
+  }
+}
 .ds-section .section-title {
   font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--muted);
