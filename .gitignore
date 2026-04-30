@@ -44,3 +44,6 @@ rollback/legacy-runtime.tar.gz
 
 mockup/
 mockups/
+
+# Local planning/spec artifacts
+docs/superpowers/
