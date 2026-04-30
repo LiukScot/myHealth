@@ -73,7 +73,7 @@ export const prefsSchema = apiEnvelopeSchema(
     chatRange: z.string(),
     lastRange: z.string(),
     graphSelection: z.record(z.string(), z.any()),
-    birthday: z.string().nullable().optional().default(null),
+    birthday: z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Birthday must be in YYYY-MM-DD format" }), z.null()]).nullable().optional().default(null),
   }),
 );
 

@@ -196,13 +196,21 @@ export function MemorableDaysSection({ memorable }: Props) {
                 ...(lookups.yearlyByMonthDay.get(monthDayKey) ?? []),
               ].filter((item) => matchesMemorableDate(item, dayKey));
               return (
-                <button
-                  type="button"
+                <div
                   key={dayKey}
                   className={`memorable-day-cell${monthMatch ? "" : " is-outside"}${isToday ? " is-today" : ""}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => {
                     memorable.setSelectedDate(dayKey);
                     if (items[0]) openEdit(items[0]);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      memorable.setSelectedDate(dayKey);
+                      if (items[0]) openEdit(items[0]);
+                    }
                   }}
                 >
                   <span className="memorable-day-top">
@@ -210,10 +218,18 @@ export function MemorableDaysSection({ memorable }: Props) {
                     <span
                       className={`memorable-day-add${showSuccess ? " is-success" : ""}`}
                       role="button"
+                      tabIndex={0}
                       aria-label={`Add memorable day on ${dayKey}`}
                       onClick={(event) => {
                         event.stopPropagation();
                         openCreate(dayKey);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          openCreate(dayKey);
+                        }
                       }}
                     >
                       {showSuccess ? "✓" : "+"}
@@ -226,7 +242,7 @@ export function MemorableDaysSection({ memorable }: Props) {
                       </span>
                     ))}
                   </span>
-                </button>
+                </div>
               );
             })}
           </div>

@@ -136,12 +136,22 @@ export async function saveBirthday(
   password = e2eUser.password,
 ) {
   await loginApi(request, password);
+  // Fetch existing preferences to merge properly
+  const getResponse = await request.get("/api/v1/preferences");
+  const existingPrefs = getResponse.ok() ? await getResponse.json() : null;
+  const base = existingPrefs?.data ?? {
+    model: "mistral-small-latest",
+    chatRange: "all",
+    lastRange: "all",
+    graphSelection: {},
+  };
+
   const response = await request.put("/api/v1/preferences", {
     data: {
-      model: "",
-      chatRange: "all",
-      lastRange: "all",
-      graphSelection: {},
+      model: base.model,
+      chatRange: base.chatRange,
+      lastRange: base.lastRange,
+      graphSelection: base.graphSelection,
       birthday,
     },
   });
