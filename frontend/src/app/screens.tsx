@@ -10,6 +10,7 @@ import {
   type CbtFormValues,
   type DashboardConnection,
   type DashboardInsight,
+  type MemorableDay,
   type DashboardQuickRange,
   type DbtEntry,
   type DbtFormValues,
@@ -198,6 +199,7 @@ export function DashboardSection({
   graphSelection,
   onGraphToggle,
   wellbeingChart,
+  anniversaryCards,
 }: {
   dashboardFrom: string;
   dashboardTo: string;
@@ -214,6 +216,7 @@ export function DashboardSection({
   graphSelection: Record<WellbeingSeriesKey, boolean>;
   onGraphToggle: (key: WellbeingSeriesKey, checked: boolean) => void;
   wellbeingChart: WellbeingChartView;
+  anniversaryCards: MemorableDay[];
 }) {
   return (
     <section className="panel panel--dashboard">
@@ -253,6 +256,26 @@ export function DashboardSection({
                 ? "Try widening the dates, or add a new diary or pain entry to start filling this range."
                 : "Your averages will appear here after you log your first diary or pain entry."}
             />
+          ) : null}
+
+          {anniversaryCards.length > 0 ? (
+            <>
+              <SectionHead title="Anniversaries today" />
+              <div className="stats-grid stats-grid-dashboard stats-grid-memorable">
+                {anniversaryCards.map((card) => (
+                  <article key={`${card.source}-${card.id}-${card.date}`}>
+                    <h3>
+                      <span className="card-emoji" aria-hidden="true">
+                        {card.emoji || "✨"}
+                      </span>
+                      {card.title}
+                    </h3>
+                    <strong>{card.occurrenceLabel}</strong>
+                    <span className="delta-slot memorable-lock-slot">{card.locked ? "Settings-owned" : card.repeatMode}</span>
+                  </article>
+                ))}
+              </div>
+            </>
           ) : null}
 
           <SectionHead title="Averages" />
@@ -1748,6 +1771,9 @@ export function DbtSection({
 
 export function SettingsSection({
   auth,
+  birthday,
+  birthdayPending,
+  onSaveBirthday,
   purgeConfirmArmed,
   purgePending,
   purgeError,
@@ -1761,6 +1787,9 @@ export function SettingsSection({
   backupFeedback,
 }: {
   auth: ReturnType<typeof useAuth>;
+  birthday: string | null;
+  birthdayPending: boolean;
+  onSaveBirthday: (birthday: string | null) => void;
   purgeConfirmArmed: boolean;
   purgePending: boolean;
   purgeError: InlineMessage | null;
@@ -1775,6 +1804,9 @@ export function SettingsSection({
 }) {
   const variantProps = {
     auth,
+    birthday,
+    birthdayPending,
+    onSaveBirthday,
     purgeConfirmArmed,
     purgePending,
     purgeError,

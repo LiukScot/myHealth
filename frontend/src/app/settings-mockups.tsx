@@ -7,6 +7,9 @@ import { McpAccessSection } from "./McpAccessSection";
 
 type SettingsSectionProps = {
   auth: ReturnType<typeof useAuth>;
+  birthday: string | null;
+  birthdayPending: boolean;
+  onSaveBirthday: (birthday: string | null) => void;
   purgeConfirmArmed: boolean;
   purgePending: boolean;
   purgeError: InlineMessage | null;
@@ -19,6 +22,35 @@ type SettingsSectionProps = {
   onImportXlsx: (file: File) => void;
   backupFeedback: InlineMessage | null;
 };
+
+function BirthdayBlock({
+  birthday,
+  birthdayPending,
+  onSaveBirthday,
+}: Pick<SettingsSectionProps, "birthday" | "birthdayPending" | "onSaveBirthday">) {
+  const [value, setValue] = useState(birthday ?? "");
+
+  return (
+    <form
+      className="stack"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSaveBirthday(value || null);
+      }}
+    >
+      <label className="field field-line">
+        <span className="field-line-label">Birthday</span>
+        <input type="date" aria-label="Birthday" value={value} onChange={(event) => setValue(event.target.value)} />
+      </label>
+      <p className="hint">Why: this becomes locked birthday item in Giorni memorabili.</p>
+      <div className="save-section">
+        <button type="submit" className="btn btn-primary" disabled={birthdayPending}>
+          {birthdayPending ? "Saving..." : "Save birthday"}
+        </button>
+      </div>
+    </form>
+  );
+}
 
 function AccountBlock({ auth }: Pick<SettingsSectionProps, "auth">) {
   return (
@@ -178,9 +210,10 @@ function AccountIdentity({ auth }: Pick<SettingsSectionProps, "auth">) {
 }
 
 /* ── Variant B — Sub-tabs ── */
-type SettingsTab = "account" | "backup" | "mcp" | "danger";
+type SettingsTab = "account" | "birthday" | "backup" | "mcp" | "danger";
 const settingsTabs: { id: SettingsTab; label: string; danger?: boolean }[] = [
   { id: "account", label: "Account" },
+  { id: "birthday", label: "Birthday" },
   { id: "backup", label: "Backup" },
   { id: "mcp", label: "MCP access" },
   { id: "danger", label: "Danger zone", danger: true },
@@ -205,6 +238,13 @@ export function SettingsVariantB(props: SettingsSectionProps) {
       </nav>
       <div className="settings-mock-panel">
         {tab === "account" ? <AccountBlock auth={props.auth} /> : null}
+        {tab === "birthday" ? (
+          <BirthdayBlock
+            birthday={props.birthday}
+            birthdayPending={props.birthdayPending}
+            onSaveBirthday={props.onSaveBirthday}
+          />
+        ) : null}
         {tab === "backup" ? (
           <BackupBlock
             onExportJson={props.onExportJson}

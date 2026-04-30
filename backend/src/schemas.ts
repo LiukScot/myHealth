@@ -83,7 +83,18 @@ export const prefsSchema = z.object({
   model: z.string().default("mistral-small-latest"),
   chatRange: z.string().default("all"),
   lastRange: z.string().default("all"),
-  graphSelection: z.record(z.string(), z.any()).default({})
+  graphSelection: z.record(z.string(), z.any()).default({}),
+  birthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional().default(null),
+});
+
+export const memorableRepeatModeSchema = z.enum(["one-time", "monthly", "yearly"]);
+
+export const memorableDaySchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  title: z.string().trim().min(1).max(120),
+  emoji: z.string().trim().max(16).optional().default(""),
+  description: z.string().max(1000).optional().default(""),
+  repeatMode: memorableRepeatModeSchema,
 });
 
 export const mcpTokenCreateSchema = z.object({

@@ -42,3 +42,14 @@ test("changes password and restores the original password", async ({ page }) => 
   await page.getByRole("button", { name: "Log out" }).click();
   await loginUi(page);
 });
+
+test("saves birthday in settings", async ({ page }) => {
+  await page.getByRole("button", { name: "Birthday" }).click();
+  await page.getByLabel("Birthday").fill("1995-06-12");
+  await page.getByRole("button", { name: "Save birthday" }).click();
+
+  await page.reload();
+  await page.getByRole("button", { name: "settings" }).click();
+  await page.getByRole("button", { name: "Birthday" }).click();
+  await expect(page.getByLabel("Birthday")).toHaveValue("1995-06-12");
+});

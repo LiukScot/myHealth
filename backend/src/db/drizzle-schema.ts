@@ -112,8 +112,27 @@ export const userPreferences = sqliteTable("user_preferences", {
   chatRange: text("chat_range").notNull().default("all"),
   lastRange: text("last_range").notNull().default("all"),
   graphSelectionJson: text("graph_selection_json").notNull().default("{}"),
+  birthday: text("birthday"),
   updatedAt: text("updated_at").notNull().default("CURRENT_TIMESTAMP"),
 });
+
+export const memorableDays = sqliteTable(
+  "memorable_days",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    date: text("date").notNull(),
+    title: text("title").notNull(),
+    emoji: text("emoji").notNull().default(""),
+    description: text("description").notNull().default(""),
+    repeatMode: text("repeat_mode").notNull(),
+    createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
+    updatedAt: text("updated_at").notNull().default("CURRENT_TIMESTAMP"),
+  },
+  (table) => [
+    index("idx_memorable_days_user_date").on(table.userId, table.date, table.id),
+  ]
+);
 
 export const appMeta = sqliteTable("app_meta", {
   key: text("key").primaryKey(),

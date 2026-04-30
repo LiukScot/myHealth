@@ -129,3 +129,46 @@ export async function openAccountPanel(page: Page) {
 export async function navigateTo(page: Page, section: string) {
   await page.getByRole("button", { name: section }).click();
 }
+
+export async function saveBirthday(
+  request: APIRequestContext,
+  birthday: string | null,
+  password = e2eUser.password,
+) {
+  await loginApi(request, password);
+  const response = await request.put("/api/v1/preferences", {
+    data: {
+      model: "",
+      chatRange: "all",
+      lastRange: "all",
+      graphSelection: {},
+      birthday,
+    },
+  });
+  expect(response.ok(), "expected birthday save to succeed").toBeTruthy();
+}
+
+export async function seedMemorableDay(
+  request: APIRequestContext,
+  overrides: Partial<{
+    date: string;
+    title: string;
+    emoji: string;
+    description: string;
+    repeatMode: "one-time" | "monthly" | "yearly";
+  }> = {},
+  password = e2eUser.password,
+) {
+  await loginApi(request, password);
+  const response = await request.post("/api/v1/memorable-days", {
+    data: {
+      date: "2024-06-10",
+      title: uniqueText("memorable"),
+      emoji: "✨",
+      description: "important date",
+      repeatMode: "monthly",
+      ...overrides,
+    },
+  });
+  expect(response.ok(), "expected memorable day seed to succeed").toBeTruthy();
+}

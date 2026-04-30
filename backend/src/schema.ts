@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 8;
+export const SCHEMA_VERSION = 9;
 
 export const migrationStatements: string[] = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -50,9 +50,23 @@ export const migrationStatements: string[] = [
     chat_range TEXT NOT NULL DEFAULT 'all',
     last_range TEXT NOT NULL DEFAULT 'all',
     graph_selection_json TEXT NOT NULL DEFAULT '{}',
+    birthday TEXT,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`,
+  `CREATE TABLE IF NOT EXISTS memorable_days (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    title TEXT NOT NULL,
+    emoji TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    repeat_mode TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_memorable_days_user_date ON memorable_days(user_id, date DESC, id DESC)`,
   // user_ai_settings dropped — Mistral chatbot replaced by MCP server.
   `DROP TABLE IF EXISTS user_ai_settings`,
   `CREATE TABLE IF NOT EXISTS app_meta (
