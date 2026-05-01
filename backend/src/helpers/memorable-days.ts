@@ -21,18 +21,23 @@ export type MemorableDayView = MemorableDayRecord & {
 function parseDateParts(date: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
   if (!match) return null;
-  return {
-    year: Number(match[1]),
-    month: Number(match[2]),
-    day: Number(match[3]),
-  };
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const utc = new Date(Date.UTC(year, month - 1, day));
+  if (utc.getUTCFullYear() !== year || utc.getUTCMonth() + 1 !== month || utc.getUTCDate() !== day) {
+    return null;
+  }
+  return { year, month, day };
 }
 
 export function matchesMemorableDate(anchorDate: string, repeatMode: MemorableRepeatMode, targetDate: string) {
   const anchor = parseDateParts(anchorDate);
   const target = parseDateParts(targetDate);
   if (!anchor || !target) return false;
-  if (targetDate < anchorDate) return false;
+  const anchorTs = Date.UTC(anchor.year, anchor.month - 1, anchor.day);
+  const targetTs = Date.UTC(target.year, target.month - 1, target.day);
+  if (targetTs < anchorTs) return false;
   if (repeatMode === "one-time") return anchorDate === targetDate;
   if (repeatMode === "monthly") return anchor.day === target.day;
   return anchor.month === target.month && anchor.day === target.day;
@@ -54,10 +59,10 @@ export function countMemorableOccurrences(anchorDate: string, repeatMode: Memora
 
 export function buildOccurrenceLabel(title: string, repeatMode: MemorableRepeatMode, count: number | null) {
   if (repeatMode === "monthly" && count !== null) {
-    return `${count} month${count === 1 ? "" : "s"} since ${title.toLowerCase()}`;
+    return `${count} month${count === 1 ? "" : "s"} since ${title}`;
   }
   if (repeatMode === "yearly" && count !== null) {
-    return `${count} year${count === 1 ? "" : "s"} since ${title.toLowerCase()}`;
+    return `${count} year${count === 1 ? "" : "s"} since ${title}`;
   }
   return title;
 }

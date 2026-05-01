@@ -15,16 +15,28 @@ export function LoginScreen({ loginForm, loginMutation }: LoginScreenProps) {
         <form noValidate onSubmit={loginForm.handleSubmit((values) => loginMutation.mutate(values))} className="stack">
           <label>
             Email
-            <input type="email" autoComplete="email" {...loginForm.register("email")} />
+            <input
+              type="email"
+              autoComplete="email"
+              aria-invalid={!!loginForm.formState.errors.email}
+              aria-describedby={loginForm.formState.errors.email ? "login-email-error" : undefined}
+              {...loginForm.register("email")}
+            />
             {loginForm.formState.errors.email && (
-              <p className="error">{loginForm.formState.errors.email.message}</p>
+              <p id="login-email-error" className="error" role="alert">{loginForm.formState.errors.email.message}</p>
             )}
           </label>
           <label>
             Password
-            <input type="password" autoComplete="current-password" {...loginForm.register("password")} />
+            <input
+              type="password"
+              autoComplete="current-password"
+              aria-invalid={!!loginForm.formState.errors.password}
+              aria-describedby={loginForm.formState.errors.password ? "login-password-error" : undefined}
+              {...loginForm.register("password")}
+            />
             {loginForm.formState.errors.password && (
-              <p className="error">{loginForm.formState.errors.password.message}</p>
+              <p id="login-password-error" className="error" role="alert">{loginForm.formState.errors.password.message}</p>
             )}
           </label>
           <button type="submit" disabled={loginMutation.isPending}>

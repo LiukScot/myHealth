@@ -161,15 +161,16 @@ backup.post("/json/import", async (c) => {
     if (body.prefs) {
       const pref = prefsSchema.parse(body.prefs);
       rawDb.query(
-        `INSERT INTO user_preferences (user_id, model, chat_range, last_range, graph_selection_json, updated_at)
-         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        `INSERT INTO user_preferences (user_id, model, chat_range, last_range, graph_selection_json, birthday, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
          ON CONFLICT(user_id) DO UPDATE SET
           model=excluded.model,
           chat_range=excluded.chat_range,
           last_range=excluded.last_range,
           graph_selection_json=excluded.graph_selection_json,
+          birthday=excluded.birthday,
           updated_at=CURRENT_TIMESTAMP`
-      ).run(userId, pref.model, pref.chatRange, pref.lastRange, JSON.stringify(pref.graphSelection ?? {}));
+      ).run(userId, pref.model, pref.chatRange, pref.lastRange, JSON.stringify(pref.graphSelection ?? {}), pref.birthday ?? null);
     }
   });
 

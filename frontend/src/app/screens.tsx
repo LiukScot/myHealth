@@ -1792,10 +1792,10 @@ export function SettingsSection({
 }: {
   auth: ReturnType<typeof useAuth>;
   birthday: string | null;
-  weekStart: "sunday" | "monday";
+  weekStart?: "sunday" | "monday";
   birthdayPending: boolean;
   onSaveBirthday: (birthday: string | null) => void;
-  onSaveWeekStart: (weekStart: "sunday" | "monday") => void;
+  onSaveWeekStart?: (weekStart: "sunday" | "monday") => void;
   purgeConfirmArmed: boolean;
   purgePending: boolean;
   purgeError: InlineMessage | null;
