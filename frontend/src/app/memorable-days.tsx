@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { SectionHead, InlineFeedback, useSplitColumnHeightSync } from "./shared";
 import { formatMonthLabel, toDateKey, type InlineMessage, type MemorableDay } from "./core";
+import { emojiCatalog, emojiCategoryLabels, type EmojiCategory, type EmojiRecord } from "./emoji-catalog";
 import { getErrorMessage } from "../lib";
 import { memorableDayPayloadSchema, matchesMemorableDate, type useMemorableDays } from "../hooks/use-memorable-days";
 
@@ -25,7 +26,41 @@ type MemorableLookups = {
   yearlyByMonthDay: Map<string, MemorableDay[]>;
 };
 
-const COMMON_EMOJIS = ["✨", "🎂", "💍", "🎉", "🌟", "❤️", "🎓", "🏆", "✈️", "🩺", "🌈", "🎯"];
+type EmojiPickerScrollTopByCategory = Record<EmojiCategory, number>;
+
+type EmojiPickerState = {
+  open: boolean;
+  activeCategory: EmojiCategory;
+  search: string;
+  recent: string[];
+  scrollTopByCategory: EmojiPickerScrollTopByCategory;
+};
+
+const emojiCategoryOrder = Object.keys(emojiCategoryLabels) as EmojiCategory[];
+
+function createEmojiPickerScrollTopByCategory(): EmojiPickerScrollTopByCategory {
+  return {
+    recent: 0,
+    smileys: 0,
+    people: 0,
+    nature: 0,
+    food: 0,
+    travel: 0,
+    objects: 0,
+    symbols: 0,
+    flags: 0,
+  };
+}
+
+function createEmojiPickerState(): EmojiPickerState {
+  return {
+    open: false,
+    activeCategory: "recent",
+    search: "",
+    recent: [],
+    scrollTopByCategory: createEmojiPickerScrollTopByCategory(),
+  };
+}
 
 function buildCalendarDays(month: Date, weekStart: "sunday" | "monday") {
   const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
@@ -85,15 +120,42 @@ export function MemorableDaysSection({ memorable }: Props) {
   const [draft, setDraft] = useState<DraftState | null>(null);
   const [feedback, setFeedback] = useState<InlineMessage | null>(null);
   const [successDateKey, setSuccessDateKey] = useState<string | null>(null);
-  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [popoverDateKey, setPopoverDateKey] = useState<string | null>(null);
-  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+  const [emojiPicker, setEmojiPicker] = useState<EmojiPickerState>(() => createEmojiPickerState());
   const popoverRef = useRef<HTMLDivElement | null>(null);
+  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+  const emojiPickerScrollRef = useRef<HTMLDivElement | null>(null);
+  const emojiPickerSearchRef = useRef<HTMLInputElement | null>(null);
+  const emojiPickerWasOpenRef = useRef(false);
   const weekdayLabels = memorable.weekStart === "monday"
     ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const days = useMemo(() => buildCalendarDays(memorable.visibleMonth, memorable.weekStart), [memorable.visibleMonth, memorable.weekStart]);
   const lookups = useMemo(() => buildMemorableLookups(memorable.memorableDays), [memorable.memorableDays]);
+  const emojiByValue = useMemo(() => new Map(emojiCatalog.map((record) => [record.emoji, record])), []);
+  const emojiRecordsByCategory = useMemo(() => {
+    const grouped = {
+      smileys: [] as EmojiRecord[],
+      people: [] as EmojiRecord[],
+      nature: [] as EmojiRecord[],
+      food: [] as EmojiRecord[],
+      travel: [] as EmojiRecord[],
+      objects: [] as EmojiRecord[],
+      symbols: [] as EmojiRecord[],
+      flags: [] as EmojiRecord[],
+    };
+    for (const record of emojiCatalog) {
+      grouped[record.category].push(record);
+    }
+    return grouped;
+  }, []);
+  const {
+    open: emojiPickerOpen,
+    activeCategory: emojiPickerActiveCategory,
+    search: emojiPickerSearch,
+    recent: emojiPickerRecent,
+    scrollTopByCategory: emojiPickerScrollTopByCategory,
+  } = emojiPicker;
   const todayKey = toDateKey(new Date());
   const { leftColRef, rightColRef } = useSplitColumnHeightSync([days.length, memorable.memorableDays.length, memorable.isLoading]);
   const popoverItems = useMemo(() => {
@@ -106,33 +168,31 @@ export function MemorableDaysSection({ memorable }: Props) {
       ...(lookups.yearlyByMonthDay.get(monthDayKey) ?? []),
     ].filter((item) => matchesMemorableDate(item, popoverDateKey));
   }, [popoverDateKey, lookups]);
+  const emojiPickerRecords = useMemo(() => {
+    const baseRecords = emojiPickerActiveCategory === "recent"
+      ? emojiPickerRecent.map((emoji) => emojiByValue.get(emoji)).filter((record): record is EmojiRecord => Boolean(record))
+      : emojiRecordsByCategory[emojiPickerActiveCategory];
+    const search = emojiPickerSearch.trim().toLowerCase();
+    if (!search) return baseRecords;
+    return baseRecords.filter((record) => record.searchText.includes(search));
+  }, [emojiByValue, emojiPickerActiveCategory, emojiPickerRecent, emojiPickerSearch, emojiRecordsByCategory]);
 
   useEffect(() => {
     if (!draft) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && !emojiPickerOpen) {
         setDraft(null);
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [draft]);
+  }, [draft, emojiPickerOpen]);
 
   useEffect(() => {
     if (!successDateKey) return;
     const timer = window.setTimeout(() => setSuccessDateKey(null), 2500);
     return () => window.clearTimeout(timer);
   }, [successDateKey]);
-
-  useEffect(() => {
-    if (!emojiPickerOpen) return;
-    const onPointerDown = (event: MouseEvent) => {
-      if (emojiPickerRef.current?.contains(event.target as Node)) return;
-      setEmojiPickerOpen(false);
-    };
-    window.addEventListener("mousedown", onPointerDown);
-    return () => window.removeEventListener("mousedown", onPointerDown);
-  }, [emojiPickerOpen]);
 
   useEffect(() => {
     if (!popoverDateKey) return;
@@ -152,6 +212,46 @@ export function MemorableDaysSection({ memorable }: Props) {
   }, [popoverDateKey]);
 
   useEffect(() => {
+    if (!emojiPickerOpen) return;
+    const savedScrollTop = emojiPickerScrollTopByCategory[emojiPickerActiveCategory] ?? 0;
+    const wasOpen = emojiPickerWasOpenRef.current;
+    emojiPickerWasOpenRef.current = true;
+    const frame = window.requestAnimationFrame(() => {
+      if (!wasOpen && emojiPickerSearchRef.current) {
+        emojiPickerSearchRef.current.focus();
+      }
+      if (emojiPickerScrollRef.current) {
+        emojiPickerScrollRef.current.scrollTop = savedScrollTop;
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [emojiPickerActiveCategory, emojiPickerOpen, emojiPickerScrollTopByCategory]);
+
+  useEffect(() => {
+    if (emojiPickerOpen) return;
+    emojiPickerWasOpenRef.current = false;
+  }, [emojiPickerOpen]);
+
+  useEffect(() => {
+    if (!emojiPickerOpen) return;
+    const onMouseDown = (event: MouseEvent) => {
+      if (emojiPickerRef.current?.contains(event.target as Node)) return;
+      closeEmojiPicker();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeEmojiPicker();
+      }
+    };
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [emojiPickerOpen]);
+
+  useEffect(() => {
     if (!draft?.date) return;
     const [year, month] = draft.date.split("-").map(Number);
     if (!year || !month) return;
@@ -161,7 +261,7 @@ export function MemorableDaysSection({ memorable }: Props) {
   const closeDraft = () => {
     setDraft(null);
     setFeedback(null);
-    setEmojiPickerOpen(false);
+    closeEmojiPicker();
   };
 
   const onSave = async () => {
@@ -196,7 +296,7 @@ export function MemorableDaysSection({ memorable }: Props) {
   const openCreate = (date: string) => {
     memorable.setSelectedDate(date);
     setFeedback(null);
-    setEmojiPickerOpen(false);
+    closeEmojiPicker();
     setDraft(emptyDraft(date));
   };
 
@@ -204,7 +304,7 @@ export function MemorableDaysSection({ memorable }: Props) {
     memorable.setSelectedDate(item.date);
     memorable.setVisibleMonth(new Date(`${item.date}T00:00:00`));
     setFeedback(null);
-    setEmojiPickerOpen(false);
+    closeEmojiPicker();
     setDraft({
       id: item.id > 0 ? item.id : null,
       date: item.date,
@@ -214,6 +314,67 @@ export function MemorableDaysSection({ memorable }: Props) {
       repeatMode: item.repeatMode,
       locked: item.locked,
     });
+  };
+
+  const openEmojiPicker = () => {
+    setEmojiPicker((current) => ({ ...current, open: true }));
+    emojiPickerWasOpenRef.current = false;
+  };
+
+  const closeEmojiPicker = () => {
+    rememberEmojiPickerScrollTop();
+    setEmojiPicker((current) => ({ ...current, open: false }));
+  };
+
+  const selectEmoji = (record: EmojiRecord) => {
+    setDraft((current) => (current ? { ...current, emoji: record.emoji } : current));
+    setEmojiPicker((current) => ({
+      ...current,
+      recent: [record.emoji, ...current.recent.filter((emoji) => emoji !== record.emoji)].slice(0, 24),
+    }));
+    closeEmojiPicker();
+  };
+
+  const rememberEmojiPickerScrollTop = () => {
+    const scroller = emojiPickerScrollRef.current;
+    if (!scroller) return;
+    const nextScrollTop = scroller.scrollTop;
+    setEmojiPicker((current) => {
+      const currentScrollTop = current.scrollTopByCategory[current.activeCategory] ?? 0;
+      if (currentScrollTop === nextScrollTop) return current;
+      return {
+        ...current,
+        scrollTopByCategory: {
+          ...current.scrollTopByCategory,
+          [current.activeCategory]: nextScrollTop,
+        },
+      };
+    });
+  };
+
+  const onEmojiPickerScroll = () => {
+    const scroller = emojiPickerScrollRef.current;
+    if (!scroller) return;
+    const nextScrollTop = scroller.scrollTop;
+    setEmojiPicker((current) => {
+      const currentScrollTop = current.scrollTopByCategory[current.activeCategory] ?? 0;
+      if (currentScrollTop === nextScrollTop) return current;
+      return {
+        ...current,
+        scrollTopByCategory: {
+          ...current.scrollTopByCategory,
+          [current.activeCategory]: nextScrollTop,
+        },
+      };
+    });
+  };
+
+  const onListItemWheel = (event: React.WheelEvent<HTMLButtonElement>) => {
+    const list = event.currentTarget.closest(".memorable-list");
+    if (!(list instanceof HTMLElement)) return;
+    if (list.scrollHeight <= list.clientHeight + 1) return;
+    list.scrollTop += event.deltaY;
+    event.preventDefault();
   };
 
   return (
@@ -318,6 +479,7 @@ export function MemorableDaysSection({ memorable }: Props) {
                   type="button"
                   key={`${item.source}-${item.id}-${item.date}`}
                   className="memorable-list-item"
+                  onWheelCapture={onListItemWheel}
                   onClick={() => openEdit(item)}
                 >
                   <span className="memorable-list-emoji">{item.emoji || "✨"}</span>
@@ -340,7 +502,7 @@ export function MemorableDaysSection({ memorable }: Props) {
       </button>
 
       {draft ? (
-        <div className="memorable-modal-backdrop" role="presentation" onClick={() => setDraft(null)}>
+        <div className="memorable-modal-backdrop" role="presentation" onClick={closeDraft}>
           <div className="memorable-modal" role="dialog" aria-modal="true" aria-label={draft.id ? "Edit memorable day" : "Add memorable day"} onClick={(event) => event.stopPropagation()}>
             <SectionHead title={draft.id ? "Edit memorable day" : "Add memorable day"} />
             <div className="memorable-modal-top-row">
@@ -348,37 +510,106 @@ export function MemorableDaysSection({ memorable }: Props) {
                 <span className="field-line-label">Date</span>
                 <input type="date" value={draft.date} onChange={(event) => setDraft((current) => current ? { ...current, date: event.target.value } : current)} />
               </label>
-              <div ref={emojiPickerRef} className="field field-line memorable-emoji-field memorable-emoji-picker">
+              <label className="field field-line memorable-emoji-field">
                 <span className="field-line-label">Emoji</span>
-                <input
-                  type="text"
-                  inputMode="text"
-                  maxLength={8}
-                  aria-label="Emoji"
-                  placeholder="✨"
-                  value={draft.emoji}
-                  onFocus={() => setEmojiPickerOpen(true)}
-                  onClick={() => setEmojiPickerOpen(true)}
-                  onChange={(event) => setDraft((current) => current ? { ...current, emoji: event.target.value } : current)}
-                />
-                {emojiPickerOpen ? (
-                  <div className="memorable-emoji-popover" role="listbox" aria-label="Emoji picker">
-                    {COMMON_EMOJIS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        className="memorable-emoji-option"
-                        onClick={() => {
-                          setDraft((current) => current ? { ...current, emoji } : current);
-                          setEmojiPickerOpen(false);
-                        }}
+                <div ref={emojiPickerRef} className="memorable-emoji-picker">
+                  <button
+                    type="button"
+                    className="btn memorable-emoji-picker-trigger"
+                    aria-haspopup="dialog"
+                    aria-expanded={emojiPickerOpen}
+                    aria-controls="emoji-picker-panel"
+                    onClick={() => {
+                      if (emojiPickerOpen) {
+                        closeEmojiPicker();
+                        return;
+                      }
+                      openEmojiPicker();
+                    }}
+                  >
+                    <span aria-hidden="true" className="memorable-emoji-picker-trigger-emoji">
+                      {draft.emoji || "✨"}
+                    </span>
+                    <span className="memorable-emoji-picker-trigger-label">
+                      Emoji
+                    </span>
+                  </button>
+
+                  {emojiPickerOpen ? (
+                    <div
+                      id="emoji-picker-panel"
+                      role="dialog"
+                      aria-label="Emoji picker"
+                      className="memorable-emoji-picker-panel"
+                      onMouseDown={(event) => event.stopPropagation()}
+                    >
+                      <label className="field field-line memorable-emoji-picker-search">
+                        <span className="field-line-label">Search emoji</span>
+                        <input
+                          ref={emojiPickerSearchRef}
+                          className="memorable-emoji-picker-search-input"
+                          type="search"
+                          value={emojiPickerSearch}
+                          onChange={(event) => setEmojiPicker((current) => ({ ...current, search: event.target.value }))}
+                          placeholder="Search emoji"
+                        />
+                      </label>
+
+                      <div role="tablist" aria-label="Emoji categories" className="memorable-emoji-picker-tabs">
+                        {emojiCategoryOrder.map((category) => {
+                          const isActive = emojiPickerActiveCategory === category;
+                          const label = emojiCategoryLabels[category];
+                          return (
+                            <button
+                              key={category}
+                              type="button"
+                              role="tab"
+                              aria-selected={isActive}
+                              className={`memorable-emoji-picker-tab${isActive ? " is-active" : ""}`}
+                              onClick={() => {
+                                rememberEmojiPickerScrollTop();
+                                setEmojiPicker((current) => ({ ...current, activeCategory: category }));
+                              }}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div
+                        ref={emojiPickerScrollRef}
+                        onScroll={onEmojiPickerScroll}
+                        className="memorable-emoji-picker-scroll"
                       >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
+                        {emojiPickerRecords.length > 0 ? (
+                          <div className="memorable-emoji-picker-grid">
+                            {emojiPickerRecords.map((record) => {
+                              const isSelected = draft.emoji === record.emoji;
+                              return (
+                                <button
+                                  key={record.emoji}
+                                  type="button"
+                                  aria-label={`${record.name}, ${record.emoji}`}
+                                  aria-pressed={isSelected}
+                                  className={`memorable-emoji-picker-emoji${isSelected ? " is-selected" : ""}`}
+                                  onClick={() => selectEmoji(record)}
+                                >
+                                  {record.emoji}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="hint memorable-emoji-picker-empty">
+                            No emoji match.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </label>
             </div>
             <label className="field field-line">
               <span className="field-line-label">Title</span>
