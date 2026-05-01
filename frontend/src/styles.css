@@ -2205,6 +2205,11 @@ tbody tr:hover {
   font-size: 13px;
 }
 
+.memorable-list-body .memorable-list-meta {
+  font-size: 11px;
+  color: var(--muted-soft);
+}
+
 .memorable-list-date {
   flex-shrink: 0;
   text-align: right;
@@ -2514,11 +2519,17 @@ tbody tr:hover {
 /* Dashboard-scoped override: SectionHead labels match Diary/Pain "NEW ENTRY"
    (entries-heading) — 13px accent uppercase — instead of the smaller 10px muted
    variant used elsewhere. */
-.panel--dashboard .section-head .section-title {
+.panel--dashboard .section-head .section-title,
+.panel--memorable .memorable-header .section-head .section-title {
   font-size: 13px;
   color: var(--accent);
   letter-spacing: 0.16em;
   font-weight: 700;
+}
+
+.panel--memorable .memorable-header .section-head {
+  margin: 2px 0 12px;
+  padding: 0;
 }
 
 .panel--dashboard .section-head {

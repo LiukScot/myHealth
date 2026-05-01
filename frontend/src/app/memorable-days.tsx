@@ -129,6 +129,12 @@ export function MemorableDaysSection({ memorable }: Props) {
     memorable.setVisibleMonth(new Date(year, month - 1, 1));
   }, [draft?.date]);
 
+  const closeDraft = () => {
+    setDraft(null);
+    setFeedback(null);
+    setEmojiPickerOpen(false);
+  };
+
   const onSave = async () => {
     if (!draft) return;
     try {
@@ -142,8 +148,7 @@ export function MemorableDaysSection({ memorable }: Props) {
       if (draft.id) await memorable.updateMemorableDay(draft.id, payload);
       else await memorable.createMemorableDay(payload);
       setSuccessDateKey(draft.date);
-      setFeedback(null);
-      setDraft(null);
+      closeDraft();
     } catch (error) {
       setFeedback({ tone: "error", text: getDraftErrorMessage(error) });
     }
@@ -153,7 +158,7 @@ export function MemorableDaysSection({ memorable }: Props) {
     if (!draft?.id) return;
     try {
       await memorable.deleteMemorableDay(draft.id);
-      setDraft(null);
+      closeDraft();
     } catch (error) {
       setFeedback({ tone: "error", text: getErrorMessage(error) });
     }
@@ -161,6 +166,7 @@ export function MemorableDaysSection({ memorable }: Props) {
 
   const openCreate = (date: string) => {
     memorable.setSelectedDate(date);
+    setFeedback(null);
     setEmojiPickerOpen(false);
     setDraft(emptyDraft(date));
   };
@@ -168,6 +174,7 @@ export function MemorableDaysSection({ memorable }: Props) {
   const openEdit = (item: MemorableDay) => {
     memorable.setSelectedDate(item.date);
     memorable.setVisibleMonth(new Date(`${item.date}T00:00:00`));
+    setFeedback(null);
     setEmojiPickerOpen(false);
     setDraft({
       id: item.id > 0 ? item.id : null,
@@ -178,7 +185,6 @@ export function MemorableDaysSection({ memorable }: Props) {
       repeatMode: item.repeatMode,
       locked: item.locked,
     });
-    setFeedback(null);
   };
 
   return (
@@ -186,6 +192,7 @@ export function MemorableDaysSection({ memorable }: Props) {
       <div className="memorable-header">
         <div>
           <h1 className="panel-title">Memorable days</h1>
+          <SectionHead title="Calendar" />
         </div>
       </div>
       {feedback?.tone === "error" ? <InlineFeedback message={feedback} /> : null}
@@ -217,21 +224,28 @@ export function MemorableDaysSection({ memorable }: Props) {
                 ...(lookups.yearlyByMonthDay.get(monthDayKey) ?? []),
               ].filter((item) => matchesMemorableDate(item, dayKey));
               return (
-                <button
-                  type="button"
+                <div
                   key={dayKey}
                   className={`memorable-day-cell${monthMatch ? "" : " is-outside"}${isToday ? " is-today" : ""}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => {
                     memorable.setSelectedDate(dayKey);
                     if (items[0]) openEdit(items[0]);
                   }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      memorable.setSelectedDate(dayKey);
+                      if (items[0]) openEdit(items[0]);
+                    }
+                  }}
                 >
                   <span className="memorable-day-top">
                     <span>{day.getDate()}</span>
-                    <span
+                    <button
+                      type="button"
                       className={`memorable-day-add${showSuccess ? " is-success" : ""}`}
-                      role="button"
-                      tabIndex={0}
                       aria-label={`Add memorable day on ${dayKey}`}
                       onClick={(event) => {
                         event.stopPropagation();
@@ -239,7 +253,7 @@ export function MemorableDaysSection({ memorable }: Props) {
                       }}
                     >
                       {showSuccess ? "✓" : "+"}
-                    </span>
+                    </button>
                   </span>
                   <span className="memorable-day-markers">
                     {items.slice(0, 3).map((item) => (
@@ -248,7 +262,7 @@ export function MemorableDaysSection({ memorable }: Props) {
                       </span>
                     ))}
                   </span>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -280,7 +294,7 @@ export function MemorableDaysSection({ memorable }: Props) {
                       <strong>{item.title}</strong>
                       <span className="memorable-list-date">{item.date}</span>
                     </span>
-                    <span>{item.locked ? "Locked from Settings" : item.repeatMode}</span>
+                    <span className="memorable-list-meta">{item.locked ? "Locked from Settings" : item.repeatMode}</span>
                   </span>
                 </button>
                 ))}
@@ -360,7 +374,7 @@ export function MemorableDaysSection({ memorable }: Props) {
                   Delete
                 </button>
               ) : null}
-              <button type="button" className="btn memorable-modal-cancel" onClick={() => setDraft(null)}>
+              <button type="button" className="btn memorable-modal-cancel" onClick={closeDraft}>
                 Cancel
               </button>
             </div>
