@@ -1,0 +1,7 @@
+[     217ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=8d27a9d5:20102
+[  524468ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:864
+[  629723ms] [WARNING] Error with Permissions-Policy header: Unrecognized feature: 'bluetooth'. @ :0
+[  629723ms] [WARNING] Error with Permissions-Policy header: Unrecognized feature: 'web-share'. @ :0
+[  630822ms] [INFO] [O11Y] [DatadogRUM] Initialized {service: claude-ai, env: production, version: c78597ac3b} @ https://assets-proxy.anthropic.com/claude-ai/v2/assets/v1/c393cb7f5-DykwM-3r.js:1
+[  632075ms] [WARNING] [Intercom] The App ID in your code snippet has not been set. Set it to your App ID found in settings to complete installation: https://app.intercom.com/a/apps/_/settings/web @ https://js.intercomcdn.com/frame-modern.b9d6ca43.js:0
+[  633201ms] [INFO] Launched external handler for 'claude://claude.ai/magic-link#476a774b4c34b5c38d50250c424eddd6:bHVjYXNjb3R0b243MEBkdWNrLmNvbQ=='. @ https://claude.ai/magic-link?client=desktop_app#476a774b4c34b5c38d50250c424eddd6:bHVjYXNjb3R0b243MEBkdWNrLmNvbQ==:0

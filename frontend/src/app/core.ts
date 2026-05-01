@@ -231,7 +231,7 @@ const appName = "Health";
 
 export const navLabels: Record<NavItem, string> = {
   dashboard: "Dashboard",
-  "memorable-days": "Giorni memorabili",
+  "memorable-days": "Memorable days",
   diary: "Diary",
   pain: "Pain",
   cbt: "CBT",

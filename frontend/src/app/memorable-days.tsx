@@ -86,7 +86,9 @@ export function MemorableDaysSection({ memorable }: Props) {
   const [feedback, setFeedback] = useState<InlineMessage | null>(null);
   const [successDateKey, setSuccessDateKey] = useState<string | null>(null);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const [popoverDateKey, setPopoverDateKey] = useState<string | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
   const weekdayLabels = memorable.weekStart === "monday"
     ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -94,6 +96,16 @@ export function MemorableDaysSection({ memorable }: Props) {
   const lookups = useMemo(() => buildMemorableLookups(memorable.memorableDays), [memorable.memorableDays]);
   const todayKey = toDateKey(new Date());
   const { leftColRef, rightColRef } = useSplitColumnHeightSync([days.length, memorable.memorableDays.length, memorable.isLoading]);
+  const popoverItems = useMemo(() => {
+    if (!popoverDateKey) return [];
+    const [,, day] = popoverDateKey.split("-").map(Number);
+    const monthDayKey = popoverDateKey.slice(5);
+    return [
+      ...(lookups.oneTimeByDate.get(popoverDateKey) ?? []),
+      ...(lookups.monthlyByDay.get(day) ?? []),
+      ...(lookups.yearlyByMonthDay.get(monthDayKey) ?? []),
+    ].filter((item) => matchesMemorableDate(item, popoverDateKey));
+  }, [popoverDateKey, lookups]);
 
   useEffect(() => {
     if (!draft) return;
@@ -121,6 +133,23 @@ export function MemorableDaysSection({ memorable }: Props) {
     window.addEventListener("mousedown", onPointerDown);
     return () => window.removeEventListener("mousedown", onPointerDown);
   }, [emojiPickerOpen]);
+
+  useEffect(() => {
+    if (!popoverDateKey) return;
+    const onMouseDown = (event: MouseEvent) => {
+      if (popoverRef.current?.contains(event.target as Node)) return;
+      setPopoverDateKey(null);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPopoverDateKey(null);
+    };
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [popoverDateKey]);
 
   useEffect(() => {
     if (!draft?.date) return;
@@ -231,13 +260,13 @@ export function MemorableDaysSection({ memorable }: Props) {
                   tabIndex={0}
                   onClick={() => {
                     memorable.setSelectedDate(dayKey);
-                    if (items[0]) openEdit(items[0]);
+                    if (items.length > 0) setPopoverDateKey(popoverDateKey === dayKey ? null : dayKey);
                   }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
                       memorable.setSelectedDate(dayKey);
-                      if (items[0]) openEdit(items[0]);
+                      if (items.length > 0) setPopoverDateKey(popoverDateKey === dayKey ? null : dayKey);
                     }
                   }}
                 >
@@ -256,11 +285,14 @@ export function MemorableDaysSection({ memorable }: Props) {
                     </button>
                   </span>
                   <span className="memorable-day-markers">
-                    {items.slice(0, 3).map((item) => (
+                    {items.slice(0, 2).map((item) => (
                       <span key={`${item.source}-${item.id}-${item.date}`} className="memorable-day-marker">
                         {item.emoji || "•"} {item.title}
                       </span>
                     ))}
+                    {items.length > 2 ? (
+                      <span className="memorable-day-overflow">+{items.length - 2} more</span>
+                    ) : null}
                   </span>
                 </div>
               );
@@ -376,6 +408,41 @@ export function MemorableDaysSection({ memorable }: Props) {
               ) : null}
               <button type="button" className="btn memorable-modal-cancel" onClick={closeDraft}>
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {popoverDateKey ? (
+        <div className="memorable-modal-backdrop" role="presentation" onClick={() => setPopoverDateKey(null)}>
+          <div ref={popoverRef} className="memorable-modal" role="dialog" aria-modal="true" aria-label={`Events on ${popoverDateKey}`} onClick={(event) => event.stopPropagation()}>
+            <SectionHead title={popoverDateKey} />
+            <div className="memorable-day-popover-list">
+              {popoverItems.map((item) => (
+                <button
+                  key={`${item.source}-${item.id}-${item.date}`}
+                  type="button"
+                  className="memorable-day-popover-item"
+                  onClick={() => {
+                    setPopoverDateKey(null);
+                    openEdit(item);
+                  }}
+                >
+                  <span className="memorable-day-popover-emoji">{item.emoji || "✨"}</span>
+                  <span className="memorable-day-popover-body">
+                    <strong>{item.title}</strong>
+                    <span className="memorable-list-meta">{item.repeatMode}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="memorable-modal-actions">
+              <button type="button" className="btn btn-primary" onClick={() => { setPopoverDateKey(null); openCreate(popoverDateKey); }}>
+                Add new
+              </button>
+              <button type="button" className="btn memorable-modal-cancel" onClick={() => setPopoverDateKey(null)}>
+                Close
               </button>
             </div>
           </div>

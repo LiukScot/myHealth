@@ -1,0 +1,223 @@
+- generic [ref=e14]:
+  - complementary "Main navigation" [ref=e15]:
+    - generic [ref=e16]:
+      - img [ref=e17]
+      - generic [ref=e19]: Health
+      - button "Collapse sidebar" [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+    - navigation [ref=e23]:
+      - button "Dashboard" [ref=e24] [cursor=pointer]:
+        - img [ref=e25]
+        - generic [ref=e30]: Dashboard
+      - button "Pain" [ref=e31] [cursor=pointer]:
+        - img [ref=e32]
+        - generic [ref=e34]: Pain
+      - button "Diary" [ref=e35] [cursor=pointer]:
+        - img [ref=e36]
+        - generic [ref=e39]: Diary
+      - button "CBT" [ref=e40] [cursor=pointer]:
+        - img [ref=e41]
+        - generic [ref=e49]: CBT
+      - button "DBT" [ref=e50] [cursor=pointer]:
+        - img [ref=e51]
+        - generic [ref=e57]: DBT
+      - button "Memorable days" [active] [ref=e58] [cursor=pointer]:
+        - img [ref=e59]
+        - generic [ref=e62]: Memorable days
+      - button "Settings" [ref=e63] [cursor=pointer]:
+        - img [ref=e64]
+        - generic [ref=e67]: Settings
+  - main [ref=e68]:
+    - generic [ref=e564]:
+      - heading "Memorable days" [level=1] [ref=e567]
+      - generic [ref=e568]:
+        - generic [ref=e569]:
+          - heading "Calendar" [level=2] [ref=e570]
+          - generic [ref=e571]:
+            - button "Prev" [ref=e572] [cursor=pointer]
+            - generic [ref=e574]: May 2026
+            - button "Next" [ref=e575] [cursor=pointer]
+          - generic [ref=e576]:
+            - generic [ref=e577]: Sun
+            - generic [ref=e578]: Mon
+            - generic [ref=e579]: Tue
+            - generic [ref=e580]: Wed
+            - generic [ref=e581]: Thu
+            - generic [ref=e582]: Fri
+            - generic [ref=e583]: Sat
+          - generic [ref=e584]:
+            - button "26 Add memorable day on 2026-04-26" [ref=e585] [cursor=pointer]:
+              - generic [ref=e586]:
+                - generic [ref=e587]: "26"
+                - button "Add memorable day on 2026-04-26" [ref=e588]: +
+            - button "27 Add memorable day on 2026-04-27" [ref=e589] [cursor=pointer]:
+              - generic [ref=e590]:
+                - generic [ref=e591]: "27"
+                - button "Add memorable day on 2026-04-27" [ref=e592]: +
+            - button "28 Add memorable day on 2026-04-28" [ref=e593] [cursor=pointer]:
+              - generic [ref=e594]:
+                - generic [ref=e595]: "28"
+                - button "Add memorable day on 2026-04-28" [ref=e596]: +
+            - button "29 Add memorable day on 2026-04-29" [ref=e597] [cursor=pointer]:
+              - generic [ref=e598]:
+                - generic [ref=e599]: "29"
+                - button "Add memorable day on 2026-04-29" [ref=e600]: +
+            - button "30 Add memorable day on 2026-04-30" [ref=e601] [cursor=pointer]:
+              - generic [ref=e602]:
+                - generic [ref=e603]: "30"
+                - button "Add memorable day on 2026-04-30" [ref=e604]: +
+            - button "1 Add memorable day on 2026-05-01" [ref=e605] [cursor=pointer]:
+              - generic [ref=e606]:
+                - generic [ref=e607]: "1"
+                - button "Add memorable day on 2026-05-01" [ref=e608]: +
+            - button "2 Add memorable day on 2026-05-02" [ref=e609] [cursor=pointer]:
+              - generic [ref=e610]:
+                - generic [ref=e611]: "2"
+                - button "Add memorable day on 2026-05-02" [ref=e612]: +
+            - button "3 Add memorable day on 2026-05-03" [ref=e613] [cursor=pointer]:
+              - generic [ref=e614]:
+                - generic [ref=e615]: "3"
+                - button "Add memorable day on 2026-05-03" [ref=e616]: +
+            - button "4 Add memorable day on 2026-05-04" [ref=e617] [cursor=pointer]:
+              - generic [ref=e618]:
+                - generic [ref=e619]: "4"
+                - button "Add memorable day on 2026-05-04" [ref=e620]: +
+            - button "5 Add memorable day on 2026-05-05" [ref=e621] [cursor=pointer]:
+              - generic [ref=e622]:
+                - generic [ref=e623]: "5"
+                - button "Add memorable day on 2026-05-05" [ref=e624]: +
+            - button "6 Add memorable day on 2026-05-06" [ref=e625] [cursor=pointer]:
+              - generic [ref=e626]:
+                - generic [ref=e627]: "6"
+                - button "Add memorable day on 2026-05-06" [ref=e628]: +
+            - button "7 Add memorable day on 2026-05-07" [ref=e629] [cursor=pointer]:
+              - generic [ref=e630]:
+                - generic [ref=e631]: "7"
+                - button "Add memorable day on 2026-05-07" [ref=e632]: +
+            - button "8 Add memorable day on 2026-05-08" [ref=e633] [cursor=pointer]:
+              - generic [ref=e634]:
+                - generic [ref=e635]: "8"
+                - button "Add memorable day on 2026-05-08" [ref=e636]: +
+            - button "9 Add memorable day on 2026-05-09" [ref=e637] [cursor=pointer]:
+              - generic [ref=e638]:
+                - generic [ref=e639]: "9"
+                - button "Add memorable day on 2026-05-09" [ref=e640]: +
+            - button "10 Add memorable day on 2026-05-10" [ref=e641] [cursor=pointer]:
+              - generic [ref=e642]:
+                - generic [ref=e643]: "10"
+                - button "Add memorable day on 2026-05-10" [ref=e644]: +
+            - button "11 Add memorable day on 2026-05-11" [ref=e645] [cursor=pointer]:
+              - generic [ref=e646]:
+                - generic [ref=e647]: "11"
+                - button "Add memorable day on 2026-05-11" [ref=e648]: +
+            - button "12 Add memorable day on 2026-05-12" [ref=e649] [cursor=pointer]:
+              - generic [ref=e650]:
+                - generic [ref=e651]: "12"
+                - button "Add memorable day on 2026-05-12" [ref=e652]: +
+            - button "13 Add memorable day on 2026-05-13" [ref=e653] [cursor=pointer]:
+              - generic [ref=e654]:
+                - generic [ref=e655]: "13"
+                - button "Add memorable day on 2026-05-13" [ref=e656]: +
+            - button "14 Add memorable day on 2026-05-14" [ref=e657] [cursor=pointer]:
+              - generic [ref=e658]:
+                - generic [ref=e659]: "14"
+                - button "Add memorable day on 2026-05-14" [ref=e660]: +
+            - button "15 Add memorable day on 2026-05-15" [ref=e661] [cursor=pointer]:
+              - generic [ref=e662]:
+                - generic [ref=e663]: "15"
+                - button "Add memorable day on 2026-05-15" [ref=e664]: +
+            - button "16 Add memorable day on 2026-05-16" [ref=e665] [cursor=pointer]:
+              - generic [ref=e666]:
+                - generic [ref=e667]: "16"
+                - button "Add memorable day on 2026-05-16" [ref=e668]: +
+            - button "17 Add memorable day on 2026-05-17" [ref=e669] [cursor=pointer]:
+              - generic [ref=e670]:
+                - generic [ref=e671]: "17"
+                - button "Add memorable day on 2026-05-17" [ref=e672]: +
+            - button "18 Add memorable day on 2026-05-18" [ref=e673] [cursor=pointer]:
+              - generic [ref=e674]:
+                - generic [ref=e675]: "18"
+                - button "Add memorable day on 2026-05-18" [ref=e676]: +
+            - button "19 Add memorable day on 2026-05-19" [ref=e677] [cursor=pointer]:
+              - generic [ref=e678]:
+                - generic [ref=e679]: "19"
+                - button "Add memorable day on 2026-05-19" [ref=e680]: +
+            - button "20 Add memorable day on 2026-05-20" [ref=e681] [cursor=pointer]:
+              - generic [ref=e682]:
+                - generic [ref=e683]: "20"
+                - button "Add memorable day on 2026-05-20" [ref=e684]: +
+            - button "21 Add memorable day on 2026-05-21" [ref=e685] [cursor=pointer]:
+              - generic [ref=e686]:
+                - generic [ref=e687]: "21"
+                - button "Add memorable day on 2026-05-21" [ref=e688]: +
+            - button "22 Add memorable day on 2026-05-22" [ref=e689] [cursor=pointer]:
+              - generic [ref=e690]:
+                - generic [ref=e691]: "22"
+                - button "Add memorable day on 2026-05-22" [ref=e692]: +
+            - button "23 Add memorable day on 2026-05-23" [ref=e693] [cursor=pointer]:
+              - generic [ref=e694]:
+                - generic [ref=e695]: "23"
+                - button "Add memorable day on 2026-05-23" [ref=e696]: +
+            - button "24 Add memorable day on 2026-05-24" [ref=e697] [cursor=pointer]:
+              - generic [ref=e698]:
+                - generic [ref=e699]: "24"
+                - button "Add memorable day on 2026-05-24" [ref=e700]: +
+            - button "25 Add memorable day on 2026-05-25" [ref=e701] [cursor=pointer]:
+              - generic [ref=e702]:
+                - generic [ref=e703]: "25"
+                - button "Add memorable day on 2026-05-25" [ref=e704]: +
+            - button "26 Add memorable day on 2026-05-26" [ref=e705] [cursor=pointer]:
+              - generic [ref=e706]:
+                - generic [ref=e707]: "26"
+                - button "Add memorable day on 2026-05-26" [ref=e708]: +
+            - button "27 Add memorable day on 2026-05-27" [ref=e709] [cursor=pointer]:
+              - generic [ref=e710]:
+                - generic [ref=e711]: "27"
+                - button "Add memorable day on 2026-05-27" [ref=e712]: +
+            - button "28 Add memorable day on 2026-05-28" [ref=e713] [cursor=pointer]:
+              - generic [ref=e714]:
+                - generic [ref=e715]: "28"
+                - button "Add memorable day on 2026-05-28" [ref=e716]: +
+            - button "29 Add memorable day on 2026-05-29" [ref=e717] [cursor=pointer]:
+              - generic [ref=e718]:
+                - generic [ref=e719]: "29"
+                - button "Add memorable day on 2026-05-29" [ref=e720]: +
+            - button "30 Add memorable day on 2026-05-30" [ref=e721] [cursor=pointer]:
+              - generic [ref=e722]:
+                - generic [ref=e723]: "30"
+                - button "Add memorable day on 2026-05-30" [ref=e724]: +
+            - button "31 Add memorable day on 2026-05-31" [ref=e725] [cursor=pointer]:
+              - generic [ref=e726]:
+                - generic [ref=e727]: "31"
+                - button "Add memorable day on 2026-05-31" [ref=e728]: +
+            - button "1 Add memorable day on 2026-06-01" [ref=e729] [cursor=pointer]:
+              - generic [ref=e730]:
+                - generic [ref=e731]: "1"
+                - button "Add memorable day on 2026-06-01" [ref=e732]: +
+            - button "2 Add memorable day on 2026-06-02" [ref=e733] [cursor=pointer]:
+              - generic [ref=e734]:
+                - generic [ref=e735]: "2"
+                - button "Add memorable day on 2026-06-02" [ref=e736]: +
+            - button "3 Add memorable day on 2026-06-03" [ref=e737] [cursor=pointer]:
+              - generic [ref=e738]:
+                - generic [ref=e739]: "3"
+                - button "Add memorable day on 2026-06-03" [ref=e740]: +
+            - button "4 Add memorable day on 2026-06-04" [ref=e741] [cursor=pointer]:
+              - generic [ref=e742]:
+                - generic [ref=e743]: "4"
+                - button "Add memorable day on 2026-06-04" [ref=e744]: +
+            - button "5 Add memorable day on 2026-06-05" [ref=e745] [cursor=pointer]:
+              - generic [ref=e746]:
+                - generic [ref=e747]: "5"
+                - button "Add memorable day on 2026-06-05" [ref=e748]: +
+            - button "6 Add memorable day on 2026-06-06" [ref=e749] [cursor=pointer]:
+              - generic [ref=e750]:
+                - generic [ref=e751]: "6"
+                - button "Add memorable day on 2026-06-06" [ref=e752]: +
+        - generic [ref=e753]:
+          - heading "All memorable days" [level=2] [ref=e754]
+          - generic [ref=e755]:
+            - paragraph [ref=e756]: No memorable days yet
+            - paragraph [ref=e757]: Add one birthday, anniversary, or event to start the list.
+  - button "Open design system" [ref=e161] [cursor=pointer]:
+    - img [ref=e162]

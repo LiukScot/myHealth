@@ -1964,6 +1964,7 @@ tbody tr:hover {
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-2);
+  margin-bottom: 17px;
 }
 
 .memorable-layout {
@@ -2052,6 +2053,7 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: relative;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
@@ -2073,7 +2075,11 @@ tbody tr:hover {
 .memorable-day-add {
   width: 24px;
   height: 24px;
+  min-height: 0;
+  padding: 0;
+  flex-shrink: 0;
   border: 0;
+  box-shadow: none;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
@@ -2110,13 +2116,57 @@ tbody tr:hover {
   transition: color 0.15s ease, opacity 0.15s ease;
 }
 
-.memorable-day-cell:hover {
-  color: var(--text);
+.memorable-day-overflow {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.35;
+  opacity: 0.75;
 }
 
-.memorable-day-marker:hover {
-  color: var(--accent);
+.memorable-day-popover-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 8px;
 }
+
+.memorable-day-popover-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card-soft);
+  border: 0;
+  box-shadow: none;
+  min-height: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s ease;
+}
+
+.memorable-day-popover-item:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.memorable-day-popover-emoji {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.memorable-day-popover-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.memorable-day-cell:hover {
+  background: color-mix(in srgb, var(--text) 4%, var(--card-soft));
+}
+
 
 .memorable-list {
   display: flex;
@@ -2126,27 +2176,14 @@ tbody tr:hover {
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: auto;
-  scrollbar-gutter: stable;
   gap: 10px;
-  /* Hide scrollbar until hover (Firefox + WebKit) */
-  scrollbar-width: none;
-}
-.memorable-list::-webkit-scrollbar {
-  width: 0;
-  background: transparent;
+  /* Gutter always reserved; thumb invisible until hover — no layout shift */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 }
 .memorable-list:hover,
 .memorable-list:focus-within {
-  scrollbar-width: thin;
-}
-.memorable-list:hover::-webkit-scrollbar,
-.memorable-list:focus-within::-webkit-scrollbar {
-  width: 8px;
-}
-.memorable-list:hover::-webkit-scrollbar-thumb,
-.memorable-list:focus-within::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 4px;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
 .memorable-list-item {
@@ -2324,7 +2361,7 @@ tbody tr:hover {
 .memorable-calendar-panel > .entries-heading:first-child,
 .memorable-list-panel > .entries-heading:first-child {
   margin-top: 0;
-  margin-bottom: 18px;
+  margin-bottom: 22px;
 }
 
 .memorable-modal-cancel {
@@ -2349,7 +2386,7 @@ tbody tr:hover {
   }
 
   .memorable-layout > .panel-col + .panel-col {
-    padding-top: 20px;
+    padding-top: 28px;
   }
 
   .memorable-layout > .panel-col + .panel-col {
@@ -2370,19 +2407,32 @@ tbody tr:hover {
 
   .memorable-list-panel > .entries-heading:first-child {
     margin-top: 0;
-    margin-bottom: 12px;
+    margin-bottom: 22px;
   }
 }
 
 @media (max-width: 980px) {
   .memorable-header {
-    margin-bottom: 2px;
+    margin-bottom: 0;
+  }
+
+  .memorable-header .section-head {
+    display: none;
+  }
+
+  /* Zero out the 28px padding added by the 1239px stacked-layout rule */
+  .memorable-layout > .panel-col + .panel-col {
+    padding-top: 0;
   }
 
   .memorable-list-panel {
     padding-top: 0;
     height: auto;
     max-height: none;
+  }
+
+  .memorable-list-panel > .entries-heading:first-child {
+    margin-top: 10px;
   }
 
   .memorable-calendar-panel {
@@ -2528,7 +2578,7 @@ tbody tr:hover {
 }
 
 .panel--memorable .memorable-header .section-head {
-  margin: 2px 0 12px;
+  margin: 2px 0 4px;
   padding: 0;
 }
 

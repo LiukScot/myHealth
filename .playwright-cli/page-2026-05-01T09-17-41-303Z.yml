@@ -1,0 +1,13 @@
+- main [ref=e3]:
+  - generic [ref=e4]:
+    - heading "Health" [level=1] [ref=e5]
+    - paragraph [ref=e6]: Sign in to access your private health workspace.
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - text: Email
+        - textbox "Email" [ref=e9]
+      - generic [ref=e10]:
+        - text: Password
+        - textbox "Password" [ref=e11]
+      - button "Sign in" [ref=e12] [cursor=pointer]
+      - paragraph [ref=e13]: Signup is disabled. Use CLI provisioning.

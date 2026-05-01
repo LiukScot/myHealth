@@ -1,0 +1,128 @@
+- generic [ref=e14]:
+  - complementary "Main navigation" [ref=e15]:
+    - generic [ref=e16]:
+      - img [ref=e17]
+      - generic [ref=e19]: Health
+      - button "Collapse sidebar" [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+    - navigation [ref=e23]:
+      - button "Dashboard" [ref=e24] [cursor=pointer]:
+        - img [ref=e25]
+        - generic [ref=e30]: Dashboard
+      - button "Pain" [active] [ref=e31] [cursor=pointer]:
+        - img [ref=e32]
+        - generic [ref=e34]: Pain
+      - button "Diary" [ref=e35] [cursor=pointer]:
+        - img [ref=e36]
+        - generic [ref=e39]: Diary
+      - button "CBT" [ref=e40] [cursor=pointer]:
+        - img [ref=e41]
+        - generic [ref=e49]: CBT
+      - button "DBT" [ref=e50] [cursor=pointer]:
+        - img [ref=e51]
+        - generic [ref=e57]: DBT
+      - button "Memorable days" [ref=e58] [cursor=pointer]:
+        - img [ref=e59]
+        - generic [ref=e62]: Memorable days
+      - button "Settings" [ref=e63] [cursor=pointer]:
+        - img [ref=e64]
+        - generic [ref=e67]: Settings
+  - main [ref=e68]:
+    - generic [ref=e167]:
+      - heading "Pain" [level=1] [ref=e168]
+      - generic [ref=e169]:
+        - generic [ref=e170]:
+          - heading "New entry" [level=2] [ref=e171]
+          - generic [ref=e172]:
+            - generic [ref=e173]:
+              - generic [ref=e174]:
+                - generic [ref=e175]: Date & time
+                - textbox "Date/time" [ref=e176] [cursor=pointer]: 2026-05-01T11:18
+              - generic [ref=e177]: Values
+              - generic [ref=e178]:
+                - generic [ref=e179]: Pain level
+                - group "Pain level" [ref=e180]:
+                  - button "Pain level 1 of 9" [ref=e181] [cursor=pointer]
+                  - button "Pain level 2 of 9" [ref=e182] [cursor=pointer]
+                  - button "Pain level 3 of 9" [ref=e183] [cursor=pointer]
+                  - button "Pain level 4 of 9" [ref=e184] [cursor=pointer]
+                  - button "Pain level 5 of 9" [ref=e185] [cursor=pointer]
+                  - button "Pain level 6 of 9" [ref=e186] [cursor=pointer]
+                  - button "Pain level 7 of 9" [ref=e187] [cursor=pointer]
+                  - button "Pain level 8 of 9" [ref=e188] [cursor=pointer]
+                  - button "Pain level 9 of 9" [ref=e189] [cursor=pointer]
+                - generic [ref=e190]: —
+              - generic [ref=e191]:
+                - generic [ref=e192]: Fatigue
+                - group "Fatigue" [ref=e193]:
+                  - button "Fatigue 1 of 9" [ref=e194] [cursor=pointer]
+                  - button "Fatigue 2 of 9" [ref=e195] [cursor=pointer]
+                  - button "Fatigue 3 of 9" [ref=e196] [cursor=pointer]
+                  - button "Fatigue 4 of 9" [ref=e197] [cursor=pointer]
+                  - button "Fatigue 5 of 9" [ref=e198] [cursor=pointer]
+                  - button "Fatigue 6 of 9" [ref=e199] [cursor=pointer]
+                  - button "Fatigue 7 of 9" [ref=e200] [cursor=pointer]
+                  - button "Fatigue 8 of 9" [ref=e201] [cursor=pointer]
+                  - button "Fatigue 9 of 9" [ref=e202] [cursor=pointer]
+                - generic [ref=e203]: —
+              - generic [ref=e204]:
+                - generic [ref=e205]: Coffee
+                - generic [ref=e207]:
+                  - button "Decrease coffee count" [ref=e208] [cursor=pointer]: −
+                  - generic [ref=e209]: —
+                  - button "Increase coffee count" [ref=e210] [cursor=pointer]: +
+              - generic [ref=e211]:
+                - generic [ref=e212]: Note
+                - textbox "Note" [ref=e213]:
+                  - /placeholder: Anything worth remembering about this flare…
+            - generic [ref=e214]:
+              - generic [ref=e215]:
+                - generic [ref=e217]: Factors
+                - tablist "Pain categories" [ref=e218]:
+                  - tab "Area 0" [selected] [ref=e219] [cursor=pointer]:
+                    - text: Area
+                    - generic [ref=e220]: "0"
+                  - tab "Symptoms 0" [ref=e221] [cursor=pointer]:
+                    - text: Symptoms
+                    - generic [ref=e222]: "0"
+                  - tab "Activities 0" [ref=e223] [cursor=pointer]:
+                    - text: Activities
+                    - generic [ref=e224]: "0"
+                  - tab "Medicines 2" [ref=e225] [cursor=pointer]:
+                    - text: Medicines
+                    - generic [ref=e226]: "2"
+                  - tab "Habits 0" [ref=e227] [cursor=pointer]:
+                    - text: Habits
+                    - generic [ref=e228]: "0"
+                  - tab "Other 0" [ref=e229] [cursor=pointer]:
+                    - text: Other
+                    - generic [ref=e230]: "0"
+                - generic [ref=e232]:
+                  - group "Area" [ref=e233]:
+                    - button "neck" [ref=e235] [cursor=pointer]:
+                      - generic [ref=e236]: neck
+                    - button "tmj" [ref=e238] [cursor=pointer]:
+                      - generic [ref=e239]: tmj
+                    - button "legs" [ref=e241] [cursor=pointer]:
+                      - generic [ref=e242]: legs
+                    - button "shoulders" [ref=e244] [cursor=pointer]:
+                      - generic [ref=e245]: shoulders
+                    - button "chest" [ref=e247] [cursor=pointer]:
+                      - generic [ref=e248]: chest
+                    - button "head" [ref=e250] [cursor=pointer]:
+                      - generic [ref=e251]: head
+                    - button "back" [ref=e253] [cursor=pointer]:
+                      - generic [ref=e254]: back
+                    - button "abdomen" [ref=e256] [cursor=pointer]:
+                      - generic [ref=e257]: abdomen
+                  - generic [ref=e258]:
+                    - button "+ add option" [ref=e259] [cursor=pointer]
+                    - button "edit" [ref=e260] [cursor=pointer]
+              - button "Save entry" [ref=e262] [cursor=pointer]
+        - generic [ref=e263]:
+          - heading "Past entries" [level=2] [ref=e264]
+          - generic [ref=e265]:
+            - paragraph [ref=e266]: No pain entries yet
+            - paragraph [ref=e267]: Track your first session with the form above. Your pain history will show up here once you save it.
+  - button "Open design system" [ref=e161] [cursor=pointer]:
+    - img [ref=e162]
