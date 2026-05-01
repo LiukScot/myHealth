@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { InlineMessage } from "./core";
 import type { useAuth } from "../hooks/use-auth";
 import { getErrorMessage } from "../lib";
@@ -29,6 +29,10 @@ function BirthdayBlock({
   onSaveBirthday,
 }: Pick<SettingsSectionProps, "birthday" | "birthdayPending" | "onSaveBirthday">) {
   const [value, setValue] = useState(birthday ?? "");
+
+  useEffect(() => {
+    setValue(birthday ?? "");
+  }, [birthday]);
 
   return (
     <form

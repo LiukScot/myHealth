@@ -64,6 +64,7 @@ export function useSettings(enabled: boolean) {
         queryClient.invalidateQueries({ queryKey: ["diary"] }),
         queryClient.invalidateQueries({ queryKey: ["pain"] }),
         queryClient.invalidateQueries({ queryKey: ["prefs"] }),
+        queryClient.invalidateQueries({ queryKey: ["memorable-days"] }),
       ]);
       setPurgeConfirmArmed(false);
     },

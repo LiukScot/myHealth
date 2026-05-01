@@ -1964,6 +1964,7 @@ tbody tr:hover {
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-2);
+  margin-bottom: 17px;
 }
 
 .memorable-layout {
@@ -1987,6 +1988,7 @@ tbody tr:hover {
   height: var(--split-col-height, auto);
   max-height: var(--split-col-height, none);
   min-height: 0;
+  overflow: hidden;
 }
 
 .memorable-calendar-head,
@@ -1997,19 +1999,54 @@ tbody tr:hover {
 }
 
 .memorable-calendar-head {
-  justify-content: space-between;
-  gap: var(--space-1);
+  justify-content: flex-start;
+  gap: 8px;
   margin-bottom: 14px;
 }
 
-.memorable-month-nav {
+.memorable-month-label {
+  padding: 10px 22px;
+  min-height: 40px;
+  font: 600 14px var(--font-body);
+  letter-spacing: 0.01em;
+  text-transform: none;
+  border-radius: 999px;
+  background: transparent;
+  border-color: transparent;
   color: var(--text);
-  background: color-mix(in srgb, var(--text) 10%, transparent);
+  box-shadow: none;
+}
+
+.memorable-month-label:hover {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  border-color: transparent;
+}
+
+.memorable-month-nav {
+  padding: 10px 22px;
+  min-height: 40px;
+  min-width: 0;
+  font: 600 14px var(--font-body);
+  letter-spacing: 0.01em;
+  text-transform: none;
+  border-radius: 999px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
 }
 
 .memorable-month-nav:hover {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--text) 10%, transparent);
   color: var(--text);
-  background: color-mix(in srgb, var(--text) 16%, transparent);
+}
+
+.memorable-month-nav:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  color: var(--text);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .memorable-weekdays {
@@ -2044,6 +2081,7 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: relative;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
@@ -2062,10 +2100,26 @@ tbody tr:hover {
   justify-content: space-between;
 }
 
+.memorable-day-number {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  min-height: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  line-height: 1;
+}
+
 .memorable-day-add {
   width: 24px;
   height: 24px;
+  min-height: 0;
+  padding: 0;
+  flex-shrink: 0;
   border: 0;
+  box-shadow: none;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
@@ -2099,27 +2153,80 @@ tbody tr:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.memorable-day-overflow {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.35;
+  opacity: 0.75;
+}
+
+.memorable-day-popover-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 8px;
+}
+
+.memorable-day-popover-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card-soft);
+  border: 0;
+  box-shadow: none;
+  min-height: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s ease;
+}
+
+.memorable-day-popover-item:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.memorable-day-popover-emoji {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.memorable-day-popover-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .memorable-day-cell:hover {
-  color: var(--text);
+  background: color-mix(in srgb, var(--text) 4%, var(--card-soft));
 }
 
-.memorable-day-marker:hover {
-  color: var(--accent);
-}
 
 .memorable-list {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: auto;
   gap: 10px;
+  /* Gutter always reserved; thumb invisible until hover — no layout shift */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.memorable-list:hover,
+.memorable-list:focus-within {
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
 .memorable-list-item {
+  flex: 0 0 auto;
   width: 100%;
   gap: 12px;
   padding: 14px;
@@ -2156,13 +2263,32 @@ tbody tr:hover {
   align-items: flex-start;
 }
 
+.memorable-list-topline {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .memorable-list-body strong {
   font-size: 15px;
+  min-width: 0;
 }
 
 .memorable-list-body span {
   color: var(--muted);
   font-size: 13px;
+}
+
+.memorable-list-body .memorable-list-meta {
+  font-size: 11px;
+  color: var(--muted-soft);
+}
+
+.memorable-list-date {
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .memorable-fab {
@@ -2216,14 +2342,171 @@ tbody tr:hover {
   justify-content: start;
 }
 
-.memorable-emoji-field {
-  width: 88px;
+.memorable-modal-top-row > .field-line {
+  min-width: 0;
 }
 
-.memorable-emoji-field input {
+.memorable-emoji-field {
+  width: 88px;
+  min-width: 88px;
+  justify-self: end;
+  align-self: start;
+}
+
+.memorable-emoji-picker {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.memorable-emoji-picker-trigger {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.memorable-emoji-picker-trigger[aria-expanded="true"] {
+  background: transparent;
+  border-color: transparent;
+}
+
+.memorable-emoji-picker-trigger:focus-visible {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.memorable-emoji-picker-trigger-emoji {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.memorable-emoji-picker-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(420px, calc(100vw - 32px));
+  max-width: min(420px, calc(100vw - 32px));
+  max-height: min(520px, calc(100vh - 180px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  z-index: 30;
+}
+
+.memorable-emoji-picker-search {
+  gap: 6px;
+  margin: 0;
+}
+
+.memorable-emoji-picker-search .field-line-label {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.memorable-emoji-picker-search-input {
+  width: 100%;
+}
+
+.memorable-emoji-picker-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.memorable-emoji-picker-tab {
+  min-height: 0;
+  padding: 0 4px;
+  border-radius: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.memorable-emoji-picker-tab.is-active {
+  background: transparent;
+  color: var(--accent);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.memorable-emoji-picker-tab:focus-visible {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.memorable-emoji-picker-scroll {
+  min-height: 0;
+  max-height: 320px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  scrollbar-gutter: stable;
+  padding-right: 2px;
+}
+
+.memorable-emoji-picker-scroll:hover,
+.memorable-emoji-picker-scroll:focus-within {
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.memorable-emoji-picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.memorable-emoji-picker-emoji {
+  min-height: 0;
+  padding: 2px;
+  border-radius: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.memorable-emoji-picker-emoji.is-selected {
+  color: var(--text);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.memorable-emoji-picker-emoji:focus-visible {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.memorable-emoji-picker-empty {
+  margin: 0;
+  padding: 8px 2px 2px;
   text-align: center;
-  font-size: 24px;
-  padding-inline: 0;
+  color: var(--muted-soft);
 }
 
 .memorable-modal-actions {
@@ -2236,8 +2519,10 @@ tbody tr:hover {
   color: var(--muted);
 }
 
-.memorable-list-panel .section-head {
-  margin-bottom: 18px;
+.memorable-calendar-panel > .entries-heading:first-child,
+.memorable-list-panel > .entries-heading:first-child {
+  margin-top: 0;
+  margin-bottom: 22px;
 }
 
 .memorable-modal-cancel {
@@ -2250,33 +2535,94 @@ tbody tr:hover {
   background: color-mix(in srgb, var(--text) 16%, transparent);
 }
 
-@media (max-width: 980px) {
+@media (hover: hover) {
+  .memorable-month-nav:hover {
+    border-color: transparent;
+    background: color-mix(in srgb, var(--text) 10%, transparent);
+    color: var(--text);
+  }
+
+  .memorable-emoji-picker-trigger:hover {
+    background: transparent;
+    color: var(--text);
+    border-color: transparent;
+  }
+
+  .memorable-emoji-picker-tab:hover {
+    border-color: transparent;
+    background: transparent;
+    color: var(--text);
+    box-shadow: none;
+  }
+
+  .memorable-emoji-picker-emoji:hover {
+    color: var(--text);
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 1239px) {
   .memorable-layout {
     grid-template-columns: 1fr;
     gap: 0;
   }
 
-  .memorable-calendar-panel {
-    padding-bottom: 14px;
+  .memorable-layout > .panel-col:first-of-type:not(:only-child) {
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 28px;
+  }
+
+  .memorable-layout > .panel-col + .panel-col {
+    padding-top: 22px;
+  }
+
+  .memorable-layout > .panel-col + .panel-col {
+    border-left: 0;
+    padding-left: 0;
   }
 
   .memorable-list-panel {
     height: auto;
     max-height: none;
+    padding-top: 22px;
     padding-left: 0;
-    padding-top: 14px;
     border-left: 0;
   }
 
   .memorable-list {
     max-height: none;
   }
+
+  .memorable-list-panel > .entries-heading:first-child {
+    margin-top: 0;
+    margin-bottom: 22px;
+  }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 980px) {
+  .memorable-header {
+    margin-bottom: 0;
+  }
+
+  .memorable-header .section-head {
+    display: none;
+  }
+
+  /* Zero out the 28px padding added by the 1239px stacked-layout rule */
+  .memorable-layout > .panel-col + .panel-col {
+    padding-top: 0;
+  }
+
   .memorable-list-panel {
+    padding-top: 0;
     height: auto;
     max-height: none;
+  }
+
+  .memorable-list-panel > .entries-heading:first-child {
+    margin-top: 10px;
   }
 
   .memorable-calendar-panel {
@@ -2284,12 +2630,14 @@ tbody tr:hover {
   }
 
   .memorable-modal-top-row {
-    grid-template-columns: 1fr;
-    justify-content: stretch;
+    grid-template-columns: minmax(0, 1fr) 88px;
+    justify-content: start;
   }
 
   .memorable-list {
     max-height: none;
+    overflow: visible;
+    scrollbar-gutter: auto;
   }
 
   .memorable-fab {
@@ -2411,11 +2759,18 @@ tbody tr:hover {
 /* Dashboard-scoped override: SectionHead labels match Diary/Pain "NEW ENTRY"
    (entries-heading) — 13px accent uppercase — instead of the smaller 10px muted
    variant used elsewhere. */
-.panel--dashboard .section-head .section-title {
+.panel--dashboard .section-head .section-title,
+.panel--memorable .memorable-header .section-head .section-title,
+.memorable-modal .section-head .section-title {
   font-size: 13px;
   color: var(--accent);
   letter-spacing: 0.16em;
   font-weight: 700;
+}
+
+.panel--memorable .memorable-header .section-head {
+  margin: 2px 0 4px;
+  padding: 0;
 }
 
 .panel--dashboard .section-head {

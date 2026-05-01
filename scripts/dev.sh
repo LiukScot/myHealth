@@ -6,6 +6,9 @@ cd "$ROOT_DIR"
 
 ./scripts/stop-frontend-dev.sh
 
+# Pin backend to 5555 even when caller (e.g. preview runner) injects PORT.
+export PORT=5555
+
 backend_pid=""
 
 cleanup() {

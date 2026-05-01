@@ -54,8 +54,8 @@ export const migrationStatements: string[] = [
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`,
-  // schema-v9: add birthday column to existing databases
-  `ALTER TABLE user_preferences ADD COLUMN birthday TEXT`,
+  // schema-v9: birthday column added to CREATE TABLE above; ALTER TABLE for
+  // existing databases is handled separately in db.ts via columnExists guard.
   `CREATE TABLE IF NOT EXISTS memorable_days (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,

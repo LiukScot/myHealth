@@ -73,7 +73,7 @@ export function useMemorableDays(enabled: boolean) {
 
   const items = memorableDaysQuery.data ?? [];
   const sortedItems = useMemo(
-    () => [...items].sort((left, right) => left.date.localeCompare(right.date) || left.title.localeCompare(right.title)),
+    () => [...items].sort((left, right) => right.date.localeCompare(left.date) || left.title.localeCompare(right.title)),
     [items],
   );
   const todayItems = useMemo(() => sortedItems.filter((item) => matchesMemorableDate(item, todayKey())), [sortedItems]);
@@ -90,6 +90,7 @@ export function useMemorableDays(enabled: boolean) {
     updateMemorableDay: (id: number, payload: MemorableDayPayload) => updateMutation.mutateAsync({ id, payload }),
     deleteMemorableDay: (id: number) => deleteMutation.mutateAsync(id),
     isSaving: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending,
+    weekStart: "monday" as "sunday" | "monday",
   };
 }
 
