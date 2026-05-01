@@ -169,12 +169,15 @@ export function MemorableDaysSection({ memorable }: Props) {
     ].filter((item) => matchesMemorableDate(item, popoverDateKey));
   }, [popoverDateKey, lookups]);
   const emojiPickerRecords = useMemo(() => {
+    const search = emojiPickerSearch.trim().toLowerCase();
+    if (search) {
+      // When searching, search the full catalog instead of just the active category
+      return emojiCatalog.filter((record) => record.searchText.includes(search));
+    }
     const baseRecords = emojiPickerActiveCategory === "recent"
       ? emojiPickerRecent.map((emoji) => emojiByValue.get(emoji)).filter((record): record is EmojiRecord => Boolean(record))
       : emojiRecordsByCategory[emojiPickerActiveCategory];
-    const search = emojiPickerSearch.trim().toLowerCase();
-    if (!search) return baseRecords;
-    return baseRecords.filter((record) => record.searchText.includes(search));
+    return baseRecords;
   }, [emojiByValue, emojiPickerActiveCategory, emojiPickerRecent, emojiPickerSearch, emojiRecordsByCategory]);
 
   useEffect(() => {
@@ -373,8 +376,11 @@ export function MemorableDaysSection({ memorable }: Props) {
     const list = event.currentTarget.closest(".memorable-list");
     if (!(list instanceof HTMLElement)) return;
     if (list.scrollHeight <= list.clientHeight + 1) return;
-    list.scrollTop += event.deltaY;
-    event.preventDefault();
+    const newScrollTop = Math.max(0, Math.min(list.scrollTop + event.deltaY, list.scrollHeight - list.clientHeight));
+    if (newScrollTop !== list.scrollTop) {
+      list.scrollTop = newScrollTop;
+      event.preventDefault();
+    }
   };
 
   return (
@@ -510,6 +516,7 @@ export function MemorableDaysSection({ memorable }: Props) {
                   <button
                     type="button"
                     className="btn memorable-emoji-picker-trigger"
+                    aria-label={`Emoji ${draft.emoji || "✨"}`}
                     aria-haspopup="dialog"
                     aria-expanded={emojiPickerOpen}
                     aria-controls="emoji-picker-panel"
