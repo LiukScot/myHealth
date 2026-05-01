@@ -12,14 +12,20 @@ export function LoginScreen({ loginForm, loginMutation }: LoginScreenProps) {
       <section className="auth-card">
         <h1>Health</h1>
         <p>Sign in to access your private health workspace.</p>
-        <form onSubmit={loginForm.handleSubmit((values) => loginMutation.mutate(values))} className="stack">
+        <form noValidate onSubmit={loginForm.handleSubmit((values) => loginMutation.mutate(values))} className="stack">
           <label>
             Email
             <input type="email" autoComplete="email" {...loginForm.register("email")} />
+            {loginForm.formState.errors.email && (
+              <p className="error">{loginForm.formState.errors.email.message}</p>
+            )}
           </label>
           <label>
             Password
             <input type="password" autoComplete="current-password" {...loginForm.register("password")} />
+            {loginForm.formState.errors.password && (
+              <p className="error">{loginForm.formState.errors.password.message}</p>
+            )}
           </label>
           <button type="submit" disabled={loginMutation.isPending}>
             {loginMutation.isPending ? "Signing in..." : "Sign in"}

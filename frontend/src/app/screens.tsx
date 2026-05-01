@@ -271,7 +271,9 @@ export function DashboardSection({
                       {card.title}
                     </h3>
                     <strong>{card.occurrenceLabel}</strong>
-                    <span className="delta-slot memorable-lock-slot">{card.locked ? "Settings-owned" : card.repeatMode}</span>
+                    {!card.locked && (
+                      <span className="delta-slot memorable-lock-slot">{card.repeatMode}</span>
+                    )}
                   </article>
                 ))}
               </div>
@@ -1772,8 +1774,10 @@ export function DbtSection({
 export function SettingsSection({
   auth,
   birthday,
+  weekStart,
   birthdayPending,
   onSaveBirthday,
+  onSaveWeekStart,
   purgeConfirmArmed,
   purgePending,
   purgeError,
@@ -1788,8 +1792,10 @@ export function SettingsSection({
 }: {
   auth: ReturnType<typeof useAuth>;
   birthday: string | null;
+  weekStart: "sunday" | "monday";
   birthdayPending: boolean;
   onSaveBirthday: (birthday: string | null) => void;
+  onSaveWeekStart: (weekStart: "sunday" | "monday") => void;
   purgeConfirmArmed: boolean;
   purgePending: boolean;
   purgeError: InlineMessage | null;
@@ -1805,8 +1811,10 @@ export function SettingsSection({
   const variantProps = {
     auth,
     birthday,
+    weekStart,
     birthdayPending,
     onSaveBirthday,
+    onSaveWeekStart,
     purgeConfirmArmed,
     purgePending,
     purgeError,

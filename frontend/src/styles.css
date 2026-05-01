@@ -1987,6 +1987,7 @@ tbody tr:hover {
   height: var(--split-col-height, auto);
   max-height: var(--split-col-height, none);
   min-height: 0;
+  overflow: hidden;
 }
 
 .memorable-calendar-head,
@@ -2003,13 +2004,20 @@ tbody tr:hover {
 }
 
 .memorable-month-nav {
-  color: var(--text);
-  background: color-mix(in srgb, var(--text) 10%, transparent);
+  padding: 6px 12px;
+  font: 600 12px var(--font-body);
+  color: var(--muted);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+  box-shadow: none;
 }
 
 .memorable-month-nav:hover {
   color: var(--text);
-  background: color-mix(in srgb, var(--text) 16%, transparent);
+  background: color-mix(in srgb, var(--text) 10%, transparent);
 }
 
 .memorable-weekdays {
@@ -2115,11 +2123,34 @@ tbody tr:hover {
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: auto;
+  scrollbar-gutter: stable;
   gap: 10px;
+  /* Hide scrollbar until hover (Firefox + WebKit) */
+  scrollbar-width: none;
+}
+.memorable-list::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+.memorable-list:hover,
+.memorable-list:focus-within {
+  scrollbar-width: thin;
+}
+.memorable-list:hover::-webkit-scrollbar,
+.memorable-list:focus-within::-webkit-scrollbar {
+  width: 8px;
+}
+.memorable-list:hover::-webkit-scrollbar-thumb,
+.memorable-list:focus-within::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
 }
 
 .memorable-list-item {
+  flex: 0 0 auto;
   width: 100%;
   gap: 12px;
   padding: 14px;
@@ -2156,13 +2187,27 @@ tbody tr:hover {
   align-items: flex-start;
 }
 
+.memorable-list-topline {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .memorable-list-body strong {
   font-size: 15px;
+  min-width: 0;
 }
 
 .memorable-list-body span {
   color: var(--muted);
   font-size: 13px;
+}
+
+.memorable-list-date {
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .memorable-fab {
@@ -2220,10 +2265,45 @@ tbody tr:hover {
   width: 88px;
 }
 
+.memorable-emoji-picker {
+  position: relative;
+}
+
 .memorable-emoji-field input {
   text-align: center;
   font-size: 24px;
   padding-inline: 0;
+}
+
+.memorable-emoji-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+  background: var(--card-soft);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  z-index: 3;
+}
+
+.memorable-emoji-option {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  font-size: 22px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.memorable-emoji-option:hover {
+  background: color-mix(in srgb, var(--text) 10%, transparent);
 }
 
 .memorable-modal-actions {
@@ -2236,7 +2316,9 @@ tbody tr:hover {
   color: var(--muted);
 }
 
-.memorable-list-panel .section-head {
+.memorable-calendar-panel > .entries-heading:first-child,
+.memorable-list-panel > .entries-heading:first-child {
+  margin-top: 0;
   margin-bottom: 18px;
 }
 
@@ -2250,31 +2332,50 @@ tbody tr:hover {
   background: color-mix(in srgb, var(--text) 16%, transparent);
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1239px) {
   .memorable-layout {
     grid-template-columns: 1fr;
     gap: 0;
   }
 
-  .memorable-calendar-panel {
-    padding-bottom: 14px;
+  .memorable-layout > .panel-col:first-of-type:not(:only-child) {
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 28px;
+  }
+
+  .memorable-layout > .panel-col + .panel-col {
+    padding-top: 20px;
+  }
+
+  .memorable-layout > .panel-col + .panel-col {
+    border-left: 0;
+    padding-left: 0;
   }
 
   .memorable-list-panel {
     height: auto;
     max-height: none;
     padding-left: 0;
-    padding-top: 14px;
     border-left: 0;
   }
 
   .memorable-list {
     max-height: none;
   }
+
+  .memorable-list-panel > .entries-heading:first-child {
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 980px) {
+  .memorable-header {
+    margin-bottom: 2px;
+  }
+
   .memorable-list-panel {
+    padding-top: 0;
     height: auto;
     max-height: none;
   }
@@ -2290,6 +2391,8 @@ tbody tr:hover {
 
   .memorable-list {
     max-height: none;
+    overflow: visible;
+    scrollbar-gutter: auto;
   }
 
   .memorable-fab {

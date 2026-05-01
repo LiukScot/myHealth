@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { SectionHead, InlineFeedback, useSplitColumnHeightSync } from "./shared";
 import { formatMonthLabel, toDateKey, type InlineMessage, type MemorableDay } from "./core";
@@ -25,13 +25,17 @@ type MemorableLookups = {
   yearlyByMonthDay: Map<string, MemorableDay[]>;
 };
 
-function buildCalendarDays(month: Date) {
+const COMMON_EMOJIS = ["✨", "🎂", "💍", "🎉", "🌟", "❤️", "🎓", "🏆", "✈️", "🩺", "🌈", "🎯"];
+
+function buildCalendarDays(month: Date, weekStart: "sunday" | "monday") {
   const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
   const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+  const firstOffset = weekStart === "monday" ? (firstDay.getDay() + 6) % 7 : firstDay.getDay();
+  const lastOffset = weekStart === "monday" ? (6 - ((lastDay.getDay() + 6) % 7)) : (6 - lastDay.getDay());
   const start = new Date(firstDay);
-  start.setDate(start.getDate() - firstDay.getDay());
+  start.setDate(start.getDate() - firstOffset);
   const end = new Date(lastDay);
-  end.setDate(end.getDate() + (6 - end.getDay()));
+  end.setDate(end.getDate() + lastOffset);
   const dayCount = Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000)) + 1;
   return Array.from({ length: dayCount }, (_, index) => {
     const value = new Date(start);
@@ -81,7 +85,12 @@ export function MemorableDaysSection({ memorable }: Props) {
   const [draft, setDraft] = useState<DraftState | null>(null);
   const [feedback, setFeedback] = useState<InlineMessage | null>(null);
   const [successDateKey, setSuccessDateKey] = useState<string | null>(null);
-  const days = useMemo(() => buildCalendarDays(memorable.visibleMonth), [memorable.visibleMonth]);
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+  const weekdayLabels = memorable.weekStart === "monday"
+    ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const days = useMemo(() => buildCalendarDays(memorable.visibleMonth, memorable.weekStart), [memorable.visibleMonth, memorable.weekStart]);
   const lookups = useMemo(() => buildMemorableLookups(memorable.memorableDays), [memorable.memorableDays]);
   const todayKey = toDateKey(new Date());
   const { leftColRef, rightColRef } = useSplitColumnHeightSync([days.length, memorable.memorableDays.length, memorable.isLoading]);
@@ -102,6 +111,16 @@ export function MemorableDaysSection({ memorable }: Props) {
     const timer = window.setTimeout(() => setSuccessDateKey(null), 2500);
     return () => window.clearTimeout(timer);
   }, [successDateKey]);
+
+  useEffect(() => {
+    if (!emojiPickerOpen) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (emojiPickerRef.current?.contains(event.target as Node)) return;
+      setEmojiPickerOpen(false);
+    };
+    window.addEventListener("mousedown", onPointerDown);
+    return () => window.removeEventListener("mousedown", onPointerDown);
+  }, [emojiPickerOpen]);
 
   useEffect(() => {
     if (!draft?.date) return;
@@ -142,12 +161,14 @@ export function MemorableDaysSection({ memorable }: Props) {
 
   const openCreate = (date: string) => {
     memorable.setSelectedDate(date);
+    setEmojiPickerOpen(false);
     setDraft(emptyDraft(date));
   };
 
   const openEdit = (item: MemorableDay) => {
     memorable.setSelectedDate(item.date);
     memorable.setVisibleMonth(new Date(`${item.date}T00:00:00`));
+    setEmojiPickerOpen(false);
     setDraft({
       id: item.id > 0 ? item.id : null,
       date: item.date,
@@ -171,6 +192,7 @@ export function MemorableDaysSection({ memorable }: Props) {
 
       <div className="panel-split memorable-layout">
         <section ref={leftColRef} className="panel-col memorable-calendar-panel">
+          <h2 className="entries-heading">Calendar</h2>
           <div className="memorable-calendar-head">
             <button type="button" className="btn memorable-month-nav" onClick={() => memorable.setVisibleMonth(new Date(memorable.visibleMonth.getFullYear(), memorable.visibleMonth.getMonth() - 1, 1))}>
               Prev
@@ -181,7 +203,7 @@ export function MemorableDaysSection({ memorable }: Props) {
             </button>
           </div>
           <div className="memorable-weekdays">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((label) => <span key={label}>{label}</span>)}
+            {weekdayLabels.map((label) => <span key={label}>{label}</span>)}
           </div>
           <div className="memorable-calendar-grid">
             {days.map((day) => {
@@ -233,7 +255,7 @@ export function MemorableDaysSection({ memorable }: Props) {
         </section>
 
         <section ref={rightColRef} className="panel-col memorable-list-panel">
-          <SectionHead title="All memorable days" />
+          <h2 className="entries-heading">All memorable days</h2>
           {memorable.isLoading ? (
             <p className="hint">Loading memorable days...</p>
           ) : memorable.memorableDays.length === 0 ? (
@@ -243,7 +265,9 @@ export function MemorableDaysSection({ memorable }: Props) {
             </div>
           ) : (
             <div className="memorable-list">
-              {memorable.memorableDays.map((item) => (
+              {[...memorable.memorableDays]
+                .sort((a, b) => b.date.localeCompare(a.date))
+                .map((item) => (
                 <button
                   type="button"
                   key={`${item.source}-${item.id}-${item.date}`}
@@ -252,12 +276,14 @@ export function MemorableDaysSection({ memorable }: Props) {
                 >
                   <span className="memorable-list-emoji">{item.emoji || "✨"}</span>
                   <span className="memorable-list-body">
-                    <strong>{item.title}</strong>
-                    <span>{item.date}</span>
+                    <span className="memorable-list-topline">
+                      <strong>{item.title}</strong>
+                      <span className="memorable-list-date">{item.date}</span>
+                    </span>
                     <span>{item.locked ? "Locked from Settings" : item.repeatMode}</span>
                   </span>
                 </button>
-              ))}
+                ))}
             </div>
           )}
         </section>
@@ -276,7 +302,7 @@ export function MemorableDaysSection({ memorable }: Props) {
                 <span className="field-line-label">Date</span>
                 <input type="date" value={draft.date} onChange={(event) => setDraft((current) => current ? { ...current, date: event.target.value } : current)} />
               </label>
-              <div className="field field-line memorable-emoji-field">
+              <div ref={emojiPickerRef} className="field field-line memorable-emoji-field memorable-emoji-picker">
                 <span className="field-line-label">Emoji</span>
                 <input
                   type="text"
@@ -285,8 +311,27 @@ export function MemorableDaysSection({ memorable }: Props) {
                   aria-label="Emoji"
                   placeholder="✨"
                   value={draft.emoji}
+                  onFocus={() => setEmojiPickerOpen(true)}
+                  onClick={() => setEmojiPickerOpen(true)}
                   onChange={(event) => setDraft((current) => current ? { ...current, emoji: event.target.value } : current)}
                 />
+                {emojiPickerOpen ? (
+                  <div className="memorable-emoji-popover" role="listbox" aria-label="Emoji picker">
+                    {COMMON_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        className="memorable-emoji-option"
+                        onClick={() => {
+                          setDraft((current) => current ? { ...current, emoji } : current);
+                          setEmojiPickerOpen(false);
+                        }}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </div>
             <label className="field field-line">
