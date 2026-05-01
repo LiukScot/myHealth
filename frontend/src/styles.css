@@ -1999,9 +1999,27 @@ tbody tr:hover {
 }
 
 .memorable-calendar-head {
-  justify-content: space-between;
-  gap: var(--space-1);
+  justify-content: flex-start;
+  gap: 8px;
   margin-bottom: 14px;
+}
+
+.memorable-month-label {
+  padding: 10px 22px;
+  min-height: 40px;
+  font: 600 14px var(--font-body);
+  letter-spacing: 0.01em;
+  text-transform: none;
+  border-radius: 999px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.memorable-month-label:hover {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  border-color: transparent;
 }
 
 .memorable-month-nav {
@@ -2135,7 +2153,6 @@ tbody tr:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.15s ease, opacity 0.15s ease;
 }
 
 .memorable-day-overflow {
@@ -2343,46 +2360,32 @@ tbody tr:hover {
 }
 
 .memorable-emoji-picker-trigger {
-  width: 100%;
   min-width: 0;
-  aspect-ratio: 1 / 1;
   min-height: 0;
-  padding: 10px 8px;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
+  padding: 0;
+  border-radius: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  text-align: center;
-  background: var(--card-soft);
-  border-color: var(--border);
+  background: transparent;
+  border-color: transparent;
   color: var(--text);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .memorable-emoji-picker-trigger[aria-expanded="true"] {
-  background: color-mix(in srgb, var(--accent) 8%, var(--card-soft));
-  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  background: transparent;
+  border-color: transparent;
 }
 
 .memorable-emoji-picker-trigger:focus-visible {
-  border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+  border-color: transparent;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .memorable-emoji-picker-trigger-emoji {
-  font-size: 24px;
+  font-size: 32px;
   line-height: 1;
-}
-
-.memorable-emoji-picker-trigger-label {
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
 }
 
 .memorable-emoji-picker-panel {
@@ -2424,11 +2427,11 @@ tbody tr:hover {
 }
 
 .memorable-emoji-picker-tab {
-  min-height: 32px;
-  padding: 6px 11px;
-  border-radius: 999px;
+  min-height: 0;
+  padding: 0 4px;
+  border-radius: 0;
   border-color: transparent;
-  background: color-mix(in srgb, var(--text) 6%, transparent);
+  background: transparent;
   color: var(--muted);
   box-shadow: none;
   font-size: 11px;
@@ -2438,15 +2441,15 @@ tbody tr:hover {
 }
 
 .memorable-emoji-picker-tab.is-active {
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  background: transparent;
   color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  border-color: transparent;
   box-shadow: none;
 }
 
 .memorable-emoji-picker-tab:focus-visible {
-  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
-  background: color-mix(in srgb, var(--text) 10%, transparent);
+  border-color: transparent;
+  background: transparent;
   color: var(--text);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
 }
@@ -2468,35 +2471,34 @@ tbody tr:hover {
 }
 
 .memorable-emoji-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .memorable-emoji-picker-emoji {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  min-height: 40px;
-  padding: 0;
-  border-radius: 12px;
-  border-color: var(--border);
-  background: var(--card-soft);
+  min-height: 0;
+  padding: 2px;
+  border-radius: 0;
+  border-color: transparent;
+  background: transparent;
   box-shadow: none;
-  display: grid;
-  place-items: center;
-  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
   line-height: 1;
 }
 
 .memorable-emoji-picker-emoji.is-selected {
   color: var(--text);
-  background: color-mix(in srgb, var(--accent) 14%, var(--card-soft));
-  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .memorable-emoji-picker-emoji:focus-visible {
-  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  border-color: transparent;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
@@ -2541,22 +2543,22 @@ tbody tr:hover {
   }
 
   .memorable-emoji-picker-trigger:hover {
-    background: color-mix(in srgb, var(--text) 4%, var(--card-soft));
+    background: transparent;
     color: var(--text);
-    border-color: var(--border);
+    border-color: transparent;
   }
 
   .memorable-emoji-picker-tab:hover {
     border-color: transparent;
-    background: color-mix(in srgb, var(--text) 10%, transparent);
+    background: transparent;
     color: var(--text);
     box-shadow: none;
   }
 
   .memorable-emoji-picker-emoji:hover {
     color: var(--text);
-    background: color-mix(in srgb, var(--text) 4%, var(--card-soft));
-    border-color: color-mix(in srgb, var(--accent) 26%, var(--border));
+    background: transparent;
+    border-color: transparent;
     box-shadow: none;
   }
 }
@@ -2573,7 +2575,7 @@ tbody tr:hover {
   }
 
   .memorable-layout > .panel-col + .panel-col {
-    padding-top: 28px;
+    padding-top: 22px;
   }
 
   .memorable-layout > .panel-col + .panel-col {
@@ -2584,6 +2586,7 @@ tbody tr:hover {
   .memorable-list-panel {
     height: auto;
     max-height: none;
+    padding-top: 22px;
     padding-left: 0;
     border-left: 0;
   }
@@ -2757,7 +2760,8 @@ tbody tr:hover {
    (entries-heading) — 13px accent uppercase — instead of the smaller 10px muted
    variant used elsewhere. */
 .panel--dashboard .section-head .section-title,
-.panel--memorable .memorable-header .section-head .section-title {
+.panel--memorable .memorable-header .section-head .section-title,
+.memorable-modal .section-head .section-title {
   font-size: 13px;
   color: var(--accent);
   letter-spacing: 0.16em;

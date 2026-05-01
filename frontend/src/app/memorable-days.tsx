@@ -355,22 +355,6 @@ export function MemorableDaysSection({ memorable }: Props) {
     });
   };
 
-  const onEmojiPickerScroll = () => {
-    const scroller = emojiPickerScrollRef.current;
-    if (!scroller) return;
-    const nextScrollTop = scroller.scrollTop;
-    setEmojiPicker((current) => {
-      const currentScrollTop = current.scrollTopByCategory[current.activeCategory] ?? 0;
-      if (currentScrollTop === nextScrollTop) return current;
-      return {
-        ...current,
-        scrollTopByCategory: {
-          ...current.scrollTopByCategory,
-          [current.activeCategory]: nextScrollTop,
-        },
-      };
-    });
-  };
 
   const onListItemWheel = (event: React.WheelEvent<HTMLButtonElement>) => {
     const list = event.currentTarget.closest(".memorable-list");
@@ -399,7 +383,14 @@ export function MemorableDaysSection({ memorable }: Props) {
             <button type="button" className="btn memorable-month-nav" onClick={() => memorable.setVisibleMonth(new Date(memorable.visibleMonth.getFullYear(), memorable.visibleMonth.getMonth() - 1, 1))}>
               Prev
             </button>
-            <SectionHead title={formatMonthLabel(memorable.visibleMonth)} />
+            <button
+              type="button"
+              className="btn memorable-month-label"
+              onClick={() => memorable.setVisibleMonth(new Date())}
+              aria-label="Go to current month"
+            >
+              {new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long", year: "numeric" }).format(new Date())}
+            </button>
             <button type="button" className="btn memorable-month-nav" onClick={() => memorable.setVisibleMonth(new Date(memorable.visibleMonth.getFullYear(), memorable.visibleMonth.getMonth() + 1, 1))}>
               Next
             </button>
@@ -423,6 +414,12 @@ export function MemorableDaysSection({ memorable }: Props) {
                 <div
                   key={dayKey}
                   className={`memorable-day-cell${monthMatch ? "" : " is-outside"}${isToday ? " is-today" : ""}`}
+                  onClick={(event) => {
+                    if ((event.target as Element).closest("button")) return;
+                    memorable.setSelectedDate(dayKey);
+                    if (items.length > 0) setPopoverDateKey(popoverDateKey === dayKey ? null : dayKey);
+                    else openCreate(dayKey);
+                  }}
                 >
                   <span className="memorable-day-top">
                     <button
@@ -435,14 +432,6 @@ export function MemorableDaysSection({ memorable }: Props) {
                       }}
                     >
                       {day.getDate()}
-                    </button>
-                    <button
-                      type="button"
-                      className={`memorable-day-add${showSuccess ? " is-success" : ""}`}
-                      aria-label={`Add memorable day on ${dayKey}`}
-                      onClick={() => openCreate(dayKey)}
-                    >
-                      {showSuccess ? "✓" : "+"}
                     </button>
                   </span>
                   <span className="memorable-day-markers">
@@ -531,9 +520,6 @@ export function MemorableDaysSection({ memorable }: Props) {
                     <span aria-hidden="true" className="memorable-emoji-picker-trigger-emoji">
                       {draft.emoji || "✨"}
                     </span>
-                    <span className="memorable-emoji-picker-trigger-label">
-                      Emoji
-                    </span>
                   </button>
 
                   {emojiPickerOpen ? (
@@ -580,7 +566,6 @@ export function MemorableDaysSection({ memorable }: Props) {
 
                       <div
                         ref={emojiPickerScrollRef}
-                        onScroll={onEmojiPickerScroll}
                         className="memorable-emoji-picker-scroll"
                       >
                         {emojiPickerRecords.length > 0 ? (
