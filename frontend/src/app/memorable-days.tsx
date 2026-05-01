@@ -417,30 +417,24 @@ export function MemorableDaysSection({ memorable }: Props) {
                 <div
                   key={dayKey}
                   className={`memorable-day-cell${monthMatch ? "" : " is-outside"}${isToday ? " is-today" : ""}`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    memorable.setSelectedDate(dayKey);
-                    if (items.length > 0) setPopoverDateKey(popoverDateKey === dayKey ? null : dayKey);
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      memorable.setSelectedDate(dayKey);
-                      if (items.length > 0) setPopoverDateKey(popoverDateKey === dayKey ? null : dayKey);
-                    }
-                  }}
                 >
                   <span className="memorable-day-top">
-                    <span>{day.getDate()}</span>
+                    <button
+                      type="button"
+                      className="memorable-day-number"
+                      aria-label={items.length > 0 ? `View events on ${dayKey}` : `${day.getDate()}`}
+                      onClick={() => {
+                        memorable.setSelectedDate(dayKey);
+                        if (items.length > 0) setPopoverDateKey(popoverDateKey === dayKey ? null : dayKey);
+                      }}
+                    >
+                      {day.getDate()}
+                    </button>
                     <button
                       type="button"
                       className={`memorable-day-add${showSuccess ? " is-success" : ""}`}
                       aria-label={`Add memorable day on ${dayKey}`}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        openCreate(dayKey);
-                      }}
+                      onClick={() => openCreate(dayKey)}
                     >
                       {showSuccess ? "✓" : "+"}
                     </button>
@@ -590,7 +584,7 @@ export function MemorableDaysSection({ memorable }: Props) {
                                 <button
                                   key={record.emoji}
                                   type="button"
-                                  aria-label={`${record.name}, ${record.emoji}`}
+                                  aria-label={record.name}
                                   aria-pressed={isSelected}
                                   className={`memorable-emoji-picker-emoji${isSelected ? " is-selected" : ""}`}
                                   onClick={() => selectEmoji(record)}

@@ -2005,20 +2005,30 @@ tbody tr:hover {
 }
 
 .memorable-month-nav {
-  padding: 6px 12px;
-  font: 600 12px var(--font-body);
-  color: var(--muted);
-  background: color-mix(in srgb, var(--text) 5%, transparent);
-  border: 0;
+  padding: 10px 22px;
+  min-height: 40px;
+  min-width: 0;
+  font: 600 14px var(--font-body);
+  letter-spacing: 0.01em;
+  text-transform: none;
   border-radius: 999px;
-  cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
   box-shadow: none;
 }
 
 .memorable-month-nav:hover {
-  color: var(--text);
+  border-color: transparent;
   background: color-mix(in srgb, var(--text) 10%, transparent);
+  color: var(--text);
+}
+
+.memorable-month-nav:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  color: var(--text);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .memorable-weekdays {
@@ -2070,6 +2080,18 @@ tbody tr:hover {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+}
+
+.memorable-day-number {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  min-height: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  line-height: 1;
 }
 
 .memorable-day-add {
@@ -2303,49 +2325,186 @@ tbody tr:hover {
   justify-content: start;
 }
 
+.memorable-modal-top-row > .field-line {
+  min-width: 0;
+}
+
 .memorable-emoji-field {
   width: 88px;
+  min-width: 88px;
+  justify-self: end;
+  align-self: start;
 }
 
 .memorable-emoji-picker {
   position: relative;
+  width: 100%;
+  min-width: 0;
 }
 
-.memorable-emoji-field input {
-  text-align: center;
-  font-size: 24px;
-  padding-inline: 0;
-}
-
-.memorable-emoji-popover {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  padding: 10px;
-  background: var(--card-soft);
-  border-radius: var(--radius-md);
-  box-shadow: none;
-  z-index: 3;
-}
-
-.memorable-emoji-option {
-  width: 40px;
-  height: 40px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--text) 4%, transparent);
-  font-size: 22px;
-  line-height: 1;
-  display: inline-flex;
+.memorable-emoji-picker-trigger {
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  padding: 10px 8px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  text-align: center;
+  background: var(--card-soft);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
 }
 
-.memorable-emoji-option:hover {
+.memorable-emoji-picker-trigger[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--accent) 8%, var(--card-soft));
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
+.memorable-emoji-picker-trigger:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.memorable-emoji-picker-trigger-emoji {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.memorable-emoji-picker-trigger-label {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.memorable-emoji-picker-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(420px, calc(100vw - 32px));
+  max-width: min(420px, calc(100vw - 32px));
+  max-height: min(520px, calc(100vh - 180px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  z-index: 30;
+}
+
+.memorable-emoji-picker-search {
+  gap: 6px;
+  margin: 0;
+}
+
+.memorable-emoji-picker-search .field-line-label {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.memorable-emoji-picker-search-input {
+  width: 100%;
+}
+
+.memorable-emoji-picker-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.memorable-emoji-picker-tab {
+  min-height: 32px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border-color: transparent;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--muted);
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.memorable-emoji-picker-tab.is-active {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  box-shadow: none;
+}
+
+.memorable-emoji-picker-tab:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
   background: color-mix(in srgb, var(--text) 10%, transparent);
+  color: var(--text);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.memorable-emoji-picker-scroll {
+  min-height: 0;
+  max-height: 320px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  scrollbar-gutter: stable;
+  padding-right: 2px;
+}
+
+.memorable-emoji-picker-scroll:hover,
+.memorable-emoji-picker-scroll:focus-within {
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.memorable-emoji-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 8px;
+}
+
+.memorable-emoji-picker-emoji {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 12px;
+  border-color: var(--border);
+  background: var(--card-soft);
+  box-shadow: none;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.memorable-emoji-picker-emoji.is-selected {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 14%, var(--card-soft));
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.memorable-emoji-picker-emoji:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.memorable-emoji-picker-empty {
+  margin: 0;
+  padding: 8px 2px 2px;
+  text-align: center;
+  color: var(--muted-soft);
 }
 
 .memorable-modal-actions {
@@ -2372,6 +2531,34 @@ tbody tr:hover {
 .memorable-modal-cancel:hover {
   color: var(--text);
   background: color-mix(in srgb, var(--text) 16%, transparent);
+}
+
+@media (hover: hover) {
+  .memorable-month-nav:hover {
+    border-color: transparent;
+    background: color-mix(in srgb, var(--text) 10%, transparent);
+    color: var(--text);
+  }
+
+  .memorable-emoji-picker-trigger:hover {
+    background: color-mix(in srgb, var(--text) 4%, var(--card-soft));
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  .memorable-emoji-picker-tab:hover {
+    border-color: transparent;
+    background: color-mix(in srgb, var(--text) 10%, transparent);
+    color: var(--text);
+    box-shadow: none;
+  }
+
+  .memorable-emoji-picker-emoji:hover {
+    color: var(--text);
+    background: color-mix(in srgb, var(--text) 4%, var(--card-soft));
+    border-color: color-mix(in srgb, var(--accent) 26%, var(--border));
+    box-shadow: none;
+  }
 }
 
 @media (max-width: 1239px) {
@@ -2440,8 +2627,8 @@ tbody tr:hover {
   }
 
   .memorable-modal-top-row {
-    grid-template-columns: 1fr;
-    justify-content: stretch;
+    grid-template-columns: minmax(0, 1fr) 88px;
+    justify-content: start;
   }
 
   .memorable-list {

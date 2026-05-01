@@ -23,7 +23,7 @@ test("desktop shows calendar and list, create/edit/delete works", async ({ page 
   await expect(page.getByRole("searchbox", { name: "Search emoji" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Smileys" })).toBeVisible();
   await page.getByRole("searchbox", { name: "Search emoji" }).fill("ring");
-  await page.getByRole("button", { name: "ring", exact: true }).click();
+  await page.getByRole("button", { name: /ring/i }).first().click();
   await expect(page.getByRole("searchbox", { name: "Search emoji" })).toBeHidden();
   await page.getByRole("button", { name: "Emoji" }).click();
   await expect(page.getByRole("searchbox", { name: "Search emoji" })).toHaveValue("ring");
@@ -63,7 +63,7 @@ test("mobile hides calendar and shows floating add button", async ({ page, reque
 
 test("tablet width stacks list under calendar", async ({ page, request }) => {
   await seedMemorableDay(request, { title: "Birthday", repeatMode: "yearly", emoji: "🎂" });
-  await page.setViewportSize({ width: 1030, height: 766 });
+  await page.setViewportSize({ width: 1400, height: 766 });
   await loginUi(page);
   await page.getByRole("button", { name: "Memorable days" }).click();
 

@@ -46,3 +46,5 @@ mockups/
 
 # Local planning/spec artifacts
 docs/superpowers/
+.superpowers/
+.playwright-cli
