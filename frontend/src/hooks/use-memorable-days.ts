@@ -14,7 +14,11 @@ type MemorableDayPayload = {
 };
 
 function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 export function matchesMemorableDate(item: MemorableDay, date: string) {
@@ -93,6 +97,6 @@ export const memorableDayPayloadSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   title: z.string().trim().min(1),
   emoji: z.string().trim().max(16).default(""),
-  description: z.string().default(""),
+  description: z.string().max(1000).default(""),
   repeatMode: memorableRepeatModeSchema,
 });

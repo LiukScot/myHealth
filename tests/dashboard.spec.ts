@@ -124,9 +124,9 @@ test("renders dashboard data and supports chart toggles", async ({ page }) => {
 
 test("shows anniversary cards above averages", async ({ page, request }) => {
   const now = new Date();
-  const yyyy = now.getFullYear() - 2;
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
+  const yyyy = now.getUTCFullYear() - 2;
+  const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(now.getUTCDate()).padStart(2, "0");
   await seedMemorableDay(request, {
     date: `${yyyy}-${mm}-${dd}`,
     title: "Wedding",

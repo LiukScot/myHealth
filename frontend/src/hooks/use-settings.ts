@@ -41,7 +41,7 @@ export function usePrefs(enabled: boolean) {
       chatRange: patch.chatRange ?? base.chatRange,
       lastRange: patch.lastRange ?? base.lastRange,
       graphSelection: patch.graphSelection ?? base.graphSelection,
-      birthday: patch.birthday ?? base.birthday ?? null,
+      birthday: patch.birthday === undefined ? base.birthday : patch.birthday,
     });
   };
 

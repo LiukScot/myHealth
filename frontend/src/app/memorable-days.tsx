@@ -192,7 +192,6 @@ export function MemorableDaysSection({ memorable }: Props) {
 
       <div className="panel-split memorable-layout">
         <section ref={leftColRef} className="panel-col memorable-calendar-panel">
-          <h2 className="entries-heading">Calendar</h2>
           <div className="memorable-calendar-head">
             <button type="button" className="btn memorable-month-nav" onClick={() => memorable.setVisibleMonth(new Date(memorable.visibleMonth.getFullYear(), memorable.visibleMonth.getMonth() - 1, 1))}>
               Prev
@@ -232,6 +231,7 @@ export function MemorableDaysSection({ memorable }: Props) {
                     <span
                       className={`memorable-day-add${showSuccess ? " is-success" : ""}`}
                       role="button"
+                      tabIndex={0}
                       aria-label={`Add memorable day on ${dayKey}`}
                       onClick={(event) => {
                         event.stopPropagation();
