@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { SectionHead, InlineFeedback, useSplitColumnHeightSync } from "./shared";
-import { formatMonthLabel, toDateKey, type InlineMessage, type MemorableDay } from "./core";
+import { toDateKey, type InlineMessage, type MemorableDay } from "./core";
 import { emojiCatalog, emojiCategoryLabels, type EmojiCategory, type EmojiRecord } from "./emoji-catalog";
 import { getErrorMessage } from "../lib";
 import { memorableDayPayloadSchema, matchesMemorableDate, type useMemorableDays } from "../hooks/use-memorable-days";
@@ -235,6 +235,28 @@ export function MemorableDaysSection({ memorable }: Props) {
     emojiPickerWasOpenRef.current = false;
   }, [emojiPickerOpen]);
 
+  const rememberEmojiPickerScrollTop = useCallback(() => {
+    const scroller = emojiPickerScrollRef.current;
+    if (!scroller) return;
+    const nextScrollTop = scroller.scrollTop;
+    setEmojiPicker((current) => {
+      const currentScrollTop = current.scrollTopByCategory[current.activeCategory] ?? 0;
+      if (currentScrollTop === nextScrollTop) return current;
+      return {
+        ...current,
+        scrollTopByCategory: {
+          ...current.scrollTopByCategory,
+          [current.activeCategory]: nextScrollTop,
+        },
+      };
+    });
+  }, []);
+
+  const closeEmojiPicker = useCallback(() => {
+    rememberEmojiPickerScrollTop();
+    setEmojiPicker((current) => ({ ...current, open: false }));
+  }, [rememberEmojiPickerScrollTop]);
+
   useEffect(() => {
     if (!emojiPickerOpen) return;
     const onMouseDown = (event: MouseEvent) => {
@@ -252,14 +274,14 @@ export function MemorableDaysSection({ memorable }: Props) {
       window.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [emojiPickerOpen]);
+  }, [closeEmojiPicker, emojiPickerOpen]);
 
   useEffect(() => {
     if (!draft?.date) return;
     const [year, month] = draft.date.split("-").map(Number);
     if (!year || !month) return;
     memorable.setVisibleMonth(new Date(year, month - 1, 1));
-  }, [draft?.date]);
+  }, [draft?.date, memorable]);
 
   const closeDraft = () => {
     setDraft(null);
@@ -324,11 +346,6 @@ export function MemorableDaysSection({ memorable }: Props) {
     emojiPickerWasOpenRef.current = false;
   };
 
-  const closeEmojiPicker = () => {
-    rememberEmojiPickerScrollTop();
-    setEmojiPicker((current) => ({ ...current, open: false }));
-  };
-
   const selectEmoji = (record: EmojiRecord) => {
     setDraft((current) => (current ? { ...current, emoji: record.emoji } : current));
     setEmojiPicker((current) => ({
@@ -337,24 +354,6 @@ export function MemorableDaysSection({ memorable }: Props) {
     }));
     closeEmojiPicker();
   };
-
-  const rememberEmojiPickerScrollTop = () => {
-    const scroller = emojiPickerScrollRef.current;
-    if (!scroller) return;
-    const nextScrollTop = scroller.scrollTop;
-    setEmojiPicker((current) => {
-      const currentScrollTop = current.scrollTopByCategory[current.activeCategory] ?? 0;
-      if (currentScrollTop === nextScrollTop) return current;
-      return {
-        ...current,
-        scrollTopByCategory: {
-          ...current.scrollTopByCategory,
-          [current.activeCategory]: nextScrollTop,
-        },
-      };
-    });
-  };
-
 
   const onListItemWheel = (event: React.WheelEvent<HTMLButtonElement>) => {
     const list = event.currentTarget.closest(".memorable-list");
@@ -403,7 +402,6 @@ export function MemorableDaysSection({ memorable }: Props) {
               const dayKey = toDateKey(day);
               const monthMatch = day.getMonth() === memorable.visibleMonth.getMonth();
               const isToday = dayKey === todayKey;
-              const showSuccess = successDateKey === dayKey;
               const monthDayKey = dayKey.slice(5);
               const items = [
                 ...(lookups.oneTimeByDate.get(dayKey) ?? []),

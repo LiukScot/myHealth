@@ -30,9 +30,8 @@ function BirthdayBlock({
 }: Pick<SettingsSectionProps, "birthday" | "birthdayPending" | "onSaveBirthday">) {
   const [value, setValue] = useState(birthday ?? "");
 
-  useEffect(() => {
-    setValue(birthday ?? "");
-  }, [birthday]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setValue(birthday ?? ""); }, [birthday]);
 
   return (
     <form

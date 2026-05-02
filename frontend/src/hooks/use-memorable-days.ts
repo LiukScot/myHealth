@@ -71,10 +71,9 @@ export function useMemorableDays(enabled: boolean) {
     },
   });
 
-  const items = memorableDaysQuery.data ?? [];
   const sortedItems = useMemo(
-    () => [...items].sort((left, right) => right.date.localeCompare(left.date) || left.title.localeCompare(right.title)),
-    [items],
+    () => [...(memorableDaysQuery.data ?? [])].sort((left, right) => right.date.localeCompare(left.date) || left.title.localeCompare(right.title)),
+    [memorableDaysQuery.data],
   );
   const todayItems = useMemo(() => sortedItems.filter((item) => matchesMemorableDate(item, todayKey())), [sortedItems]);
 
