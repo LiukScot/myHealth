@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { SectionHead, InlineFeedback, useSplitColumnHeightSync } from "./shared";
-import { formatMonthLabel, toDateKey, type InlineMessage, type MemorableDay } from "./core";
+import { toDateKey, type InlineMessage, type MemorableDay } from "./core";
 import { emojiCatalog, emojiCategoryLabels, type EmojiCategory, type EmojiRecord } from "./emoji-catalog";
 import { getErrorMessage } from "../lib";
 import { memorableDayPayloadSchema, matchesMemorableDate, type useMemorableDays } from "../hooks/use-memorable-days";
@@ -403,7 +403,6 @@ export function MemorableDaysSection({ memorable }: Props) {
               const dayKey = toDateKey(day);
               const monthMatch = day.getMonth() === memorable.visibleMonth.getMonth();
               const isToday = dayKey === todayKey;
-              const showSuccess = successDateKey === dayKey;
               const monthDayKey = dayKey.slice(5);
               const items = [
                 ...(lookups.oneTimeByDate.get(dayKey) ?? []),
