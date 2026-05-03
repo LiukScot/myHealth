@@ -918,16 +918,14 @@ tbody tr:hover {
 :where(.dense-form-grid, .ds-metrics) .bars .bar:hover {
   background: color-mix(in srgb, white 10%, var(--card));
 }
-:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.low,
-:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.mid,
-:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.high {
-  background: var(--accent);
-}
 :where(.dense-form-grid, .ds-metrics) .bars .bar.filled.low {
-  background: color-mix(in srgb, var(--accent) 55%, var(--success));
+  background: var(--success);
+}
+:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.mid {
+  background: var(--warning);
 }
 :where(.dense-form-grid, .ds-metrics) .bars .bar.filled.high {
-  background: color-mix(in srgb, var(--accent) 70%, var(--danger));
+  background: var(--danger);
 }
 
 /* Coffee stepper row — sits in the val column, track is a muted spacer */
@@ -1293,15 +1291,14 @@ tbody tr:hover {
   font-size: 12.5px;
   line-height: 1;
   color: var(--muted);
-  background: transparent;
-  border: 1px solid var(--border-soft);
+  background: color-mix(in srgb, white 5%, var(--card));
+  border: none;
   box-shadow: none;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease;
 }
 .multi-option-chip:hover {
   color: var(--text);
-  border-color: var(--border);
-  background: transparent;
+  background: color-mix(in srgb, white 9%, var(--card));
 }
 .multi-option-chip.active {
   color: var(--accent);
@@ -1376,21 +1373,20 @@ tbody tr:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--layout-inline) var(--layout-stack);
+  gap: var(--layout-inline);
   margin-top: var(--layout-tight);
 }
 
 .multi-option-chip-add {
-  border-style: dashed;
+  border: none;
   color: var(--muted-soft);
-  background: transparent;
+  background: color-mix(in srgb, white 5%, var(--card));
+  font-weight: 500;
   cursor: pointer;
 }
 .multi-option-chip-add:hover:not(:disabled) {
-  color: var(--accent);
-  border-color: var(--accent);
-  border-style: solid;
-  background: transparent;
+  color: var(--text);
+  background: color-mix(in srgb, white 9%, var(--card));
 }
 .multi-option-chip-add:disabled {
   opacity: 0.4;
@@ -1398,20 +1394,28 @@ tbody tr:hover {
 }
 
 .multi-option-edit-link {
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  padding: var(--layout-tight) 0;
-  min-height: 0;
+  background: color-mix(in srgb, white 5%, var(--card));
+  border: none;
+  border-radius: 999px;
+  padding: var(--layout-tight) var(--layout-stack);
+  min-height: 28px;
   color: var(--muted-soft);
-  font: 500 12px var(--font-body);
-  letter-spacing: 0.04em;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
   box-shadow: none;
   cursor: pointer;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease;
 }
-.multi-option-edit-link:hover { color: var(--text); background: transparent; }
-.multi-option-edit-link.active { color: var(--accent); }
+.multi-option-edit-link:hover { color: var(--text); background: color-mix(in srgb, white 9%, var(--card)); }
+.multi-option-edit-link.active {
+  color: var(--accent);
+  border: none;
+  border-radius: 999px;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  padding: var(--layout-tight) var(--layout-stack);
+}
 
 /* Inline adder — appears in place of the +add chip */
 .multi-option-adder {
@@ -1458,11 +1462,11 @@ tbody tr:hover {
 }
 .multi-option-adder-confirm {
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  background: transparent;
 }
 .multi-option-adder-confirm:hover {
   color: var(--text);
-  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: transparent;
 }
 .multi-option-adder-confirm.is-success {
   color: var(--success);
