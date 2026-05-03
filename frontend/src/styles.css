@@ -29,7 +29,7 @@
   --layout-xs: 10px; /* narrow insets, small gaps */
   --layout-stack: 12px; /* between blocks in a column; BarMetric columns */
   --layout-block: 20px; /* secondary column rhythm; memorable header gap */
-  --layout-form-gap: 28px; /* therapy form save-section top spacing */
+  --layout-form-gap: 28px; /* form save-section spacing; pill chip min-height */
   --layout-page: 30px; /* major column / section gutters */
   --layout-header-offset: 32px; /* memorable button top offset */
   --layout-split: 48px; /* wide two-pane split */
@@ -1286,7 +1286,7 @@ tbody tr:hover {
   align-items: center;
   gap: var(--layout-inline);
   padding: var(--layout-tight) var(--layout-stack);
-  min-height: 28px;
+  min-height: var(--layout-form-gap);
   border-radius: 999px;
   font-size: 12.5px;
   line-height: 1;
@@ -1398,7 +1398,7 @@ tbody tr:hover {
   border: none;
   border-radius: 999px;
   padding: var(--layout-tight) var(--layout-stack);
-  min-height: 28px;
+  min-height: var(--layout-form-gap);
   color: var(--muted-soft);
   font-size: 12.5px;
   font-weight: 500;
@@ -1426,7 +1426,7 @@ tbody tr:hover {
   border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 6%, transparent);
-  min-height: 28px;
+  min-height: var(--layout-form-gap);
 }
 .multi-option-adder input {
   flex: 1 1 140px;
