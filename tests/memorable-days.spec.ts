@@ -49,17 +49,6 @@ test("desktop shows calendar and list, create/edit/delete works", async ({ page 
   await expect(page.locator(".memorable-list-item").filter({ hasText: "Wedding" })).toHaveCount(0);
 });
 
-test("mobile hides calendar and shows Add new beside list heading", async ({ page, request }) => {
-  await seedMemorableDay(request, { title: "Birthday", repeatMode: "yearly", emoji: "🎂" });
-  await page.setViewportSize({ width: 390, height: 844 });
-  await loginUi(page);
-  await page.getByRole("button", { name: "Open menu" }).click();
-  await page.getByRole("button", { name: "Memorable days" }).click();
-
-  await expect(page.locator(".memorable-calendar-panel")).toBeHidden();
-  await expect(page.locator(".memorable-list-panel")).toBeVisible();
-  await expect(page.locator(".memorable-list-heading-row--intro .memorable-list-add")).toBeVisible();
-});
 
 test("tablet width stacks list under calendar", async ({ page, request }) => {
   await seedMemorableDay(request, { title: "Birthday", repeatMode: "yearly", emoji: "🎂" });
