@@ -58,9 +58,12 @@
    * Tailwind @theme --spacing-* below mirrors px for utilities; favor --layout-* in app styles.
    */
   --layout-inline: 8px; /* chips, field gaps, panel pad, inline clusters */
+  --layout-xs: 10px; /* narrow insets, small gaps */
   --layout-stack: 12px; /* between blocks in a column; BarMetric columns */
   --layout-block: 20px; /* secondary column rhythm; memorable header gap */
+  --layout-form-gap: 28px; /* therapy form save-section top spacing */
   --layout-page: 30px; /* major column / section gutters */
+  --layout-header-offset: 32px; /* memorable button top offset */
   --layout-split: 48px; /* wide two-pane split */
   --layout-tight: 4px; /* dense UI below inline (icon–text, chips); halve for 2px via calc(var(--layout-tight) / 2) */
 }
@@ -880,7 +883,7 @@ tbody tr:hover {
 }
 
 .therapy-form .save-section .btn {
-  margin-top: calc(var(--layout-block) + var(--layout-inline));
+  margin-top: var(--layout-form-gap);
 }
 
 .btn-primary.is-success-pulse {
@@ -2131,8 +2134,8 @@ tbody tr:hover {
 
 .panel--memorable > .memorable-add-btn {
   position: absolute;
-  top: 32px;
-  right: 10px;
+  top: var(--layout-header-offset);
+  right: var(--layout-xs);
 }
 
 .memorable-month-label {
