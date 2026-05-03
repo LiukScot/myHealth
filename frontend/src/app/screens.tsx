@@ -717,18 +717,28 @@ const DESIGN_COLOR_TOKENS: { name: string; varName: string; role: string }[] = [
   { name: "Danger", varName: "--danger", role: "Negative state" },
 ];
 
-const DESIGN_SPACING_TOKENS: { varName: string; px: string }[] = [
-  { varName: "--space-1", px: "10px" },
-  { varName: "--space-2", px: "20px" },
-  { varName: "--space-3", px: "30px" },
-  { varName: "--space-4", px: "40px" },
+/** Semantic layout tokens from `styles.css` `:root` — bars use `width: var(...)`. */
+const DESIGN_SPACING_TOKENS: { varName: string }[] = [
+  { varName: "--layout-inline" },
+  { varName: "--layout-stack" },
+  { varName: "--layout-block" },
+  { varName: "--layout-page" },
+  { varName: "--layout-split" },
 ];
+
+const DS_MEMORABLE_WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 const DESIGN_RADIUS_TOKENS: { varName: string; px: string }[] = [
   { varName: "--radius-sm", px: "10px" },
   { varName: "--radius-md", px: "12px" },
   { varName: "--radius-lg", px: "16px" },
 ];
+
+const DS_SIDEBAR_DEMO_ICON = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden width={20} height={20}>
+    <circle cx="12" cy="12" r="7" />
+  </svg>
+);
 
 export function DesignSystemSection() {
   const [moodDemo, setMoodDemo] = useState<number | null>(6);
@@ -740,12 +750,11 @@ export function DesignSystemSection() {
     <section className="panel">
       <h1 className="panel-title">Design System</h1>
       <p className="hint ds-lede">
-        Living reference for the tokens, primitives, and patterns the Diary page is built from.
-        Every example below uses the same classes as the real app &mdash; edit{" "}
-        <code>styles.css</code> and this page updates with it.
+        Living reference for tokens, primitives, and patterns used across Diary, Pain, therapy forms, and Memorable days.
+        Examples use the same classes as production &mdash; edit <code>styles.css</code> and this page tracks it.
       </p>
 
-      <div className="panel-split panel-split--diary">
+      <div className="panel-split panel-split--diary panel-split--after-intro">
         <div className="panel-col ds-col">
           <h2 className="entries-heading">Foundations</h2>
 
@@ -804,17 +813,31 @@ export function DesignSystemSection() {
           <section className="ds-section">
             <div className="section-head">
               <span className="section-title">Spacing</span>
-              <span className="section-aside">Base scale</span>
+              <span className="section-aside">Layout tokens</span>
             </div>
-            <ul className="ds-scale-list">
+            <p className="hint ds-spacing-lede">
+              Use named steps (<code>--layout-inline</code> &rarr; <code>--layout-split</code>) in CSS — no numbered scale; bar length matches each variable.
+            </p>
+            <ul className="ds-layout-token-list">
               {DESIGN_SPACING_TOKENS.map((t) => (
-                <li key={t.varName} className="ds-scale-row">
+                <li key={t.varName} className="ds-layout-token-row">
                   <code>{t.varName}</code>
-                  <span className="ds-scale-bar" style={{ width: `var(${t.varName})` }} />
-                  <span className="ds-scale-val">{t.px}</span>
+                  <span className="ds-layout-token-bar" style={{ width: `var(${t.varName})` }} aria-hidden title={t.varName} />
                 </li>
               ))}
             </ul>
+            <div className="ds-field-line-spacing-demo">
+              <p className="ds-field-line-demo-title">Field-line (label ↔ control)</p>
+              <label className="field field-line">
+                <span className="field-line-label">Example</span>
+                <input type="text" defaultValue="Spacing demo" aria-label="Field-line spacing demo" />
+              </label>
+              <p className="ds-field-line-spacing-note">
+                <code>.field-line</code> uses <strong>gap: var(--layout-inline)</strong>. <code>.field-line-label</code> uses{" "}
+                <strong>padding-top: var(--layout-stack)</strong>, <strong>padding-bottom: var(--layout-inline)</strong>; inputs use{" "}
+                <strong>padding: var(--layout-inline) var(--layout-stack)</strong> (see <code>styles.css</code>).
+              </p>
+            </div>
           </section>
 
           <section className="ds-section">
@@ -860,6 +883,26 @@ export function DesignSystemSection() {
               <button type="button" className="btn btn-primary">Primary</button>
               <button type="button" className="btn btn-primary is-success-pulse">✓ Saved</button>
               <button type="button" className="btn btn-danger">Danger</button>
+            </div>
+          </section>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Sidebar nav</span>
+              <span className="section-aside">.sidebar-item</span>
+            </div>
+            <p className="hint ds-sidebar-preview-note">
+              Uses production classes. Default → hover <code>card-strong</code>; <code>active</code> → accent tint.
+            </p>
+            <div className="ds-sidebar-preview">
+              <button type="button" className="sidebar-item" tabIndex={-1}>
+                {DS_SIDEBAR_DEMO_ICON}
+                <span className="sidebar-item-label">Dashboard</span>
+              </button>
+              <button type="button" className="sidebar-item active" tabIndex={-1}>
+                {DS_SIDEBAR_DEMO_ICON}
+                <span className="sidebar-item-label">Settings</span>
+              </button>
             </div>
           </section>
 
@@ -943,6 +986,110 @@ export function DesignSystemSection() {
                 </div>
               </div>
             </details>
+          </section>
+
+          <section className="ds-section">
+            <div className="section-head">
+              <span className="section-title">Memorable days</span>
+              <span className="section-aside">Calendar · list · emoji</span>
+            </div>
+            <div className="ds-memorable-stack">
+              <div className="memorable-calendar-head">
+                <div className="memorable-calendar-nav">
+                  <button type="button" className="btn memorable-month-nav">
+                    Prev
+                  </button>
+                  <button type="button" className="btn memorable-month-label" aria-label="Go to current month (demo)">
+                    May 2026
+                  </button>
+                  <button type="button" className="btn memorable-month-nav">
+                    Next
+                  </button>
+                </div>
+                <button type="button" className="btn btn-primary memorable-add-btn">
+                  Add new
+                </button>
+              </div>
+              <div className="memorable-weekdays">
+                {DS_MEMORABLE_WEEKDAY_LABELS.map((d) => (
+                  <span key={d}>{d}</span>
+                ))}
+              </div>
+              <div className="ds-memorable-calendar-preview">
+                <div className="memorable-calendar-grid">
+                  <div className="memorable-day-cell is-outside">
+                    <span className="memorable-day-top">
+                      <button type="button" className="memorable-day-number" tabIndex={-1} onClick={(e) => e.preventDefault()}>
+                        27
+                      </button>
+                    </span>
+                  </div>
+                  <div className="memorable-day-cell is-today">
+                    <span className="memorable-day-top">
+                      <button type="button" className="memorable-day-number" tabIndex={-1} onClick={(e) => e.preventDefault()}>
+                        28
+                      </button>
+                    </span>
+                  </div>
+                  <div className="memorable-day-cell">
+                    <span className="memorable-day-top">
+                      <button type="button" className="memorable-day-number" tabIndex={-1} onClick={(e) => e.preventDefault()}>
+                        29
+                      </button>
+                    </span>
+                    <span className="memorable-day-markers">
+                      <span className="memorable-day-marker">Team lunch</span>
+                    </span>
+                  </div>
+                  <div className="memorable-day-cell">
+                    <span className="memorable-day-top">
+                      <button type="button" className="memorable-day-number" tabIndex={-1} onClick={(e) => e.preventDefault()}>
+                        30
+                      </button>
+                    </span>
+                  </div>
+                  <div className="memorable-day-cell">
+                    <span className="memorable-day-top">
+                      <button type="button" className="memorable-day-number" tabIndex={-1} onClick={(e) => e.preventDefault()}>
+                        1
+                      </button>
+                    </span>
+                  </div>
+                  <div className="memorable-day-cell">
+                    <span className="memorable-day-top">
+                      <button type="button" className="memorable-day-number" tabIndex={-1} onClick={(e) => e.preventDefault()}>
+                        2
+                      </button>
+                    </span>
+                  </div>
+                  <div className="memorable-day-cell">
+                    <span className="memorable-day-top">
+                      <button type="button" className="memorable-day-number" tabIndex={-1} onClick={(e) => e.preventDefault()}>
+                        3
+                      </button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button type="button" className="memorable-list-item">
+                <span className="memorable-list-emoji">🎂</span>
+                <span className="memorable-list-body">
+                  <span className="memorable-list-topline">
+                    <strong>Sample day</strong>
+                    <span className="memorable-list-date">05-15</span>
+                  </span>
+                  <span className="memorable-list-meta">yearly</span>
+                </span>
+              </button>
+              <div className="ds-memorable-emoji-row">
+                <button type="button" className="btn memorable-emoji-picker-trigger" aria-label="Emoji picker trigger demo">
+                  <span className="memorable-emoji-picker-trigger-emoji" aria-hidden>
+                    ✨
+                  </span>
+                </button>
+                <p className="hint">Same trigger class as the modal emoji control.</p>
+              </div>
+            </div>
           </section>
         </div>
       </div>

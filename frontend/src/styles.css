@@ -23,7 +23,8 @@
   --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.45);
   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
 
-  --spacing-1: 10px;
+  /* Numeric keys for Tailwind spacing utilities only — prefer --layout-* in :root for real CSS. */
+  --spacing-1: 8px;
   --spacing-2: 20px;
   --spacing-3: 30px;
   --spacing-4: 40px;
@@ -50,11 +51,17 @@
   --radius-lg: 16px;
   --radius-md: 12px;
   --radius-sm: 10px;
-  --space-1: 10px;
-  --space-2: 20px;
-  --space-3: 30px;
-  --space-4: 40px;
   --font-body: "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /*
+   * Layout spacing — use these names in CSS (no numbered --space-* ladder).
+   * Tailwind @theme --spacing-* below mirrors px for utilities; favor --layout-* in app styles.
+   */
+  --layout-inline: 8px; /* tight: chips, field gaps, panel pad, inline clusters */
+  --layout-stack: 12px; /* between blocks in a column; BarMetric columns */
+  --layout-block: 20px; /* secondary column rhythm; memorable header gap */
+  --layout-page: 30px; /* major column / section gutters */
+  --layout-split: 48px; /* wide two-pane split */
 }
 
 html { overflow-x: hidden; }
@@ -150,13 +157,26 @@ body {
   transition: all 0.2s ease;
   box-shadow: none;
 }
-.sidebar-collapse-btn svg { width: 16px; height: 16px; }
+.sidebar-collapse-btn svg { width: 20px; height: 20px; }
 .sidebar-collapse-btn:hover { color: var(--text); box-shadow: none; }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.sidebar-nav--main {
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar-footer {
+  flex-shrink: 0;
+  /* Slightly more than .sidebar-brand bottom padding (14px): button has inner padding so extra air reads even */
+  padding-top: 20px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
 }
 
 .sidebar-item {
@@ -189,7 +209,7 @@ body {
 .sidebar-item:hover {
   color: var(--text);
   background: var(--card-strong);
-  border-color: var(--border);
+  border-color: transparent;
   box-shadow: none;
 }
 .sidebar-item.active {
@@ -207,7 +227,7 @@ body {
 .app-main {
   max-width: 1500px;
   width: 100%;
-  padding: clamp(14px, 3vw, 40px) clamp(14px, 3vw, 40px) var(--space-2);
+  padding: clamp(14px, 3vw, 40px) clamp(14px, 3vw, 40px) var(--layout-block);
   overflow-y: auto;
 }
 
@@ -232,7 +252,7 @@ body {
   background: transparent;
   border: none;
   border-radius: 0;
-  padding: var(--space-1);
+  padding: var(--layout-inline);
   box-shadow: none;
   container-type: inline-size;
 }
@@ -424,9 +444,14 @@ label {
 /* CBT/DBT reuse the dense-form-grid primitive; keep textarea growth reasonable. */
 .therapy-form textarea { min-height: 54px; }
 
-.therapy-form .ds-section { margin-top: 6px; }
-.therapy-form .therapy-callout {
-  margin: -2px 0 4px;
+.therapy-form .ds-section {
+  margin-top: 0;
+}
+.therapy-form .ds-section .section-head {
+  padding-bottom: 0;
+}
+.therapy-form .hint.therapy-callout {
+  margin: 0;
   padding: 8px 12px;
   background: var(--card-soft);
   border-left: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
@@ -434,6 +459,10 @@ label {
   color: var(--muted);
   font-size: 12.5px;
   line-height: 1.45;
+}
+
+.therapy-form .core-col > p.hint.therapy-callout {
+  margin-top: var(--layout-stack);
 }
 
 /* legacy hooks kept so any stray usage still renders; prefer SectionHead. */
@@ -651,20 +680,20 @@ tbody tr:hover {
   height: auto;
 }
 
-.core-col { display: grid; gap: 14px; align-content: start; min-width: 0; }
-.right-col { display: grid; gap: 22px; min-width: 0; }
-.tags-col { display: grid; gap: 12px; }
+.core-col { display: grid; gap: var(--layout-stack); align-content: start; min-width: 0; }
+.right-col { display: grid; gap: var(--layout-block); min-width: 0; }
+.tags-col { display: grid; gap: var(--layout-stack); }
 .save-section { display: flex; justify-content: flex-end; padding-top: 6px; }
 
 /* Hairlines between the form's top-level sections */
-.dense-form-grid > .right-col { padding-top: 22px; }
+.dense-form-grid > .right-col { padding-top: var(--layout-block); }
 
 /* Section heading (inline label + aside text) used above tag tabs */
 .tags-col .section-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--layout-stack);
   margin-bottom: 0px;
 }
 .tags-col .section-head .section-title {
@@ -680,10 +709,10 @@ tbody tr:hover {
 }
 
 /* ── Field-line: uppercase micro-label + underline-only input ── */
-.field-line { gap: 6px; }
+.field-line { gap: var(--layout-inline); }
 .field-line .field-line-label {
-  padding-top: 12px;
-  padding-bottom: 8px;
+  padding-top: var(--layout-stack);
+  padding-bottom: var(--layout-inline);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -697,7 +726,7 @@ tbody tr:hover {
   background: color-mix(in srgb, white 3%, var(--bg));
   border: 0;
   border-radius: var(--radius-sm);
-  padding: 8px 12px;
+  padding: var(--layout-inline) var(--layout-stack);
   color: var(--text);
   font: 500 13px var(--font-body);
   box-shadow: none;
@@ -803,21 +832,27 @@ tbody tr:hover {
 .tag-panel .multi-option-list { min-height: 0; }
 
 /* ── Pill button utility (reusable) ──
-   No borders anywhere. Default .btn is transparent (blends with the
-   surface); .btn-primary / .btn-danger carry meaning via their fill. */
+   Default .btn: neutral gray (same as calendar cells / card-soft). */
 .btn {
   padding: 10px 22px;
   min-height: 40px;
   font: 600 14px var(--font-body);
-  color: var(--muted);
-  background: transparent;
+  color: var(--text);
+  background: var(--card-soft);
   border: 0;
   border-radius: 999px;
   cursor: pointer;
   box-shadow: none;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.btn:hover { color: var(--text); background: color-mix(in srgb, var(--text) 10%, transparent); }
+.btn:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 4%, var(--card-soft));
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 38%, transparent);
+}
 
 .btn-primary {
   color: var(--accent);
@@ -844,6 +879,10 @@ tbody tr:hover {
   margin-bottom: 20px;
 }
 
+.therapy-form .save-section .btn {
+  margin-top: 26px;
+}
+
 .btn-primary.is-success-pulse {
   color: var(--success);
   background: color-mix(in srgb, var(--success) 14%, transparent);
@@ -864,7 +903,7 @@ tbody tr:hover {
   display: grid;
   grid-template-columns: 120px 1fr auto;
   align-items: center;
-  gap: 16px;
+  gap: var(--layout-stack);
   padding: 0 0 3px;
 }
 
@@ -892,7 +931,8 @@ tbody tr:hover {
   gap: 2px;
 }
 
-.dense-form-grid .bars .bar {
+/* Bar segments: same UI in forms and on the Design System metrics demo */
+:where(.dense-form-grid, .ds-metrics) .bars .bar {
   height: 10px;
   min-height: 10px;
   padding: 0;
@@ -902,19 +942,20 @@ tbody tr:hover {
   background: color-mix(in srgb, white 4%, var(--card));
   cursor: pointer;
   transition: background 0.12s;
+  appearance: none;
 }
-.dense-form-grid .bars .bar:hover {
+:where(.dense-form-grid, .ds-metrics) .bars .bar:hover {
   background: color-mix(in srgb, white 10%, var(--card));
 }
-.dense-form-grid .bars .bar.filled.low,
-.dense-form-grid .bars .bar.filled.mid,
-.dense-form-grid .bars .bar.filled.high {
+:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.low,
+:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.mid,
+:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.high {
   background: var(--accent);
 }
-.dense-form-grid .bars .bar.filled.low {
+:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.low {
   background: color-mix(in srgb, var(--accent) 55%, var(--success));
 }
-.dense-form-grid .bars .bar.filled.high {
+:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.high {
   background: color-mix(in srgb, var(--accent) 70%, var(--danger));
 }
 
@@ -929,7 +970,7 @@ tbody tr:hover {
 .stepper-group {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--layout-inline);
   background: transparent;
   border: 0;
   border-radius: 0;
@@ -964,7 +1005,7 @@ tbody tr:hover {
 
 .dense-form-inline-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--layout-inline);
   flex-wrap: wrap;
 }
 
@@ -989,7 +1030,7 @@ tbody tr:hover {
 
 .panel-split {
   display: grid;
-  gap: 28px;
+  gap: var(--layout-page);
 }
 .panel-split > .panel-col { min-width: 0; }
 
@@ -1003,7 +1044,7 @@ tbody tr:hover {
 @media (min-width: 1100px) {
   .panel-split {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 48px;
+    gap: var(--layout-split);
   }
 
   /* Diary only: avoid grid stretch feeding tall right column into left height;
@@ -1013,7 +1054,7 @@ tbody tr:hover {
   }
   .panel-split > .panel-col + .panel-col {
     border-left: 1px solid var(--border-soft);
-    padding-left: 48px;
+    padding-left: var(--layout-split);
   }
   .panel-split > .panel-col .entries-heading:first-child,
   .panel-split > .panel-col > .entries-heading {
@@ -1086,7 +1127,7 @@ tbody tr:hover {
   display: grid;
   grid-template-columns: auto auto 1fr auto auto;
   align-items: center;
-  gap: 14px;
+  gap: var(--layout-stack);
   padding: 10px 2px;
   cursor: pointer;
   border: 0;
@@ -1125,10 +1166,10 @@ tbody tr:hover {
 .entry-row[open] summary .chevron { transform: rotate(90deg); }
 
 .entry-expanded {
-  padding: 6px 2px 14px;
+  padding: 6px 2px var(--layout-stack);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
+  gap: var(--layout-stack);
   border-top: 0;
 }
 
@@ -1832,21 +1873,26 @@ tbody tr:hover {
   .sidebar-item { padding: 14px 12px; font-size: 16px; }
   .sidebar-item svg { width: 22px; height: 22px; }
 
-  /* Mobile hamburger button at top-left of main content */
+  /* Mobile hamburger — same soft gray fill as .sidebar-item--card-soft, no border.
+     Left inset matches .panel padding so the icon lines up with .panel-title (incl. Settings on small screens). */
   .mobile-menu-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 40px;
     height: 40px;
-    margin: 0 0 10px;
+    margin: 0 0 10px var(--layout-inline);
     padding: 0;
-    border: 1px solid var(--border);
+    border: 0;
     border-radius: var(--radius-sm);
-    background: var(--card);
-    color: var(--text);
+    background: var(--card-soft);
+    color: var(--muted);
     cursor: pointer;
     box-shadow: none;
+  }
+  .mobile-menu-btn:hover {
+    color: var(--text);
+    background: var(--card-strong);
   }
 
   .screen { padding: 10px; }
@@ -1887,12 +1933,13 @@ tbody tr:hover {
     height: 280px;
   }
   .panel {
-    padding: var(--space-1);
+    padding: var(--layout-inline);
     border-radius: var(--radius-md);
   }
+  /* Settings uses frameless globally for desktop; on narrow screens give it the same gutters as other panels */
   .panel.panel--frameless {
-    padding: 0;
-    border-radius: 0;
+    padding: var(--layout-inline);
+    border-radius: var(--radius-md);
   }
   button,
   summary {
@@ -1911,49 +1958,58 @@ tbody tr:hover {
   .diary-table td:nth-child(11) { max-width: 100px; overflow: hidden; text-overflow: ellipsis; }
   .pain-table td:nth-child(12) { max-width: 100px; overflow: hidden; text-overflow: ellipsis; }
 
-  .design-system-fab { display: none; }
 }
 
-/* Floating action button: lower-left entry point for the Design System page. */
-.design-system-fab {
-  position: fixed;
-  left: 16px;
-  bottom: 16px;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  background: var(--card-strong);
-  border: 0;
-  color: var(--muted);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  z-index: 50;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-.design-system-fab:hover {
-  color: var(--accent);
+/* Design system entry: same row metrics as .sidebar-item, light fill from design tokens. */
+.sidebar-item.sidebar-item--card-soft {
   background: var(--card-soft);
+  border: 0;
+  box-shadow: none;
 }
-.design-system-fab:focus-visible {
+/* Same hover language as .btn (neutral pill on card-soft — not .sidebar-item:hover card-strong). */
+.sidebar-item.sidebar-item--card-soft:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 4%, var(--card-soft));
+  border: 0;
+  box-shadow: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+/* Must repeat active chrome — base .sidebar-item--card-soft sits later than .active and would otherwise wipe accent fill. */
+.sidebar-item.sidebar-item--card-soft.active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 0;
+  box-shadow: none;
+}
+/* Selected: no hover affordance (matches main .sidebar-item.active + hover, which keeps accent fill). */
+.sidebar-item.sidebar-item--card-soft.active:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 0;
+  box-shadow: none;
+}
+.sidebar-item.sidebar-item--card-soft:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 38%, transparent), var(--shadow-sm);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 38%, transparent);
 }
 
 /* ===== Design System page ===== */
-.ds-lede { margin: 8px 0 18px; max-width: 72ch; }
+.ds-lede { margin: var(--layout-inline) 0 var(--layout-block); max-width: 72ch; }
 .ds-lede code { padding: 1px 6px; border-radius: 6px; background: var(--card-soft); color: var(--text); }
-
-.panel-split--diary > .panel-col.ds-col {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
+/* Intro → split: extra air (Design System; token matches layout list). */
+.panel-split.panel-split--after-intro {
+  margin-top: var(--layout-page);
 }
-.panel-split--diary > .panel-col.ds-col > .entries-heading { margin: 0; }
 
-.ds-section { display: flex; flex-direction: column; gap: 14px; }
+/* Match Diary/Pain columns: block flow + heading margin-bottom (not flex gap — that reads larger than production). */
+.panel-split--diary > .panel-col.ds-col {
+  display: block;
+}
+.panel-split--diary > .panel-col.ds-col > .ds-section + .ds-section {
+  margin-top: var(--layout-stack);
+}
+
+.ds-section { display: flex; flex-direction: column; gap: var(--layout-stack); }
 .ds-section .section-head {
   display: flex; align-items: baseline; justify-content: space-between;
   padding-bottom: 8px;
@@ -1963,13 +2019,13 @@ tbody tr:hover {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-2);
-  margin-bottom: 17px;
+  gap: var(--layout-block);
+  margin-bottom: var(--layout-block);
 }
 
 .memorable-layout {
   grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.9fr);
-  gap: 48px;
+  gap: var(--layout-split);
 }
 
 .memorable-calendar-panel,
@@ -1999,59 +2055,35 @@ tbody tr:hover {
 }
 
 .memorable-calendar-head {
-  justify-content: flex-start;
-  gap: 8px;
-  margin-bottom: 14px;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--layout-inline);
+  margin-bottom: var(--layout-page);
+}
+.memorable-calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--layout-inline);
+  min-width: 0;
+}
+.memorable-calendar-head .memorable-add-btn {
+  flex-shrink: 0;
 }
 
 .memorable-month-label {
-  padding: 10px 22px;
-  min-height: 40px;
-  font: 600 14px var(--font-body);
   letter-spacing: 0.01em;
   text-transform: none;
-  border-radius: 999px;
-  background: transparent;
-  border-color: transparent;
-  color: var(--text);
-  box-shadow: none;
-}
-
-.memorable-month-label:hover {
-  background: color-mix(in srgb, var(--text) 8%, transparent);
-  border-color: transparent;
 }
 
 .memorable-month-nav {
-  padding: 10px 22px;
-  min-height: 40px;
   min-width: 0;
-  font: 600 14px var(--font-body);
   letter-spacing: 0.01em;
   text-transform: none;
-  border-radius: 999px;
-  border-color: transparent;
-  background: transparent;
-  color: var(--muted);
-  box-shadow: none;
-}
-
-.memorable-month-nav:hover {
-  border-color: transparent;
-  background: color-mix(in srgb, var(--text) 10%, transparent);
-  color: var(--text);
-}
-
-.memorable-month-nav:focus-visible {
-  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
-  background: color-mix(in srgb, var(--text) 10%, transparent);
-  color: var(--text);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .memorable-weekdays {
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--layout-inline);
+  margin-bottom: var(--layout-inline);
 }
 
 .memorable-weekdays span {
@@ -2066,12 +2098,12 @@ tbody tr:hover {
 .memorable-calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
+  gap: var(--layout-inline);
 }
 
 .memorable-day-cell {
   min-height: 108px;
-  padding: 10px;
+  padding: var(--layout-stack);
   border-radius: var(--radius-md);
   border: 0;
   background: var(--card-soft);
@@ -2080,7 +2112,7 @@ tbody tr:hover {
   text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--layout-inline);
   position: relative;
   transition: background 0.15s ease, color 0.15s ease;
 }
@@ -2096,7 +2128,7 @@ tbody tr:hover {
 .memorable-day-top,
 .memorable-list-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
 }
 
@@ -2143,7 +2175,7 @@ tbody tr:hover {
 .memorable-day-markers {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--layout-inline);
 }
 
 .memorable-day-marker {
@@ -2166,19 +2198,19 @@ tbody tr:hover {
 .memorable-day-popover-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin: 4px 0 8px;
+  gap: var(--layout-inline);
+  margin: 0 0 var(--layout-inline);
 }
 
 .memorable-day-popover-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--layout-stack);
   background: var(--card-soft);
   border: 0;
   box-shadow: none;
   min-height: 0;
-  padding: 10px 12px;
+  padding: var(--layout-inline) var(--layout-stack);
   border-radius: var(--radius-md);
   color: var(--text);
   text-align: left;
@@ -2215,7 +2247,7 @@ tbody tr:hover {
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: auto;
-  gap: 10px;
+  gap: var(--layout-stack);
   /* Gutter always reserved; thumb invisible until hover — no layout shift */
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
@@ -2228,8 +2260,8 @@ tbody tr:hover {
 .memorable-list-item {
   flex: 0 0 auto;
   width: 100%;
-  gap: 12px;
-  padding: 14px;
+  gap: var(--layout-stack);
+  padding: var(--layout-stack);
   border-radius: var(--radius-md);
   border: 0;
   background: var(--card-soft);
@@ -2242,13 +2274,6 @@ tbody tr:hover {
   background: color-mix(in srgb, var(--text) 4%, var(--card-soft));
 }
 
-.memorable-list-item:hover .memorable-list-body strong {
-  color: var(--text);
-}
-
-.memorable-list-item:hover .memorable-list-body span {
-  color: var(--muted);
-}
 
 .memorable-list-emoji {
   font-size: 22px;
@@ -2268,12 +2293,13 @@ tbody tr:hover {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--layout-stack);
 }
 
 .memorable-list-body strong {
   font-size: 15px;
   min-width: 0;
+  color: var(--text);
 }
 
 .memorable-list-body span {
@@ -2293,8 +2319,8 @@ tbody tr:hover {
 
 .memorable-fab {
   position: fixed;
-  right: 22px;
-  bottom: 22px;
+  right: var(--layout-block);
+  bottom: var(--layout-block);
   width: 56px;
   height: 56px;
   border-radius: 999px;
@@ -2318,16 +2344,16 @@ tbody tr:hover {
   -webkit-backdrop-filter: blur(6px);
   display: grid;
   place-items: center;
-  padding: 20px;
+  padding: var(--layout-block);
   z-index: 40;
 }
 
 .memorable-modal {
   width: min(520px, 100%);
-  padding: 18px;
+  padding: var(--layout-block);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--layout-stack);
   background: var(--card);
   border: 0;
   border-radius: var(--radius-md);
@@ -2337,7 +2363,7 @@ tbody tr:hover {
 .memorable-modal-top-row {
   display: grid;
   grid-template-columns: 168px 88px;
-  gap: 12px;
+  gap: var(--layout-stack);
   align-items: start;
   justify-content: start;
 }
@@ -2390,15 +2416,15 @@ tbody tr:hover {
 
 .memorable-emoji-picker-panel {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + var(--layout-inline));
   right: 0;
   width: min(420px, calc(100vw - 32px));
   max-width: min(420px, calc(100vw - 32px));
   max-height: min(520px, calc(100vh - 180px));
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 12px;
+  gap: var(--layout-stack);
+  padding: var(--layout-stack);
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -2407,7 +2433,7 @@ tbody tr:hover {
 }
 
 .memorable-emoji-picker-search {
-  gap: 6px;
+  gap: var(--layout-inline);
   margin: 0;
 }
 
@@ -2423,7 +2449,7 @@ tbody tr:hover {
 .memorable-emoji-picker-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--layout-inline);
 }
 
 .memorable-emoji-picker-tab {
@@ -2473,7 +2499,7 @@ tbody tr:hover {
 .memorable-emoji-picker-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--layout-inline);
 }
 
 .memorable-emoji-picker-emoji {
@@ -2504,13 +2530,13 @@ tbody tr:hover {
 
 .memorable-emoji-picker-empty {
   margin: 0;
-  padding: 8px 2px 2px;
+  padding: var(--layout-inline) 2px 2px;
   text-align: center;
   color: var(--muted-soft);
 }
 
 .memorable-modal-actions {
-  gap: 10px;
+  gap: var(--layout-stack);
   justify-content: flex-end;
   flex-wrap: wrap;
 }
@@ -2522,8 +2548,9 @@ tbody tr:hover {
 .memorable-calendar-panel > .entries-heading:first-child,
 .memorable-list-panel > .entries-heading:first-child {
   margin-top: 0;
-  margin-bottom: 22px;
+  margin-bottom: var(--layout-block);
 }
+
 
 .memorable-modal-cancel {
   color: var(--text);
@@ -2536,12 +2563,6 @@ tbody tr:hover {
 }
 
 @media (hover: hover) {
-  .memorable-month-nav:hover {
-    border-color: transparent;
-    background: color-mix(in srgb, var(--text) 10%, transparent);
-    color: var(--text);
-  }
-
   .memorable-emoji-picker-trigger:hover {
     background: transparent;
     color: var(--text);
@@ -2622,7 +2643,8 @@ tbody tr:hover {
   }
 
   .memorable-list-panel > .entries-heading:first-child {
-    margin-top: 10px;
+    margin-top: 0;
+    margin-bottom: 22px;
   }
 
   .memorable-calendar-panel {
@@ -2665,13 +2687,15 @@ tbody tr:hover {
 }
 .ds-swatch {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
+  padding: 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
   background: var(--card-soft);
 }
 .ds-swatch-chip {
   width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  border: 0;
+  box-shadow: none;
 }
 .ds-swatch-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .ds-swatch-name { font-size: 12px; font-weight: 600; color: var(--text); }
@@ -2687,56 +2711,133 @@ tbody tr:hover {
 .ds-type-row dt { margin: 0; min-width: 0; }
 .ds-type-row dd { margin: 0; font-size: 11px; color: var(--muted-soft); }
 
-/* Spacing scale */
-.ds-scale-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.ds-scale-row {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
-  font-size: 11px; color: var(--muted);
+/* Layout tokens (Design System — variable + bar; values live in :root) */
+.ds-spacing-lede {
+  margin: 0 0 var(--layout-stack);
+  max-width: 62ch;
 }
-.ds-scale-bar {
-  height: 8px; background: var(--accent); border-radius: 4px;
-  justify-self: start; max-width: 100%;
+.ds-layout-token-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--layout-inline); }
+.ds-layout-token-row {
+  display: grid;
+  grid-template-columns: minmax(13rem, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--layout-inline);
+  font-size: 11px;
+  color: var(--muted);
+}
+.ds-layout-token-row code {
+  font-size: 11px;
+  color: var(--muted-soft);
+}
+.ds-layout-token-bar {
+  height: 8px;
+  background: var(--accent);
+  border-radius: 4px;
+  max-width: 100%;
+  min-width: 0;
 }
 .ds-scale-val { color: var(--muted-soft); font-variant-numeric: tabular-nums; }
 
 /* Radius */
-.ds-radius-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 14px; }
+.ds-radius-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--layout-stack); }
 .ds-radius-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
 .ds-radius-chip {
-  width: 54px; height: 54px; background: var(--card-strong);
-  border: 1px solid var(--border-soft);
+  width: 54px; height: 54px;
+  background: var(--card-strong);
+  border: 0;
+  box-shadow: none;
 }
 
 /* Badges row */
-.ds-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.ds-badges { display: flex; gap: var(--layout-inline); flex-wrap: wrap; }
 
 /* Buttons */
-.ds-btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.ds-btn-row { display: flex; gap: var(--layout-inline); flex-wrap: wrap; }
+
+/* Sidebar nav (same classes as <aside class="sidebar"> — static demo, not the real shell) */
+.ds-sidebar-preview {
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-stack);
+}
+.ds-sidebar-preview-note {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted-soft);
+  line-height: 1.4;
+}
 
 /* Fields */
-.ds-fields { display: flex; flex-direction: column; gap: 14px; }
+.ds-fields { display: flex; flex-direction: column; gap: var(--layout-stack); }
 
 /* Metrics */
-.ds-metrics { display: flex; flex-direction: column; gap: 10px; }
+.ds-metrics { display: flex; flex-direction: column; gap: var(--layout-inline); }
 
+.ds-field-line-demo-title {
+  margin: var(--layout-stack) 0 var(--layout-inline);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.ds-field-line-spacing-demo {
+  max-width: 320px;
+}
+.ds-field-line-spacing-note {
+  margin: 10px 0 0;
+  padding: 0;
+  font-size: 11px;
+  color: var(--muted-soft);
+  line-height: 1.45;
+  max-width: 42ch;
+}
+
+/* Memorable days strip on Design System page */
+.ds-memorable-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-stack);
+  align-items: stretch;
+}
+.ds-memorable-calendar-preview {
+  max-width: 480px;
+  width: 100%;
+}
+.ds-memorable-calendar-preview .memorable-calendar-grid {
+  gap: var(--layout-inline);
+}
+.ds-memorable-calendar-preview .memorable-day-cell {
+  min-height: 72px;
+  padding: var(--layout-inline);
+}
+.ds-memorable-emoji-row {
+  display: flex;
+  align-items: center;
+  gap: var(--layout-inline);
+  flex-wrap: wrap;
+}
+.ds-memorable-emoji-row .hint {
+  margin: 0;
+  font-size: 11px;
+}
 
 /* Dashboard: align filter/quick-range chrome with token typography. */
 .dashboard-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: var(--layout-stack);
   align-items: flex-end;
   margin-bottom: 18px;
 }
 .dashboard-filters label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--layout-inline);
 }
 .dashboard-filters input[type="date"] {
   min-width: 150px;
 }
-.dashboard-quick-ranges { display: flex; gap: 6px; flex-wrap: wrap; }
+.dashboard-quick-ranges { display: flex; gap: var(--layout-inline); flex-wrap: wrap; }
 .dashboard-quick-ranges button {
   padding: 6px 12px;
   font: 600 12px var(--font-body);
@@ -2828,7 +2929,7 @@ tbody tr:hover {
 
 .dashboard-insight-list {
   display: grid;
-  gap: 14px;
+  gap: var(--layout-stack);
 }
 
 .dashboard-insight-row {
@@ -2960,7 +3061,7 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: var(--layout-stack);
   padding: 10px 2px;
   border-bottom: 1px solid var(--border-soft);
 }

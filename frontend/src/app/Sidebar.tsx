@@ -22,6 +22,14 @@ const navIcons: Record<string, React.ReactNode> = {
   settings: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   ),
+  "design-system": (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  ),
 };
 
 type SidebarProps = {
@@ -36,6 +44,8 @@ type SidebarProps = {
 const items: NavItem[] = ["dashboard", "pain", "diary", "cbt", "dbt", "memorable-days", "settings"];
 
 export function Sidebar({ nav, onNav, collapsed, onToggle, onCloseMobile, mobileOpen }: SidebarProps) {
+  const dsItem: NavItem = "design-system";
+
   return (
     <aside
       className="sidebar"
@@ -55,7 +65,7 @@ export function Sidebar({ nav, onNav, collapsed, onToggle, onCloseMobile, mobile
         </button>
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className="sidebar-nav sidebar-nav--main" aria-label="Sections">
         {items.map((item) => (
           <button
             key={item}
@@ -68,6 +78,18 @@ export function Sidebar({ nav, onNav, collapsed, onToggle, onCloseMobile, mobile
           </button>
         ))}
       </nav>
+
+      <div className="sidebar-footer">
+        <button
+          type="button"
+          className={`sidebar-item sidebar-item--card-soft${nav === dsItem ? " active" : ""}`}
+          onClick={() => onNav(dsItem)}
+          title={collapsed ? navLabels[dsItem] : undefined}
+        >
+          {navIcons[dsItem]}
+          <span className="sidebar-item-label">{navLabels[dsItem]}</span>
+        </button>
+      </div>
     </aside>
   );
 }
