@@ -818,7 +818,6 @@ export function DesignSystemSection() {
             </div>
             <p className="hint ds-spacing-lede">
               Use named steps from <code>--layout-tight</code> (4px) through <code>--layout-split</code> — no numbered scale; bar length matches each variable.
-              Where you need 2px, use <code>calc(var(--layout-tight) / 2)</code>. For a −4px pull (margins), use <code>calc(-1 * var(--layout-tight))</code>.
             </p>
             <ul className="ds-layout-token-list">
               {DESIGN_SPACING_TOKENS.map((t) => (
