@@ -2704,7 +2704,7 @@ tbody tr:hover {
   }
 
   .memorable-modal-top-row {
-    grid-template-columns: minmax(0, 1fr) 88px;
+    grid-template-columns: auto 88px;
     justify-content: start;
   }
 
