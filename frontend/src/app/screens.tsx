@@ -718,12 +718,13 @@ const DESIGN_COLOR_TOKENS: { name: string; varName: string; role: string }[] = [
 ];
 
 /** Semantic layout tokens from `styles.css` `:root` — bars use `width: var(...)`. */
-const DESIGN_SPACING_TOKENS: { varName: string }[] = [
-  { varName: "--layout-inline" },
-  { varName: "--layout-stack" },
-  { varName: "--layout-block" },
-  { varName: "--layout-page" },
-  { varName: "--layout-split" },
+const DESIGN_SPACING_TOKENS: { varName: string; px: string }[] = [
+  { varName: "--layout-tight", px: "4px" },
+  { varName: "--layout-inline", px: "8px" },
+  { varName: "--layout-stack", px: "12px" },
+  { varName: "--layout-block", px: "20px" },
+  { varName: "--layout-page", px: "30px" },
+  { varName: "--layout-split", px: "48px" },
 ];
 
 const DS_MEMORABLE_WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
@@ -816,12 +817,14 @@ export function DesignSystemSection() {
               <span className="section-aside">Layout tokens</span>
             </div>
             <p className="hint ds-spacing-lede">
-              Use named steps (<code>--layout-inline</code> &rarr; <code>--layout-split</code>) in CSS — no numbered scale; bar length matches each variable.
+              Use named steps from <code>--layout-tight</code> (4px) through <code>--layout-split</code> — no numbered scale; bar length matches each variable.
+              Where you need 2px, use <code>calc(var(--layout-tight) / 2)</code>. For a −4px pull (margins), use <code>calc(-1 * var(--layout-tight))</code>.
             </p>
             <ul className="ds-layout-token-list">
               {DESIGN_SPACING_TOKENS.map((t) => (
                 <li key={t.varName} className="ds-layout-token-row">
                   <code>{t.varName}</code>
+                  <span className="ds-layout-token-px">{t.px}</span>
                   <span className="ds-layout-token-bar" style={{ width: `var(${t.varName})` }} aria-hidden title={t.varName} />
                 </li>
               ))}

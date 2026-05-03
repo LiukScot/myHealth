@@ -374,29 +374,25 @@ export function MemorableDaysSection({ memorable }: Props) {
           <SectionHead title="Calendar" />
         </div>
       </div>
+      <button type="button" className="btn btn-primary memorable-add-btn" onClick={() => openCreate(toDateKey(new Date()))}>Add new</button>
       {feedback?.tone === "error" ? <InlineFeedback message={feedback} /> : null}
 
       <div className="panel-split memorable-layout">
         <section ref={leftColRef} className="panel-col memorable-calendar-panel">
           <div className="memorable-calendar-head">
-            <div className="memorable-calendar-nav">
-              <button type="button" className="btn memorable-month-nav" onClick={() => memorable.setVisibleMonth(new Date(memorable.visibleMonth.getFullYear(), memorable.visibleMonth.getMonth() - 1, 1))}>
-                Prev
-              </button>
-              <button
-                type="button"
-                className="btn memorable-month-label"
-                onClick={() => memorable.setVisibleMonth(new Date())}
-                aria-label="Go to current month"
-              >
-                {new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long", year: "numeric" }).format(new Date())}
-              </button>
-              <button type="button" className="btn memorable-month-nav" onClick={() => memorable.setVisibleMonth(new Date(memorable.visibleMonth.getFullYear(), memorable.visibleMonth.getMonth() + 1, 1))}>
-                Next
-              </button>
-            </div>
-            <button type="button" className="btn btn-primary memorable-add-btn" onClick={() => openCreate(toDateKey(new Date()))}>
-              Add new
+            <button type="button" className="btn memorable-month-nav" onClick={() => memorable.setVisibleMonth(new Date(memorable.visibleMonth.getFullYear(), memorable.visibleMonth.getMonth() - 1, 1))}>
+              Prev
+            </button>
+            <button
+              type="button"
+              className="btn memorable-month-label"
+              onClick={() => memorable.setVisibleMonth(new Date())}
+              aria-label="Go to current month"
+            >
+              {new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long", year: "numeric" }).format(new Date())}
+            </button>
+            <button type="button" className="btn memorable-month-nav" onClick={() => memorable.setVisibleMonth(new Date(memorable.visibleMonth.getFullYear(), memorable.visibleMonth.getMonth() + 1, 1))}>
+              Next
             </button>
           </div>
           <div className="memorable-weekdays">
@@ -488,7 +484,6 @@ export function MemorableDaysSection({ memorable }: Props) {
           )}
         </section>
       </div>
-
 
       {draft ? (
         <div className="memorable-modal-backdrop" role="presentation" onClick={closeDraft}>

@@ -57,11 +57,12 @@
    * Layout spacing — use these names in CSS (no numbered --space-* ladder).
    * Tailwind @theme --spacing-* below mirrors px for utilities; favor --layout-* in app styles.
    */
-  --layout-inline: 8px; /* tight: chips, field gaps, panel pad, inline clusters */
+  --layout-inline: 8px; /* chips, field gaps, panel pad, inline clusters */
   --layout-stack: 12px; /* between blocks in a column; BarMetric columns */
   --layout-block: 20px; /* secondary column rhythm; memorable header gap */
   --layout-page: 30px; /* major column / section gutters */
   --layout-split: 48px; /* wide two-pane split */
+  --layout-tight: 4px; /* dense UI below inline (icon–text, chips); halve for 2px via calc(var(--layout-tight) / 2) */
 }
 
 html { overflow-x: hidden; }
@@ -101,25 +102,25 @@ body {
   flex-direction: column;
   background: var(--card);
   border-right: 1px solid var(--border);
-  padding: 14px 10px;
-  gap: 6px;
+  padding: var(--layout-stack) var(--layout-inline);
+  gap: var(--layout-inline);
   z-index: 10;
 }
 
 .sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 8px 14px;
+  gap: var(--layout-stack);
+  padding: var(--layout-tight) var(--layout-inline) var(--layout-stack);
   border-bottom: 1px solid var(--border);
-  margin-bottom: 6px;
+  margin-bottom: var(--layout-inline);
   min-height: 48px;
   overflow: hidden;
 }
 .collapsed .sidebar-brand {
   justify-content: center;
   gap: 0;
-  padding: 6px 0 14px;
+  padding: var(--layout-tight) 0 var(--layout-stack);
 }
 
 .sidebar-heart {
@@ -163,7 +164,7 @@ body {
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--layout-tight);
 }
 
 .sidebar-nav--main {
@@ -173,18 +174,17 @@ body {
 
 .sidebar-footer {
   flex-shrink: 0;
-  /* Slightly more than .sidebar-brand bottom padding (14px): button has inner padding so extra air reads even */
-  padding-top: 20px;
-  margin-top: 6px;
+  padding-top: var(--layout-block);
+  margin-top: var(--layout-inline);
   border-top: 1px solid var(--border);
 }
 
 .sidebar-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--layout-stack);
   width: 100%;
-  padding: 10px;
+  padding: var(--layout-stack);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -227,7 +227,7 @@ body {
 .app-main {
   max-width: 1500px;
   width: 100%;
-  padding: clamp(14px, 3vw, 40px) clamp(14px, 3vw, 40px) var(--layout-block);
+  padding: clamp(var(--layout-stack), 3vw, var(--spacing-4)) clamp(var(--layout-stack), 3vw, var(--spacing-4)) var(--layout-block);
   overflow-y: auto;
 }
 
@@ -237,14 +237,14 @@ body {
   margin: 0 auto;
   display: grid;
   grid-template-rows: auto auto 1fr;
-  gap: 4px;
+  gap: var(--layout-tight);
 }
 
 .auth-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 14px;
+  padding: var(--layout-stack);
   box-shadow: var(--shadow);
 }
 
@@ -296,7 +296,7 @@ summary {
   border-radius: var(--radius-sm);
   color: var(--text);
   background: var(--card);
-  padding: 10px;
+  padding: var(--layout-stack);
   min-height: 38px;
   cursor: pointer;
   font-weight: 700;
@@ -361,7 +361,7 @@ select,
 textarea {
   width: 100%;
   max-width: 100%;
-  padding: 10px;
+  padding: var(--layout-stack);
   background: var(--card-strong);
   color: var(--text);
   border: 1px solid var(--border);
@@ -393,36 +393,36 @@ textarea {
 
 label {
   display: grid;
-  gap: 4px;
+  gap: var(--layout-tight);
   align-content: start;
   color: var(--muted);
   font-size: 13px;
 }
 
-.stack { display: grid; gap: 10px; }
+.stack { display: grid; gap: var(--layout-stack); }
 
-.stack-compact { gap: 6px; }
+.stack-compact { gap: var(--layout-tight); }
 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
+  gap: var(--layout-stack);
   align-items: start;
   grid-auto-flow: dense;
-  margin-bottom: 10px;
+  margin-bottom: var(--layout-stack);
 }
 
 .row-actions {
-  margin-top: 10px;
+  margin-top: var(--layout-stack);
   display: flex;
-  gap: 10px;
+  gap: var(--layout-stack);
   grid-column: 1 / -1;
   align-items: center;
   flex-wrap: wrap;
 }
 
 .panel-title {
-  margin: 0 0 10px;
+  margin: 0 0 var(--layout-stack);
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -432,14 +432,14 @@ label {
 .panel h2,
 .panel h3,
 .panel h4 {
-  margin: 0 0 6px;
+  margin: 0 0 var(--layout-inline);
   color: var(--accent);
 }
 
 /* Therapy form: vertical guided worksheet layout (CBT, DBT) */
 .therapy-form {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: var(--layout-stack);
 }
 /* CBT/DBT reuse the dense-form-grid primitive; keep textarea growth reasonable. */
 .therapy-form textarea { min-height: 54px; }
@@ -452,7 +452,7 @@ label {
 }
 .therapy-form .hint.therapy-callout {
   margin: 0;
-  padding: 8px 12px;
+  padding: var(--layout-inline) var(--layout-stack);
   background: var(--card-soft);
   border-left: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
   border-radius: var(--radius-sm);
@@ -469,8 +469,8 @@ label {
 .legacy-therapy-label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: var(--layout-inline);
+  margin-bottom: var(--layout-block);
   font-size: 14px;
   color: var(--muted);
 }
@@ -484,8 +484,8 @@ label {
    Dashboard, field labels in grids (Pain, Diary, etc.). Standalone H3s
    override below. */
 .section-heading {
-  margin: 10px 0;
-  padding-left: 12px;
+  margin: var(--layout-stack) 0;
+  padding-left: var(--layout-stack);
   border-left: 3px solid var(--accent);
   font-size: 14px;
   font-weight: 600;
@@ -493,32 +493,32 @@ label {
   line-height: 1.2;
 }
 h3.section-heading {
-  margin: 20px 0 12px;
-  padding-left: 16px;
+  margin: var(--layout-block) 0 var(--layout-stack);
+  padding-left: var(--layout-block);
   font-size: 16px;
 }
 
 
 .panel .hint {
-  margin: 0 0 8px;
+  margin: 0 0 var(--layout-inline);
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 10px;
+  gap: var(--layout-stack);
 }
 
 .stats-grid article {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 12px;
+  padding: var(--layout-stack);
   background: var(--card);
   box-shadow: var(--shadow-sm);
 }
 
 .stats-grid h3 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--layout-inline);
   color: var(--muted);
   font-size: 10px;
   font-weight: 700;
@@ -569,9 +569,9 @@ h3.section-heading {
 .file-input {
   border: 0;
   border-radius: 12px;
-  padding: 10px;
+  padding: var(--layout-stack);
   display: grid;
-  gap: 6px;
+  gap: var(--layout-inline);
   background: color-mix(in srgb, var(--text) 5%, transparent);
   cursor: pointer;
 }
@@ -590,13 +590,13 @@ h3.section-heading {
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: var(--layout-stack);
   font-size: 13px;
 }
 
 th,
 td {
-  padding: 10px;
+  padding: var(--layout-stack);
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: top;
@@ -622,13 +622,13 @@ tbody tr:hover {
 }
 
 .pain-form {
-  gap: 12px;
+  gap: var(--layout-stack);
 }
 
 .pain-core-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
+  gap: var(--layout-stack);
   align-items: start;
 }
 
@@ -636,19 +636,19 @@ tbody tr:hover {
 .mood-tags-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: var(--layout-stack);
   align-items: start;
   grid-column: 1 / -1;
 }
 
 .pain-note-field {
-  margin-top: 2px;
+  margin-top: calc(var(--layout-tight) / 2);
 }
 
 /* ─── Dense form (minimal): Pain + Diary share one skeleton ─── */
 .dense-form-grid {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--layout-inline);
 }
 
 .dense-form-hidden-fields {
@@ -683,7 +683,7 @@ tbody tr:hover {
 .core-col { display: grid; gap: var(--layout-stack); align-content: start; min-width: 0; }
 .right-col { display: grid; gap: var(--layout-block); min-width: 0; }
 .tags-col { display: grid; gap: var(--layout-stack); }
-.save-section { display: flex; justify-content: flex-end; padding-top: 6px; }
+.save-section { display: flex; justify-content: flex-end; padding-top: var(--layout-inline); }
 
 /* Hairlines between the form's top-level sections */
 .dense-form-grid > .right-col { padding-top: var(--layout-block); }
@@ -756,7 +756,7 @@ tbody tr:hover {
 .field-line input[type="date"]::-webkit-calendar-picker-indicator,
 .field-line input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
-  margin-left: 8px;
+  margin-left: var(--layout-inline);
   filter: invert(1);
   opacity: 0.6;
 }
@@ -782,7 +782,7 @@ tbody tr:hover {
 .tag-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 18px;
+  gap: var(--layout-tight) var(--layout-block);
   border: 0;
   background: transparent;
   padding: 0;
@@ -790,8 +790,8 @@ tbody tr:hover {
 .tag-tabs button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 0;
+  gap: var(--layout-inline);
+  padding: var(--layout-tight) 0;
   font-size: 13px;
   font-weight: 500;
   color: var(--muted);
@@ -827,14 +827,14 @@ tbody tr:hover {
 }
 .tag-tabs button.active .count { color: var(--accent); }
 
-.tag-panel { padding: 0; display: grid; gap: 10px; }
+.tag-panel { padding: 0; display: grid; gap: var(--layout-stack); }
 .tag-panel .multi-select-field,
 .tag-panel .multi-option-list { min-height: 0; }
 
 /* ── Pill button utility (reusable) ──
    Default .btn: neutral gray (same as calendar cells / card-soft). */
 .btn {
-  padding: 10px 22px;
+  padding: var(--layout-stack) var(--layout-block);
   min-height: 40px;
   font: 600 14px var(--font-body);
   color: var(--text);
@@ -876,11 +876,11 @@ tbody tr:hover {
 .pain-dense-form .save-section .btn,
 .therapy-form .save-section .btn,
 .diary-past-col .diary-past-more .btn {
-  margin-bottom: 20px;
+  margin-bottom: var(--layout-block);
 }
 
 .therapy-form .save-section .btn {
-  margin-top: 26px;
+  margin-top: calc(var(--layout-block) + var(--layout-inline));
 }
 
 .btn-primary.is-success-pulse {
@@ -904,7 +904,7 @@ tbody tr:hover {
   grid-template-columns: 120px 1fr auto;
   align-items: center;
   gap: var(--layout-stack);
-  padding: 0 0 3px;
+  padding: 0 0 calc(var(--layout-tight) / 2);
 }
 
 .bar-metric .name {
@@ -928,7 +928,7 @@ tbody tr:hover {
 .bars {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
-  gap: 2px;
+  gap: calc(var(--layout-tight) / 2);
 }
 
 /* Bar segments: same UI in forms and on the Design System metrics demo */
@@ -1019,13 +1019,13 @@ tbody tr:hover {
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-weight: 700;
-  margin: 28px 0 12px;
+  margin: var(--layout-page) 0 var(--layout-stack);
 }
 
 .dense-form-grid + .entries-heading {
   border-top: 1px solid var(--border-soft);
-  padding-top: 28px;
-  margin-top: 28px;
+  padding-top: var(--layout-page);
+  margin-top: var(--layout-page);
 }
 
 .panel-split {
@@ -1063,7 +1063,7 @@ tbody tr:hover {
   .panel-split .dense-form-grid + .entries-heading {
     border-top: 0;
     padding-top: 0;
-    margin-top: 28px;
+    margin-top: var(--layout-page);
   }
 
   /* Past entries column capped to left column (form) height so extra rows
@@ -1088,8 +1088,8 @@ tbody tr:hover {
     /* Clip extra rows silently (no scrollbar). A fade at the bottom hints
        there is more content behind the Show more button. */
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
-            mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--layout-block)), transparent);
+            mask-image: linear-gradient(to bottom, #000 calc(100% - var(--layout-block)), transparent);
   }
 
   .diary-past-footer-slot {
@@ -1097,14 +1097,14 @@ tbody tr:hover {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    /* Match diary save-section: padding-top 6 + btn 40 + margin-bottom 20. */
-    min-height: 66px;
-    padding-top: 6px;
+    /* Match diary save-section: padding-top + btn + margin-bottom using layout tokens. */
+    min-height: calc(var(--layout-inline) + 40px + var(--layout-block));
+    padding-top: var(--layout-inline);
     box-sizing: border-box;
   }
 
   .diary-past-col .diary-past-more .btn {
-    margin-bottom: 20px;
+    margin-bottom: var(--layout-block);
   }
 
   .diary-past-col .diary-past-more {
@@ -1128,7 +1128,7 @@ tbody tr:hover {
   grid-template-columns: auto auto 1fr auto auto;
   align-items: center;
   gap: var(--layout-stack);
-  padding: 10px 2px;
+  padding: var(--layout-stack) calc(var(--layout-tight) / 2);
   cursor: pointer;
   border: 0;
   border-radius: 0;
@@ -1166,7 +1166,7 @@ tbody tr:hover {
 .entry-row[open] summary .chevron { transform: rotate(90deg); }
 
 .entry-expanded {
-  padding: 6px 2px var(--layout-stack);
+  padding: var(--layout-inline) calc(var(--layout-tight) / 2) var(--layout-stack);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: var(--layout-stack);
@@ -1175,7 +1175,7 @@ tbody tr:hover {
 
 .detail-group {
   display: grid;
-  gap: 4px;
+  gap: var(--layout-tight);
 }
 
 .detail-group .label {
@@ -1189,12 +1189,12 @@ tbody tr:hover {
   font-size: 13px;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--layout-tight);
   color: var(--text);
 }
 
 .detail-group .tag-mini {
-  padding: 2px 8px;
+  padding: calc(var(--layout-tight) / 2) var(--layout-inline);
   font-size: 11px;
   color: var(--muted);
   background: color-mix(in srgb, var(--card) 60%, var(--card-strong));
@@ -1204,13 +1204,13 @@ tbody tr:hover {
 .detail-actions {
   grid-column: 1 / -1;
   display: flex;
-  gap: 4px;
+  gap: var(--layout-tight);
   justify-content: flex-end;
-  margin-top: -4px;
+  margin-top: calc(-1 * var(--layout-tight));
 }
 
 .detail-actions button {
-  padding: 4px 8px;
+  padding: var(--layout-tight) var(--layout-inline);
   font-size: 12px;
   font-weight: 500;
   color: var(--muted);
@@ -1233,7 +1233,7 @@ tbody tr:hover {
   justify-content: center;
   min-width: 30px;
   height: 30px;
-  padding: 0 8px;
+  padding: 0 var(--layout-inline);
   border-radius: 8px;
   font-weight: 800;
   font-size: 14px;
@@ -1258,7 +1258,7 @@ tbody tr:hover {
   min-width: 24px;
   height: 24px;
   font-size: 12px;
-  padding: 0 6px;
+  padding: 0 var(--layout-tight);
 }
 
 .pain-badge.muted {
@@ -1268,20 +1268,20 @@ tbody tr:hover {
 
 @media (max-width: 860px) {
   .save-section { justify-content: flex-end; }
-  .save-section .btn { padding: 10px 20px; }
+  .save-section .btn { padding: var(--layout-stack) var(--layout-block); }
 }
 
 .multi-select-field {
   display: grid;
-  gap: 6px;
+  gap: var(--layout-inline);
   align-content: start;
 }
 
 .multi-select-field .section-heading {
   display: flex;
   flex-wrap: wrap;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin-top: var(--layout-stack);
+  margin-bottom: var(--layout-stack);
 }
 
 /* In edit mode, chips are not for toggling selection — only × removes. */
@@ -1299,7 +1299,7 @@ tbody tr:hover {
   background: transparent;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--layout-inline);
   align-content: flex-start;
   box-shadow: none;
   /* Render the chips below the add-option input + buttons by giving them
@@ -1315,8 +1315,8 @@ tbody tr:hover {
 .multi-option-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: var(--layout-inline);
+  padding: var(--layout-tight) var(--layout-stack);
   min-height: 28px;
   border-radius: 999px;
   font-size: 12.5px;
@@ -1373,9 +1373,9 @@ tbody tr:hover {
 .multi-option-confirmation {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--layout-inline);
   flex-wrap: wrap;
-  padding: 8px 10px;
+  padding: var(--layout-inline) var(--layout-stack);
   border: 1px solid color-mix(in srgb, var(--danger) 50%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--danger) 8%, transparent);
@@ -1390,13 +1390,13 @@ tbody tr:hover {
 .multi-option-confirm-actions {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--layout-inline);
 }
 
 .multi-option-confirm-button,
 .multi-option-cancel {
   min-height: 30px;
-  padding: 6px 10px;
+  padding: var(--layout-tight) var(--layout-stack);
   font-size: 12px;
   box-shadow: none;
 }
@@ -1405,8 +1405,8 @@ tbody tr:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 14px;
-  margin-top: 4px;
+  gap: var(--layout-inline) var(--layout-stack);
+  margin-top: var(--layout-tight);
 }
 
 .multi-option-chip-add {
@@ -1430,7 +1430,7 @@ tbody tr:hover {
   background: transparent;
   border: 0;
   border-radius: 0;
-  padding: 4px 0;
+  padding: var(--layout-tight) 0;
   min-height: 0;
   color: var(--muted-soft);
   font: 500 12px var(--font-body);
@@ -1446,8 +1446,8 @@ tbody tr:hover {
 .multi-option-adder {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 2px 4px 2px 12px;
+  gap: var(--layout-inline);
+  padding: calc(var(--layout-tight) / 2) var(--layout-tight) calc(var(--layout-tight) / 2) var(--layout-stack);
   border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 6%, transparent);
@@ -1477,7 +1477,7 @@ tbody tr:hover {
 .multi-option-adder-cancel {
   border: 0;
   background: transparent;
-  padding: 4px 10px;
+  padding: var(--layout-tight) var(--layout-stack);
   min-height: 24px;
   border-radius: 999px;
   font: 600 12px var(--font-body);
@@ -1525,13 +1525,13 @@ tbody tr:hover {
 }
 
 .inline-confirmation {
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: var(--layout-stack);
+  padding: var(--layout-stack);
   border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
   border-radius: 12px;
   background: color-mix(in srgb, var(--danger) 8%, var(--card));
   display: grid;
-  gap: 10px;
+  gap: var(--layout-stack);
 }
 
 .confirmation-copy {
@@ -1543,8 +1543,8 @@ tbody tr:hover {
 }
 
 .chat-output {
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: var(--layout-stack);
+  padding: var(--layout-stack);
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--card);
@@ -1554,8 +1554,8 @@ tbody tr:hover {
 
 .empty-state {
   display: grid;
-  gap: 6px;
-  margin: 10px 0 14px;
+  gap: var(--layout-inline);
+  margin: var(--layout-stack) 0 var(--layout-stack);
 }
 
 .empty-state-compact {
@@ -1581,32 +1581,32 @@ tbody tr:hover {
 }
 
 .table-scroll td > .empty-state-compact {
-  margin: 4px;
+  margin: var(--layout-tight);
 }
 
 
 .dashboard-filters {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 8px;
+  gap: var(--layout-inline);
   align-items: end;
   margin: 8px 0;
 }
 
 .dashboard-filters label {
-  gap: 6px;
+  gap: var(--layout-inline);
 }
 
 .dashboard-quick-ranges {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--layout-inline);
   align-items: center;
 }
 
 .dashboard-quick-ranges button {
   min-height: 34px;
-  padding: 8px 12px;
+  padding: var(--layout-inline) var(--layout-stack);
   font-size: 13px;
 }
 
@@ -1617,7 +1617,7 @@ tbody tr:hover {
 .stats-grid-dashboard article {
   display: grid;
   grid-template-rows: auto auto 22px;
-  gap: 6px;
+  gap: var(--layout-inline);
   align-content: start;
   width: 100%;
   max-width: 200px;
@@ -1667,9 +1667,9 @@ tbody tr:hover {
 .delta {
   display: inline-flex;
   align-items: center;
-  margin-left: 8px;
+  margin-left: var(--layout-inline);
   border-radius: 999px;
-  padding: 2px 8px;
+  padding: calc(var(--layout-tight) / 2) var(--layout-inline);
   font-size: 11px;
   font-weight: 700;
 }
@@ -1693,7 +1693,7 @@ tbody tr:hover {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--layout-inline);
   flex-wrap: wrap;
   margin-bottom: 0;
 }
@@ -1701,16 +1701,16 @@ tbody tr:hover {
 .graph-toggle-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--layout-inline);
 }
 
 .series-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--layout-inline);
   border: 0;
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: var(--layout-tight) var(--layout-stack);
   background: var(--card-soft);
   font-size: 11px;
   font-weight: 600;
@@ -1740,42 +1740,42 @@ tbody tr:hover {
 
 .chart-wrap {
   display: grid;
-  gap: 12px;
-  padding: 14px;
+  gap: var(--layout-stack);
+  padding: var(--layout-stack);
   border-radius: var(--radius-md);
   background: var(--card-soft);
 }
 
 .chart-wrap-wide {
-  margin-top: 10px;
+  margin-top: var(--layout-stack);
 }
 
 @container (max-width: 980px) {
   .dashboard-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: var(--layout-stack);
   }
 
   .dashboard-quick-ranges {
     grid-column: 1 / -1;
-    gap: 6px;
+    gap: var(--layout-inline);
   }
 
   .dashboard-quick-ranges button {
     min-height: 32px;
-    padding: 7px 10px;
+    padding: var(--layout-inline) var(--layout-stack);
   }
 
   .stats-grid.stats-grid-dashboard {
-    gap: 10px;
+    gap: var(--layout-stack);
   }
 
   .graph-toggle-list {
-    gap: 6px;
+    gap: var(--layout-inline);
   }
 
   .series-toggle {
-    padding: 6px 8px;
+    padding: var(--layout-tight) var(--layout-inline);
   }
 }
 
@@ -1881,7 +1881,7 @@ tbody tr:hover {
     justify-content: center;
     width: 40px;
     height: 40px;
-    margin: 0 0 10px var(--layout-inline);
+    margin: 0 0 var(--layout-stack) var(--layout-inline);
     padding: 0;
     border: 0;
     border-radius: var(--radius-sm);
@@ -1895,8 +1895,8 @@ tbody tr:hover {
     background: var(--card-strong);
   }
 
-  .screen { padding: 10px; }
-  .app-main { padding: 10px; }
+  .screen { padding: var(--layout-stack); }
+  .app-main { padding: var(--layout-stack); }
   .app-screen { width: 100%; }
   .panel { min-width: 0; }
   .form-grid {
@@ -1943,12 +1943,12 @@ tbody tr:hover {
   }
   button,
   summary {
-    padding: 8px;
+    padding: var(--layout-inline);
     min-height: 34px;
     font-size: 13px;
   }
   table { font-size: 11px; }
-  th, td { padding: 6px 4px; white-space: nowrap; }
+  th, td { padding: var(--layout-tight); white-space: nowrap; }
   .chat-output { font-size: 13px; }
 
   /* Truncate long text columns on mobile */
@@ -2012,20 +2012,84 @@ tbody tr:hover {
 .ds-section { display: flex; flex-direction: column; gap: var(--layout-stack); }
 .ds-section .section-head {
   display: flex; align-items: baseline; justify-content: space-between;
-  padding-bottom: 8px;
+  padding-bottom: var(--layout-inline);
 }
 
-.memorable-header {
+/* Title + list-heading band: tight vertical rhythm on narrow (see --intro / --panel). */
+.memorable-page-intro {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--layout-inline);
+}
+
+.memorable-page-intro .memorable-header {
+  margin-bottom: 0;
+}
+
+@media (min-width: 981px) {
+  .memorable-page-intro {
+    gap: 0;
+  }
+
+  .memorable-page-intro .memorable-header {
+    margin-bottom: var(--layout-block);
+  }
+}
+
+.memorable-list-heading-row {
+  display: flex;
   justify-content: space-between;
-  gap: var(--layout-block);
-  margin-bottom: var(--layout-block);
+  align-items: flex-end;
+  gap: var(--layout-inline);
+  min-width: 0;
+}
+
+.memorable-list-heading-row .entries-heading {
+  margin: 0;
+}
+
+/* Wide: heading lives in list column; narrow: duplicate row under title (.memorable-page-intro) */
+.memorable-list-heading-row--intro {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .memorable-page-intro .panel-title {
+    margin-bottom: 0;
+  }
+
+  .memorable-list-heading-row--intro {
+    display: flex;
+  }
+
+  .memorable-list-heading-row--panel {
+    display: none !important;
+  }
+
+  .memorable-list-heading-row--intro .memorable-list-add {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* One primary “Add new”: beside the list heading. Calendar duplicate hidden from 981px (see below). */
+.memorable-list-heading-row .memorable-list-add {
+  flex-shrink: 0;
+}
+
+@media (min-width: 981px) {
+  .memorable-calendar-head .memorable-add-btn {
+    display: none;
+  }
 }
 
 .memorable-layout {
   grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.9fr);
   gap: var(--layout-split);
+  /* Default grid stretch makes the calendar column as tall as the list column; height sync
+     then matches that inflated height and the list never scrolls. Start-align so the left
+     column’s measured height is the real calendar block. */
+  align-items: start;
 }
 
 .memorable-calendar-panel,
@@ -2059,24 +2123,30 @@ tbody tr:hover {
   align-items: center;
   gap: var(--layout-inline);
   margin-bottom: var(--layout-page);
-}
-.memorable-calendar-nav {
-  display: flex;
-  align-items: center;
-  gap: var(--layout-inline);
   min-width: 0;
 }
-.memorable-calendar-head .memorable-add-btn {
-  flex-shrink: 0;
+.panel--memorable {
+  position: relative;
+}
+
+.panel--memorable > .memorable-add-btn {
+  position: absolute;
+  top: 32px;
+  right: 10px;
 }
 
 .memorable-month-label {
   letter-spacing: 0.01em;
   text-transform: none;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .memorable-month-nav {
-  min-width: 0;
+  flex-shrink: 0;
   letter-spacing: 0.01em;
   text-transform: none;
 }
@@ -2231,7 +2301,7 @@ tbody tr:hover {
 .memorable-day-popover-body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: calc(var(--layout-tight) / 2);
 }
 
 .memorable-day-cell:hover {
@@ -2284,7 +2354,7 @@ tbody tr:hover {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--layout-tight);
   align-items: flex-start;
 }
 
@@ -2315,25 +2385,6 @@ tbody tr:hover {
 .memorable-list-date {
   flex-shrink: 0;
   text-align: right;
-}
-
-.memorable-fab {
-  position: fixed;
-  right: var(--layout-block);
-  bottom: var(--layout-block);
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
-  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, #fff 15%), var(--accent));
-  color: #16080e;
-  font-size: 34px;
-  line-height: 1;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow);
-  z-index: 45;
 }
 
 .memorable-modal-backdrop {
@@ -2551,6 +2602,11 @@ tbody tr:hover {
   margin-bottom: var(--layout-block);
 }
 
+.memorable-list-panel > .memorable-list-heading-row--panel:first-child {
+  margin-top: var(--layout-page);
+  margin-bottom: var(--layout-block);
+}
+
 
 .memorable-modal-cancel {
   color: var(--text);
@@ -2592,11 +2648,11 @@ tbody tr:hover {
 
   .memorable-layout > .panel-col:first-of-type:not(:only-child) {
     border-bottom: 1px solid var(--border-soft);
-    padding-bottom: 28px;
+    padding-bottom: var(--layout-page);
   }
 
   .memorable-layout > .panel-col + .panel-col {
-    padding-top: 22px;
+    padding-top: var(--layout-block);
   }
 
   .memorable-layout > .panel-col + .panel-col {
@@ -2607,7 +2663,7 @@ tbody tr:hover {
   .memorable-list-panel {
     height: auto;
     max-height: none;
-    padding-top: 22px;
+    padding-top: var(--layout-block);
     padding-left: 0;
     border-left: 0;
   }
@@ -2616,22 +2672,18 @@ tbody tr:hover {
     max-height: none;
   }
 
-  .memorable-list-panel > .entries-heading:first-child {
+  .memorable-list-panel > .memorable-list-heading-row--panel:first-child {
     margin-top: 0;
-    margin-bottom: 22px;
+    margin-bottom: var(--layout-block);
   }
 }
 
 @media (max-width: 980px) {
-  .memorable-header {
-    margin-bottom: 0;
-  }
-
   .memorable-header .section-head {
     display: none;
   }
 
-  /* Zero out the 28px padding added by the 1239px stacked-layout rule */
+  /* Zero out the page-token padding added by the 1239px stacked-layout rule */
   .memorable-layout > .panel-col + .panel-col {
     padding-top: 0;
   }
@@ -2642,9 +2694,9 @@ tbody tr:hover {
     max-height: none;
   }
 
-  .memorable-list-panel > .entries-heading:first-child {
+  .memorable-list-panel > .memorable-list-heading-row--panel:first-child {
     margin-top: 0;
-    margin-bottom: 22px;
+    margin-bottom: var(--layout-block);
   }
 
   .memorable-calendar-panel {
@@ -2661,10 +2713,6 @@ tbody tr:hover {
     overflow: visible;
     scrollbar-gutter: auto;
   }
-
-  .memorable-fab {
-    display: inline-flex;
-  }
 }
 .ds-section .section-title {
   font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
@@ -2673,7 +2721,7 @@ tbody tr:hover {
 .ds-section .section-head {
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: calc(var(--layout-tight) / 2);
 }
 .ds-section .section-aside {
   font-size: 11px; color: var(--muted-soft); font-variant-numeric: tabular-nums;
@@ -2683,11 +2731,11 @@ tbody tr:hover {
 .ds-swatches {
   list-style: none; margin: 0; padding: 0;
   display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 10px;
+  gap: var(--layout-stack);
 }
 .ds-swatch {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px;
+  display: flex; align-items: center; gap: var(--layout-stack);
+  padding: var(--layout-inline);
   border: 0;
   border-radius: var(--radius-sm);
   background: var(--card-soft);
@@ -2697,15 +2745,15 @@ tbody tr:hover {
   border: 0;
   box-shadow: none;
 }
-.ds-swatch-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ds-swatch-meta { display: flex; flex-direction: column; gap: calc(var(--layout-tight) / 2); min-width: 0; }
 .ds-swatch-name { font-size: 12px; font-weight: 600; color: var(--text); }
 .ds-swatch-var { font-size: 11px; color: var(--muted); }
 .ds-swatch-role { font-size: 11px; color: var(--muted-soft); }
 
 /* Typography */
-.ds-type-scale { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.ds-type-scale { margin: 0; display: flex; flex-direction: column; gap: var(--layout-stack); }
 .ds-type-row {
-  display: flex; flex-direction: column; gap: 2px;
+  display: flex; flex-direction: column; gap: calc(var(--layout-tight) / 2);
   padding: 2px 0;
 }
 .ds-type-row dt { margin: 0; min-width: 0; }
@@ -2719,11 +2767,16 @@ tbody tr:hover {
 .ds-layout-token-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--layout-inline); }
 .ds-layout-token-row {
   display: grid;
-  grid-template-columns: minmax(13rem, auto) minmax(0, 1fr);
+  grid-template-columns: minmax(13rem, auto) 3rem minmax(0, 1fr);
   align-items: center;
   gap: var(--layout-inline);
   font-size: 11px;
   color: var(--muted);
+}
+.ds-layout-token-px {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 .ds-layout-token-row code {
   font-size: 11px;
@@ -2740,7 +2793,7 @@ tbody tr:hover {
 
 /* Radius */
 .ds-radius-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--layout-stack); }
-.ds-radius-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+.ds-radius-item { display: flex; flex-direction: column; align-items: center; gap: var(--layout-tight); font-size: 11px; color: var(--muted); }
 .ds-radius-chip {
   width: 54px; height: 54px;
   background: var(--card-strong);
@@ -2827,7 +2880,7 @@ tbody tr:hover {
   flex-wrap: wrap;
   gap: var(--layout-stack);
   align-items: flex-end;
-  margin-bottom: 18px;
+  margin-bottom: var(--layout-block);
 }
 .dashboard-filters label {
   display: flex;
@@ -2839,7 +2892,7 @@ tbody tr:hover {
 }
 .dashboard-quick-ranges { display: flex; gap: var(--layout-inline); flex-wrap: wrap; }
 .dashboard-quick-ranges button {
-  padding: 6px 12px;
+  padding: var(--layout-tight) var(--layout-stack);
   font: 600 12px var(--font-body);
   color: var(--muted);
   background: color-mix(in srgb, var(--text) 5%, transparent);
@@ -2870,22 +2923,22 @@ tbody tr:hover {
 }
 
 .panel--memorable .memorable-header .section-head {
-  margin: 2px 0 4px;
+  margin: calc(var(--layout-tight) / 2) 0 var(--layout-tight);
   padding: 0;
 }
 
 .panel--dashboard .section-head {
-  margin-top: 24px;
-  padding-bottom: 8px;
+  margin-top: var(--layout-block);
+  padding-bottom: var(--layout-inline);
 }
 
 .panel--dashboard .panel-title + .section-head,
-.panel--dashboard .panel-title + .dashboard-filters + .section-head { margin-top: 12px; }
+.panel--dashboard .panel-title + .dashboard-filters + .section-head { margin-top: var(--layout-stack); }
 
 .dashboard-pattern-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--layout-block);
   align-items: start;
 }
 
@@ -2897,19 +2950,19 @@ tbody tr:hover {
 
 .dashboard-pattern-block {
   display: grid;
-  gap: 10px;
+  gap: var(--layout-stack);
 }
 
 .dashboard-connection-stack {
   display: grid;
-  gap: 10px;
+  gap: var(--layout-stack);
 }
 
 .dashboard-connection-card {
   display: grid;
-  gap: 6px;
+  gap: var(--layout-inline);
   border-radius: var(--radius-md);
-  padding: 12px;
+  padding: var(--layout-stack);
   background: var(--card-soft);
 }
 
@@ -2934,7 +2987,7 @@ tbody tr:hover {
 
 .dashboard-insight-row {
   display: grid;
-  gap: 4px;
+  gap: var(--layout-tight);
 }
 
 .dashboard-insight-row strong {
@@ -2963,7 +3016,7 @@ tbody tr:hover {
 .dashboard-confidence {
   justify-self: start;
   border-radius: 999px;
-  padding: 2px 8px;
+  padding: calc(var(--layout-tight) / 2) var(--layout-inline);
   font-size: 11px;
   font-weight: 700;
 }
@@ -2984,7 +3037,7 @@ tbody tr:hover {
 }
 
 /* Entry row gets a tiny rhythm bump when used outside the capped column (CBT/DBT). */
-section.panel > .entry-row + .entry-row { margin-top: 4px; }
+section.panel > .entry-row + .entry-row { margin-top: var(--layout-tight); }
 
 /* Generic section-head — typography only, no underline.
    Visual separation comes from spacing + uppercase label weight. */
@@ -2992,9 +3045,9 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 4px;
-  margin-top: 16px;
+  gap: var(--layout-stack);
+  padding-bottom: var(--layout-tight);
+  margin-top: var(--layout-block);
 }
 .section-head .section-title {
   font-size: 10px;
@@ -3010,7 +3063,7 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
 }
 /* First section-head after title should breathe less aggressively above. */
 .panel-title + .section-head,
-.panel-title + .dashboard-filters + .section-head { margin-top: 8px; }
+.panel-title + .dashboard-filters + .section-head { margin-top: var(--layout-inline); }
 
 /* ──────────────────────────────────────────────────────────────────────
    MCP Access — design-system-aligned styles for McpAccessSection.
@@ -3035,9 +3088,9 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
 .mcp-just-created {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--layout-inline);
   margin-top: 8px;
-  padding: 10px 12px;
+  padding: var(--layout-stack);
   background: color-mix(in srgb, var(--warning) 10%, var(--card));
   border: 1px solid color-mix(in srgb, var(--warning) 40%, var(--border));
   border-radius: var(--radius-sm);
@@ -3066,7 +3119,7 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
   border-bottom: 1px solid var(--border-soft);
 }
 .mcp-token-row:last-child { border-bottom: 0; }
-.mcp-token-meta { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.mcp-token-meta { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: calc(var(--layout-tight) / 2); }
 .mcp-token-label {
   font: 600 13.5px var(--font-body);
   color: var(--text);
@@ -3090,7 +3143,7 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
 .mcp-instructions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--layout-inline);
   margin-top: 4px;
 }
 .mcp-client-tabs { margin-top: 4px; }
@@ -3098,7 +3151,7 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
 /* Reusable monospace code block for snippets / tokens. */
 .code-block {
   margin: 0;
-  padding: 10px 12px;
+  padding: var(--layout-stack);
   background: var(--card-soft);
   color: var(--text);
   border: 1px solid var(--border-soft);
@@ -3118,20 +3171,20 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--layout-block);
   flex-wrap: wrap;
   margin-bottom: 14px;
 }
 .settings-mockup-switcher { margin-bottom: 0; }
 
-.settings-mock { display: flex; flex-direction: column; gap: 18px; }
+.settings-mock { display: flex; flex-direction: column; gap: var(--layout-block); }
 
 /* Shared identity chip */
 .settings-identity {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: var(--layout-stack);
+  padding: var(--layout-stack);
   background: var(--card);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
@@ -3147,7 +3200,7 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }
-.settings-identity-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.settings-identity-meta { display: flex; flex-direction: column; gap: calc(var(--layout-tight) / 2); min-width: 0; }
 .settings-identity-name {
   font: 600 14px var(--font-body);
   color: var(--text);
@@ -3163,8 +3216,8 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
 
 /* ── Variant B — tabs ── */
 .settings-mock-b .settings-mock-tabs {
-  margin-bottom: -10px;
-  padding-bottom: 6px;
+  margin-bottom: calc(var(--layout-stack) * -1 + var(--layout-tight) / 2);
+  padding-bottom: var(--layout-inline);
 }
 .settings-mock-b .settings-mock-tab--danger { color: var(--danger); }
 .settings-mock-b .settings-mock-tab--danger.active { border-bottom-color: var(--danger); }
@@ -3172,11 +3225,11 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
   padding-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--layout-stack);
 }
 
 /* Account block: password + session live side-by-side inside the tab panel. */
-.settings-account-block { display: flex; flex-direction: column; gap: 8px; }
+.settings-account-block { display: flex; flex-direction: column; gap: var(--layout-inline); }
 .settings-account-block .section-head:first-child { margin-top: 0; }
 .settings-account-block .btn-primary { margin-top: 12px; }
 
@@ -3184,22 +3237,22 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
 .settings-backup {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 8px;
+  gap: var(--layout-inline);
 }
 .settings-backup > .feedback-message { grid-column: 1 / -1; }
 .backup-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--layout-block);
   padding: 12px 14px;
   border-radius: var(--radius-md);
   background: var(--card-strong);
 }
-.backup-row-head { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.backup-row-head { display: flex; flex-direction: column; gap: calc(var(--layout-tight) / 2); min-width: 0; }
 .backup-row-title { font-size: 14px; font-weight: 700; color: var(--text); }
 .backup-row-meta { font-size: 12px; color: var(--muted); }
-.backup-row-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.backup-row-actions { display: flex; gap: var(--layout-inline); flex-shrink: 0; }
 .backup-row-actions .btn {
   display: inline-flex;
   align-items: center;
@@ -3213,10 +3266,10 @@ section.panel > .entry-row + .entry-row { margin-top: 4px; }
 .file-input-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
 /* Danger block: intro copy above the trigger / confirmation. */
-.settings-danger-block { display: flex; flex-direction: column; gap: 10px; }
+.settings-danger-block { display: flex; flex-direction: column; gap: var(--layout-stack); }
 .settings-danger-description {
   margin: 0;
-  padding: 8px 12px;
+  padding: var(--layout-inline) var(--layout-stack);
   background: color-mix(in srgb, var(--danger) 7%, var(--card));
   border-left: 2px solid color-mix(in srgb, var(--danger) 55%, transparent);
   border-radius: var(--radius-sm);
