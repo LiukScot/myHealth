@@ -1,38 +1,7 @@
 @import "tailwindcss";
 
-@theme {
-  --color-bg: #000000;
-  --color-panel: #0b0b0d;
-  --color-card: #1f1f23;
-  --color-card-strong: #26262b;
-  --color-text: #f5f5f7;
-  --color-muted: #a1a1ad;
-  --color-border: #48484f;
-  --color-accent: #ff5e8a;
-  --color-accent-2: #ff8fb1;
-  --color-danger: #ff5a7f;
-  --color-success: #6fe1b0;
-  --color-warning: #ffd38a;
-
-  --font-body: "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 10px;
-
-  --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.45);
-  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
-
-  /* Numeric keys for Tailwind spacing utilities only — prefer --layout-* in :root for real CSS. */
-  --spacing-1: 8px;
-  --spacing-2: 20px;
-  --spacing-3: 30px;
-  --spacing-4: 40px;
-}
-
 :root {
   --bg: #1f1f23;
-  --panel: #0b0b0d;
   --card: #1f1f23;
   --card-strong: #26262b;
   --card-soft: #2a2a30;
@@ -42,7 +11,6 @@
   --border: #48484f;
   --border-soft: #48484f;
   --accent: #ff5e8a;
-  --accent-2: #ff8fb1;
   --danger: #ff5a7f;
   --success: #6fe1b0;
   --warning: #f5a623;
@@ -58,12 +26,9 @@
    * Tailwind @theme --spacing-* below mirrors px for utilities; favor --layout-* in app styles.
    */
   --layout-inline: 8px; /* chips, field gaps, panel pad, inline clusters */
-  --layout-xs: 10px; /* narrow insets, small gaps */
   --layout-stack: 12px; /* between blocks in a column; BarMetric columns */
   --layout-block: 20px; /* secondary column rhythm; memorable header gap */
-  --layout-form-gap: 28px; /* therapy form save-section top spacing */
   --layout-page: 30px; /* major column / section gutters */
-  --layout-header-offset: 32px; /* memorable button top offset */
   --layout-split: 48px; /* wide two-pane split */
   --layout-tight: 4px; /* dense UI below inline (icon–text, chips); halve for 2px via calc(var(--layout-tight) / 2) */
 }
@@ -230,7 +195,7 @@ body {
 .app-main {
   max-width: 1500px;
   width: 100%;
-  padding: clamp(var(--layout-stack), 3vw, var(--spacing-4)) clamp(var(--layout-stack), 3vw, var(--spacing-4)) var(--layout-block);
+  padding: clamp(var(--layout-stack), 3vw, var(--layout-split)) clamp(var(--layout-stack), 3vw, var(--layout-split)) var(--layout-block);
   overflow-y: auto;
 }
 
@@ -883,7 +848,7 @@ tbody tr:hover {
 }
 
 .therapy-form .save-section .btn {
-  margin-top: var(--layout-form-gap);
+  margin-top: var(--layout-page);
 }
 
 .btn-primary.is-success-pulse {
@@ -950,16 +915,14 @@ tbody tr:hover {
 :where(.dense-form-grid, .ds-metrics) .bars .bar:hover {
   background: color-mix(in srgb, white 10%, var(--card));
 }
-:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.low,
-:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.mid,
-:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.high {
-  background: var(--accent);
-}
 :where(.dense-form-grid, .ds-metrics) .bars .bar.filled.low {
-  background: color-mix(in srgb, var(--accent) 55%, var(--success));
+  background: var(--success);
+}
+:where(.dense-form-grid, .ds-metrics) .bars .bar.filled.mid {
+  background: var(--warning);
 }
 :where(.dense-form-grid, .ds-metrics) .bars .bar.filled.high {
-  background: color-mix(in srgb, var(--accent) 70%, var(--danger));
+  background: var(--danger);
 }
 
 /* Coffee stepper row — sits in the val column, track is a muted spacer */
@@ -1320,20 +1283,19 @@ tbody tr:hover {
   align-items: center;
   gap: var(--layout-inline);
   padding: var(--layout-tight) var(--layout-stack);
-  min-height: 28px;
+  min-height: var(--layout-page);
   border-radius: 999px;
   font-size: 12.5px;
   line-height: 1;
   color: var(--muted);
-  background: transparent;
-  border: 1px solid var(--border-soft);
+  background: color-mix(in srgb, white 5%, var(--card));
+  border: none;
   box-shadow: none;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease;
 }
 .multi-option-chip:hover {
   color: var(--text);
-  border-color: var(--border);
-  background: transparent;
+  background: color-mix(in srgb, white 9%, var(--card));
 }
 .multi-option-chip.active {
   color: var(--accent);
@@ -1408,21 +1370,20 @@ tbody tr:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--layout-inline) var(--layout-stack);
+  gap: var(--layout-inline);
   margin-top: var(--layout-tight);
 }
 
 .multi-option-chip-add {
-  border-style: dashed;
+  border: none;
   color: var(--muted-soft);
-  background: transparent;
+  background: color-mix(in srgb, white 5%, var(--card));
+  font-weight: 500;
   cursor: pointer;
 }
 .multi-option-chip-add:hover:not(:disabled) {
-  color: var(--accent);
-  border-color: var(--accent);
-  border-style: solid;
-  background: transparent;
+  color: var(--text);
+  background: color-mix(in srgb, white 9%, var(--card));
 }
 .multi-option-chip-add:disabled {
   opacity: 0.4;
@@ -1430,20 +1391,28 @@ tbody tr:hover {
 }
 
 .multi-option-edit-link {
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  padding: var(--layout-tight) 0;
-  min-height: 0;
+  background: color-mix(in srgb, white 5%, var(--card));
+  border: none;
+  border-radius: 999px;
+  padding: var(--layout-tight) var(--layout-stack);
+  min-height: var(--layout-page);
   color: var(--muted-soft);
-  font: 500 12px var(--font-body);
-  letter-spacing: 0.04em;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
   box-shadow: none;
   cursor: pointer;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease;
 }
-.multi-option-edit-link:hover { color: var(--text); background: transparent; }
-.multi-option-edit-link.active { color: var(--accent); }
+.multi-option-edit-link:hover { color: var(--text); background: color-mix(in srgb, white 9%, var(--card)); }
+.multi-option-edit-link.active {
+  color: var(--accent);
+  border: none;
+  border-radius: 999px;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  padding: var(--layout-tight) var(--layout-stack);
+}
 
 /* Inline adder — appears in place of the +add chip */
 .multi-option-adder {
@@ -1454,7 +1423,7 @@ tbody tr:hover {
   border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 6%, transparent);
-  min-height: 28px;
+  min-height: var(--layout-page);
 }
 .multi-option-adder input {
   flex: 1 1 140px;
@@ -1490,11 +1459,11 @@ tbody tr:hover {
 }
 .multi-option-adder-confirm {
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  background: transparent;
 }
 .multi-option-adder-confirm:hover {
   color: var(--text);
-  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: transparent;
 }
 .multi-option-adder-confirm.is-success {
   color: var(--success);
@@ -2134,8 +2103,8 @@ tbody tr:hover {
 
 .panel--memorable > .memorable-add-btn {
   position: absolute;
-  top: var(--layout-header-offset);
-  right: var(--layout-xs);
+  top: var(--layout-page);
+  right: var(--layout-inline);
 }
 
 .memorable-month-label {
