@@ -374,6 +374,7 @@ export function MemorableDaysSection({ memorable }: Props) {
           <SectionHead title="Calendar" />
         </div>
       </div>
+      <button type="button" className="btn btn-primary memorable-add-btn" onClick={() => openCreate(toDateKey(new Date()))}>Add new</button>
       {feedback?.tone === "error" ? <InlineFeedback message={feedback} /> : null}
 
       <div className="panel-split memorable-layout">
@@ -483,10 +484,6 @@ export function MemorableDaysSection({ memorable }: Props) {
           )}
         </section>
       </div>
-
-      <button type="button" className="memorable-fab" aria-label="Add memorable day" onClick={() => openCreate(toDateKey(new Date()))}>
-        +
-      </button>
 
       {draft ? (
         <div className="memorable-modal-backdrop" role="presentation" onClick={closeDraft}>

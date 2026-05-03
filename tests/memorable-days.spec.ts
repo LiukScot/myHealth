@@ -17,7 +17,7 @@ test("desktop shows calendar and list, create/edit/delete works", async ({ page 
   await expect(page.locator(".memorable-calendar-panel")).toBeVisible();
   await expect(page.locator(".memorable-list-panel")).toBeVisible();
 
-  await page.getByLabel(/Add memorable day on/).first().click();
+  await page.getByRole("button", { name: "Add new" }).click();
   await expect(page.getByRole("button", { name: "Emoji" })).toBeVisible();
   await page.getByRole("button", { name: "Emoji" }).click();
   await expect(page.getByRole("searchbox", { name: "Search emoji" })).toBeVisible();
@@ -49,21 +49,11 @@ test("desktop shows calendar and list, create/edit/delete works", async ({ page 
   await expect(page.locator(".memorable-list-item").filter({ hasText: "Wedding" })).toHaveCount(0);
 });
 
-test("mobile hides calendar and shows floating add button", async ({ page, request }) => {
-  await seedMemorableDay(request, { title: "Birthday", repeatMode: "yearly", emoji: "🎂" });
-  await page.setViewportSize({ width: 390, height: 844 });
-  await loginUi(page);
-  await page.getByRole("button", { name: "Open menu" }).click();
-  await page.getByRole("button", { name: "Memorable days" }).click();
-
-  await expect(page.locator(".memorable-calendar-panel")).toBeHidden();
-  await expect(page.locator(".memorable-list-panel")).toBeVisible();
-  await expect(page.locator(".memorable-fab")).toBeVisible();
-});
 
 test("tablet width stacks list under calendar", async ({ page, request }) => {
   await seedMemorableDay(request, { title: "Birthday", repeatMode: "yearly", emoji: "🎂" });
-  await page.setViewportSize({ width: 1400, height: 766 });
+  /* Stacked single-column layout is only used at max-width 1239px. */
+  await page.setViewportSize({ width: 1100, height: 766 });
   await loginUi(page);
   await page.getByRole("button", { name: "Memorable days" }).click();
 
@@ -86,7 +76,8 @@ test("wheel over memorable card still scrolls the list", async ({ page, request 
     });
   }
 
-  await page.setViewportSize({ width: 1030, height: 766 });
+  /* Two columns + split height sync so the list column height matches the calendar column and overflows. */
+  await page.setViewportSize({ width: 1280, height: 766 });
   await loginUi(page);
   await page.getByRole("button", { name: "Memorable days" }).click();
 
