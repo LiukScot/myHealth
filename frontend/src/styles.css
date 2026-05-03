@@ -26,12 +26,9 @@
    * Tailwind @theme --spacing-* below mirrors px for utilities; favor --layout-* in app styles.
    */
   --layout-inline: 8px; /* chips, field gaps, panel pad, inline clusters */
-  --layout-xs: 10px; /* narrow insets, small gaps */
   --layout-stack: 12px; /* between blocks in a column; BarMetric columns */
   --layout-block: 20px; /* secondary column rhythm; memorable header gap */
-  --layout-form-gap: 28px; /* form save-section spacing; pill chip min-height */
   --layout-page: 30px; /* major column / section gutters */
-  --layout-header-offset: 32px; /* memorable button top offset */
   --layout-split: 48px; /* wide two-pane split */
   --layout-tight: 4px; /* dense UI below inline (icon–text, chips); halve for 2px via calc(var(--layout-tight) / 2) */
 }
@@ -851,7 +848,7 @@ tbody tr:hover {
 }
 
 .therapy-form .save-section .btn {
-  margin-top: var(--layout-form-gap);
+  margin-top: var(--layout-page);
 }
 
 .btn-primary.is-success-pulse {
@@ -1286,7 +1283,7 @@ tbody tr:hover {
   align-items: center;
   gap: var(--layout-inline);
   padding: var(--layout-tight) var(--layout-stack);
-  min-height: var(--layout-form-gap);
+  min-height: var(--layout-page);
   border-radius: 999px;
   font-size: 12.5px;
   line-height: 1;
@@ -1398,7 +1395,7 @@ tbody tr:hover {
   border: none;
   border-radius: 999px;
   padding: var(--layout-tight) var(--layout-stack);
-  min-height: var(--layout-form-gap);
+  min-height: var(--layout-page);
   color: var(--muted-soft);
   font-size: 12.5px;
   font-weight: 500;
@@ -1426,7 +1423,7 @@ tbody tr:hover {
   border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 6%, transparent);
-  min-height: var(--layout-form-gap);
+  min-height: var(--layout-page);
 }
 .multi-option-adder input {
   flex: 1 1 140px;
@@ -2106,8 +2103,8 @@ tbody tr:hover {
 
 .panel--memorable > .memorable-add-btn {
   position: absolute;
-  top: var(--layout-header-offset);
-  right: var(--layout-xs);
+  top: var(--layout-page);
+  right: var(--layout-inline);
 }
 
 .memorable-month-label {

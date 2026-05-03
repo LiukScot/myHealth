@@ -721,12 +721,9 @@ const DESIGN_COLOR_TOKENS: { name: string; varName: string; role: string }[] = [
 const DESIGN_SPACING_TOKENS: { varName: string; px: string }[] = [
   { varName: "--layout-tight", px: "4px" },
   { varName: "--layout-inline", px: "8px" },
-  { varName: "--layout-xs", px: "10px" },
   { varName: "--layout-stack", px: "12px" },
   { varName: "--layout-block", px: "20px" },
-  { varName: "--layout-form-gap", px: "28px" },
   { varName: "--layout-page", px: "30px" },
-  { varName: "--layout-header-offset", px: "32px" },
   { varName: "--layout-split", px: "48px" },
 ];
 
