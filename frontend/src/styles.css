@@ -198,7 +198,7 @@ body {
 .app-main {
   max-width: 1500px;
   width: 100%;
-  padding: clamp(var(--layout-stack), 3vw, 40px) clamp(var(--layout-stack), 3vw, 40px) var(--layout-block);
+  padding: clamp(var(--layout-stack), 3vw, var(--layout-split)) clamp(var(--layout-stack), 3vw, var(--layout-split)) var(--layout-block);
   overflow-y: auto;
 }
 
