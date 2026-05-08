@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { eq, desc } from "drizzle-orm";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import type { DrizzleDB } from "../db/index.ts";
 import { diaryEntries, painEntries, userPreferences, painRemovedOptions, memorableDays } from "../db/index.ts";
 import type { SQLiteDB } from "../db.ts";
@@ -23,6 +23,45 @@ type Env = { Variables: { db: DrizzleDB; rawDb: SQLiteDB; userId: number; userEm
 const backup = new Hono<Env>();
 
 backup.use(requireAuth);
+
+// Normalize ExcelJS cell value to plain primitive matching the previous xlsx behavior.
+// ExcelJS returns objects for richtext / hyperlink / formula and Date objects for date cells.
+function cellToPrimitive(v: unknown): string | number | boolean | null {
+  if (v == null) return "";
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === "object") {
+    const obj = v as Record<string, unknown>;
+    if (Array.isArray(obj.richText)) return (obj.richText as Array<{ text?: string }>).map((r) => r.text ?? "").join("");
+    if (typeof obj.text === "string") return obj.text;
+    if (obj.result !== undefined) return cellToPrimitive(obj.result);
+    if (typeof obj.hyperlink === "string") return (obj.text as string | undefined) ?? obj.hyperlink;
+    return "";
+  }
+  return v as string | number | boolean;
+}
+
+function sheetToObjects(sheet: ExcelJS.Worksheet | undefined): Record<string, unknown>[] {
+  if (!sheet) return [];
+  const headers: string[] = [];
+  const rows: Record<string, unknown>[] = [];
+  sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    const values = row.values as unknown[]; // ExcelJS row.values is 1-indexed
+    if (rowNumber === 1) {
+      for (let i = 1; i < values.length; i++) {
+        headers[i - 1] = String(values[i] ?? "").trim();
+      }
+      return;
+    }
+    const obj: Record<string, unknown> = {};
+    for (let i = 1; i < values.length; i++) {
+      const key = headers[i - 1];
+      if (!key) continue;
+      obj[key] = cellToPrimitive(values[i]);
+    }
+    rows.push(obj);
+  });
+  return rows;
+}
 
 backup.get("/json", (c) => {
   const db = c.get("db");
@@ -178,7 +217,7 @@ backup.post("/json/import", async (c) => {
   return c.json({ data: { ok: true } });
 });
 
-backup.get("/xlsx", (c) => {
+backup.get("/xlsx", async (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
 
@@ -201,11 +240,17 @@ backup.get("/xlsx", (c) => {
   }));
 
   const result = rowsToHealthBackup(diaryForBackup, painForBackup);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(result.diary.rows), "diary");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(result.pain.rows), "pain");
+  const workbook = new ExcelJS.Workbook();
 
-  const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+  const diarySheet = workbook.addWorksheet("diary");
+  diarySheet.columns = result.diary.headers.map((h: string) => ({ header: h, key: h }));
+  for (const row of result.diary.rows) diarySheet.addRow(row);
+
+  const painSheet = workbook.addWorksheet("pain");
+  painSheet.columns = result.pain.headers.map((h: string) => ({ header: h, key: h }));
+  for (const row of result.pain.rows) painSheet.addRow(row);
+
+  const buffer = await workbook.xlsx.writeBuffer();
   return new Response(buffer, {
     status: 200,
     headers: {
@@ -219,7 +264,7 @@ backup.post("/xlsx/import", async (c) => {
   const rawDb = c.get("rawDb");
   const userId = c.get("userId");
 
-  let workbook: XLSX.WorkBook;
+  const workbook = new ExcelJS.Workbook();
   const contentType = c.req.header("content-type") ?? "";
 
   if (contentType.includes("multipart/form-data")) {
@@ -229,19 +274,18 @@ backup.post("/xlsx/import", async (c) => {
       return c.json({ error: { code: "MISSING_FILE", message: "Missing uploaded file in 'file' field" } }, 400);
     }
     const arrayBuffer = await file.arrayBuffer();
-    workbook = XLSX.read(Buffer.from(arrayBuffer), { type: "buffer" });
+    await workbook.xlsx.load(arrayBuffer);
   } else {
     const payload = (await c.req.json().catch(() => null)) as any;
     if (!payload?.base64 || typeof payload.base64 !== "string") {
       return c.json({ error: { code: "MISSING_FILE", message: "Expected multipart form upload or JSON {base64}" } }, 400);
     }
-    workbook = XLSX.read(Buffer.from(payload.base64, "base64"), { type: "buffer" });
+    const decoded = Buffer.from(payload.base64, "base64");
+    await workbook.xlsx.load(decoded.buffer.slice(decoded.byteOffset, decoded.byteOffset + decoded.byteLength));
   }
 
-  const diarySheet = workbook.Sheets.diary;
-  const painSheet = workbook.Sheets.pain;
-  const diaryRows = diarySheet ? (XLSX.utils.sheet_to_json(diarySheet) as any[]) : [];
-  const painRows = painSheet ? (XLSX.utils.sheet_to_json(painSheet) as any[]) : [];
+  const diaryRows = sheetToObjects(workbook.getWorksheet("diary"));
+  const painRows = sheetToObjects(workbook.getWorksheet("pain"));
 
   const tx = rawDb.transaction(() => {
     rawDb.query(`DELETE FROM pain_entries WHERE user_id = ?`).run(userId);
