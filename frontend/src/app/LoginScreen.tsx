@@ -17,7 +17,7 @@ export function LoginScreen({ loginForm, loginMutation }: LoginScreenProps) {
             Email
             <input
               type="email"
-              autoComplete="email"
+              autoComplete="username"
               aria-invalid={!!loginForm.formState.errors.email}
               aria-describedby={loginForm.formState.errors.email ? "login-email-error" : undefined}
               {...loginForm.register("email")}
