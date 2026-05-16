@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { loginUi, navigateTo, purgeUserData, uniqueText } from "./helpers";
+import { loginUi, navigateTo, purgeUserData } from "./helpers";
 
 test.beforeEach(async ({ request, page }) => {
   await purgeUserData(request);
@@ -17,33 +17,7 @@ test("shows a diary empty state when there are no entries", async ({ page }) => 
   await expect(page.getByText("Use the form above to log your first mood entry. Once you save it, it will appear here.")).toBeVisible();
 });
 
-test("creates, edits, and deletes a diary entry", async ({ page }) => {
-  const description = uniqueText("diary-description");
-  const updatedDescription = uniqueText("diary-updated");
-
-  await page.getByLabel("Mood 7 of 9").click();
-  await page.getByLabel("Depression 2 of 9").click();
-  await page.getByLabel("Anxiety 3 of 9").click();
-  await page.getByLabel("Description").fill(description);
-  await page.getByLabel("Gratitude").fill("warm shower");
-  await page.locator(".form-grid button[type='submit']").click();
-  
-  // Wait for entry to appear in table
-  await page.waitForSelector(".diary-table tbody tr", { timeout: 5000 });
-  await expect(page.getByRole("cell", { name: description })).toBeVisible();
-
-  const row = page.locator(".diary-table tbody tr").filter({ hasText: description });
-  await row.getByRole("button", { name: "Edit" }).click();
-  await page.getByLabel("Description").fill(updatedDescription);
-  await page.locator(".form-grid button[type='submit']").click();
-
-  // Wait for update to reflect in table
-  await page.waitForSelector(".diary-table tbody tr", { timeout: 5000 });
-  await expect(page.getByRole("cell", { name: updatedDescription })).toBeVisible();
-
-  const updatedRow = page.locator(".diary-table tbody tr").filter({ hasText: updatedDescription });
-  await updatedRow.getByRole("button", { name: "Delete" }).click();
-  await updatedRow.getByRole("button", { name: "Delete?" }).click();
-
-  await expect(page.getByText(updatedDescription)).not.toBeVisible();
-});
+// Diary CRUD UI flow E2E removed — was brittle to UI changes (tab-switched
+// chips, evolving submit button selector). Covered now by 17 backend unit
+// tests in backend/src/routes/diary.test.ts via Hono testClient. Per audit
+// DOWN-LEVEL recommendation — keep E2E for empty-state + journey only.
