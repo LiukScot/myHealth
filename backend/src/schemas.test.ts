@@ -55,6 +55,14 @@ describe("changePasswordSchema", () => {
     const r = changePasswordSchema.safeParse({ currentPassword: "old", newPassword: "x".repeat(73) });
     expect(r.success).toBe(false);
   });
+
+  test("rejects currentPassword longer than 72 chars (argon2id cap regression)", () => {
+    const r = changePasswordSchema.safeParse({
+      currentPassword: "x".repeat(73),
+      newPassword: "ValidNewPass1!",
+    });
+    expect(r.success).toBe(false);
+  });
 });
 
 describe("diarySchema", () => {

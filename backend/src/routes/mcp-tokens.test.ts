@@ -1,37 +1,14 @@
 import { describe, expect, test } from "bun:test";
-import { Hono } from "hono";
 import authRoute from "./auth.ts";
 import mcpTokensRoute from "./mcp-tokens.ts";
-import {
-  createTestDb,
-  extractSessionCookie,
-  seedUser,
-  type TestContext,
-  type TestEnv,
-} from "../test-helpers.ts";
+import { extractSessionCookie, seedUser, setupAuthedApp } from "../test-helpers.ts";
 
-async function setup(): Promise<{
-  ctx: TestContext;
-  app: Hono<TestEnv>;
-  cookie: string;
-}> {
-  const ctx = createTestDb();
-  const app = new Hono<TestEnv>();
-  app.use("*", async (c, next) => {
-    c.set("db", ctx.db);
-    c.set("rawDb", ctx.rawDb);
-    await next();
-  });
-  app.route("/auth", authRoute);
-  app.route("/mcp/tokens", mcpTokensRoute);
-  await seedUser(ctx.db, { email: "user@example.com", password: "Password123!" });
-  const loginRes = await app.request("/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: "user@example.com", password: "Password123!" }),
-  });
-  const cookie = extractSessionCookie(loginRes.headers.get("set-cookie"));
-  return { ctx, app, cookie };
+async function setup() {
+  const s = await setupAuthedApp([
+    { path: "/auth", route: authRoute },
+    { path: "/mcp/tokens", route: mcpTokensRoute },
+  ]);
+  return { ctx: s.ctx, app: s.app, cookie: s.cookie, userId: s.user.id };
 }
 
 describe("mcp-tokens auth", () => {
@@ -127,11 +104,12 @@ describe("GET /mcp/tokens", () => {
 
   test("isolates tokens across users (IDOR)", async () => {
     const { ctx, app, cookie } = await setup();
-    await app.request("/mcp/tokens", {
+    const created = await app.request("/mcp/tokens", {
       method: "POST",
       headers: { "Content-Type": "application/json", cookie },
       body: JSON.stringify({ label: "mine" }),
     });
+    expect(created.status).toBe(201);
     await seedUser(ctx.db, { email: "other@example.com", password: "Password123!" });
     const otherLogin = await app.request("/auth/login", {
       method: "POST",
@@ -170,13 +148,13 @@ describe("DELETE /mcp/tokens/:id", () => {
 
   test("cannot revoke another user's token (IDOR)", async () => {
     const { ctx, app, cookie } = await setup();
-    const created = await (
-      await app.request("/mcp/tokens", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", cookie },
-        body: JSON.stringify({ label: "mine" }),
-      })
-    ).json();
+    const createRes = await app.request("/mcp/tokens", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ label: "mine" }),
+    });
+    expect(createRes.status).toBe(201);
+    const created = await createRes.json();
     await seedUser(ctx.db, { email: "other@example.com", password: "Password123!" });
     const otherLogin = await app.request("/auth/login", {
       method: "POST",

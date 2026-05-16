@@ -201,6 +201,15 @@ describe("POST /auth/change-password", () => {
     expect(body.error.code).toBe("INVALID_CURRENT_PASSWORD");
   });
 
+  test("rejects currentPassword longer than 72 chars (argon2id cap regression)", async () => {
+    const res = await app.request("/auth/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ currentPassword: "x".repeat(73), newPassword: "NewPassword456!" }),
+    });
+    expect(res.status).toBe(400);
+  });
+
   test("succeeds and issues new session when current password matches", async () => {
     const res = await app.request("/auth/change-password", {
       method: "POST",

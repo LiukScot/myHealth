@@ -36,6 +36,14 @@ export async function parseJson<T>(c: Context, schema: z.ZodType<T>): Promise<T>
   return parsed.data;
 }
 
+export function parseIdParam(c: Context, paramName = "id"): { id: number } | Response {
+  const id = Number(c.req.param(paramName));
+  if (!Number.isFinite(id)) {
+    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
+  }
+  return { id };
+}
+
 export function readCookie(req: Request, name: string): string | null {
   const raw = req.headers.get("cookie");
   if (!raw) return null;

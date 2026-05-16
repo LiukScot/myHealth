@@ -8,7 +8,7 @@ import {
   cleanupExpiredSessions,
   requireAuth,
 } from "./auth.ts";
-import { createTestDb, seedUser } from "../test-helpers.ts";
+import { createTestDb, extractSessionCookie, seedUser } from "../test-helpers.ts";
 import { sessions } from "../db/index.ts";
 import { env } from "../env.ts";
 import { buildSessionCookie } from "../helpers.ts";
@@ -161,7 +161,7 @@ describe("requireAuth middleware", () => {
       })
     );
     const res = await app.request("/protected", {
-      headers: { cookie: buildSessionCookie(sid).split(";")[0]! },
+      headers: { cookie: extractSessionCookie(buildSessionCookie(sid)) },
     });
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -194,7 +194,7 @@ describe("requireAuth middleware", () => {
     });
     app.get("/protected", requireAuth, (c) => c.json({ data: { ok: true } }));
     const res = await app.request("/protected", {
-      headers: { cookie: buildSessionCookie(sid).split(";")[0]! },
+      headers: { cookie: extractSessionCookie(buildSessionCookie(sid)) },
     });
     expect(res.status).toBe(401);
   });

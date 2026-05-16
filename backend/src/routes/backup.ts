@@ -261,6 +261,13 @@ backup.get("/xlsx", async (c) => {
 });
 
 const XLSX_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
+// base64 4 chars encode 3 raw bytes; pre-check string length before decode
+const XLSX_UPLOAD_MAX_BASE64_CHARS = Math.ceil(XLSX_UPLOAD_MAX_BYTES / 3) * 4 + 4;
+const XLSX_MIME_TYPES = new Set([
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel",
+  "application/octet-stream"
+]);
 
 backup.post("/xlsx/import", async (c) => {
   const rawDb = c.get("rawDb");
@@ -275,6 +282,19 @@ backup.post("/xlsx/import", async (c) => {
     if (!(file instanceof File)) {
       return c.json({ error: { code: "MISSING_FILE", message: "Missing uploaded file in 'file' field" } }, 400);
     }
+    const filename = file.name.toLowerCase();
+    if (!filename.endsWith(".xlsx") && !filename.endsWith(".xls")) {
+      return c.json(
+        { error: { code: "INVALID_FILE_TYPE", message: "Expected .xlsx or .xls upload" } },
+        400
+      );
+    }
+    if (file.type && !XLSX_MIME_TYPES.has(file.type)) {
+      return c.json(
+        { error: { code: "INVALID_FILE_TYPE", message: "Unsupported MIME type" } },
+        400
+      );
+    }
     if (file.size > XLSX_UPLOAD_MAX_BYTES) {
       return c.json(
         { error: { code: "FILE_TOO_LARGE", message: "XLSX upload exceeds 10 MB limit" } },
@@ -287,6 +307,12 @@ backup.post("/xlsx/import", async (c) => {
     const payload = (await c.req.json().catch(() => null)) as any;
     if (!payload?.base64 || typeof payload.base64 !== "string") {
       return c.json({ error: { code: "MISSING_FILE", message: "Expected multipart form upload or JSON {base64}" } }, 400);
+    }
+    if (payload.base64.length > XLSX_UPLOAD_MAX_BASE64_CHARS) {
+      return c.json(
+        { error: { code: "FILE_TOO_LARGE", message: "XLSX upload exceeds 10 MB limit" } },
+        413
+      );
     }
     const decoded = Buffer.from(payload.base64, "base64");
     if (decoded.byteLength > XLSX_UPLOAD_MAX_BYTES) {

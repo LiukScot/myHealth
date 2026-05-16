@@ -3,7 +3,7 @@ import { eq, and, between, gte, lte, desc, sql } from "drizzle-orm";
 import type { DrizzleDB } from "../db/index.ts";
 import { dbtEntries } from "../db/index.ts";
 import type { SQLiteDB } from "../db.ts";
-import { parseJson } from "../helpers.ts";
+import { parseJson, parseIdParam } from "../helpers.ts";
 import { dbtSchema } from "../schemas.ts";
 import { requireAuth } from "../middleware/auth.ts";
 
@@ -79,10 +79,9 @@ dbt.post("/", async (c) => {
 dbt.put("/:id", async (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
-  const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id)) {
-    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
-  }
+  const parsed = parseIdParam(c);
+  if (parsed instanceof Response) return parsed;
+  const { id } = parsed;
   const body = await parseJson(c, dbtSchema);
   const updated = db
     .update(dbtEntries)
@@ -110,10 +109,9 @@ dbt.put("/:id", async (c) => {
 dbt.delete("/:id", (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
-  const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id)) {
-    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
-  }
+  const parsed = parseIdParam(c);
+  if (parsed instanceof Response) return parsed;
+  const { id } = parsed;
   const deleted = db.delete(dbtEntries).where(and(eq(dbtEntries.id, id), eq(dbtEntries.userId, userId)))
     .returning({ id: dbtEntries.id }).get();
   if (!deleted) {

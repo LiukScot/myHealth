@@ -1,38 +1,18 @@
 import { describe, expect, test } from "bun:test";
-import { Hono } from "hono";
 import authRoute from "./auth.ts";
 import diaryRoute from "./diary.ts";
 import {
-  createTestDb,
   extractSessionCookie,
   seedUser,
-  type TestContext,
-  type TestEnv,
+  setupAuthedApp,
 } from "../test-helpers.ts";
 
-async function setup(): Promise<{
-  ctx: TestContext;
-  app: Hono<TestEnv>;
-  cookie: string;
-  userId: number;
-}> {
-  const ctx = createTestDb();
-  const app = new Hono<TestEnv>();
-  app.use("*", async (c, next) => {
-    c.set("db", ctx.db);
-    c.set("rawDb", ctx.rawDb);
-    await next();
-  });
-  app.route("/auth", authRoute);
-  app.route("/diary", diaryRoute);
-  const seeded = await seedUser(ctx.db, { email: "user@example.com", password: "Password123!" });
-  const loginRes = await app.request("/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: "user@example.com", password: "Password123!" }),
-  });
-  const cookie = extractSessionCookie(loginRes.headers.get("set-cookie"));
-  return { ctx, app, cookie, userId: seeded.id };
+async function setup() {
+  const setup = await setupAuthedApp([
+    { path: "/auth", route: authRoute },
+    { path: "/diary", route: diaryRoute },
+  ]);
+  return { ctx: setup.ctx, app: setup.app, cookie: setup.cookie, userId: setup.user.id };
 }
 
 const validBody = {
@@ -108,6 +88,26 @@ describe("POST /diary", () => {
     });
     expect(res.status).toBe(400);
   });
+
+  test("accepts moodLevel at lower boundary (1)", async () => {
+    const { app, cookie } = await setup();
+    const res = await app.request("/diary", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ ...validBody, moodLevel: 1 }),
+    });
+    expect(res.status).toBe(201);
+  });
+
+  test("accepts moodLevel at upper boundary (9)", async () => {
+    const { app, cookie } = await setup();
+    const res = await app.request("/diary", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ ...validBody, moodLevel: 9 }),
+    });
+    expect(res.status).toBe(201);
+  });
 });
 
 describe("GET /diary", () => {
@@ -155,11 +155,12 @@ describe("GET /diary", () => {
 
   test("isolates entries across users (cross-user IDOR check)", async () => {
     const { ctx, app, cookie } = await setup();
-    await app.request("/diary", {
+    const created = await app.request("/diary", {
       method: "POST",
       headers: { "Content-Type": "application/json", cookie },
       body: JSON.stringify(validBody),
     });
+    expect(created.status).toBe(201);
     await seedUser(ctx.db, { email: "other@example.com", password: "Password123!" });
     const otherLogin = await app.request("/auth/login", {
       method: "POST",
@@ -219,6 +220,7 @@ describe("PUT /diary/:id", () => {
       headers: { "Content-Type": "application/json", cookie },
       body: JSON.stringify(validBody),
     });
+    expect(created.status).toBe(201);
     const { data } = await created.json();
     await seedUser(ctx.db, { email: "other@example.com", password: "Password123!" });
     const otherLogin = await app.request("/auth/login", {

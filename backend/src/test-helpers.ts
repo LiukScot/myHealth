@@ -23,11 +23,13 @@ export type SeededUser = {
   password: string;
 };
 
+let seedUserCounter = 0;
+
 export async function seedUser(
   db: DrizzleDB,
   opts: { email?: string; password?: string; name?: string | null; disabledAt?: string | null } = {}
 ): Promise<SeededUser> {
-  const email = opts.email ?? "test@example.com";
+  const email = opts.email ?? `test-${++seedUserCounter}@example.com`;
   const password = opts.password ?? "Password123!";
   const passwordHash = await Bun.password.hash(password, { algorithm: "argon2id" });
   const inserted = db
@@ -75,10 +77,24 @@ export type TestEnv = {
   };
 };
 
-export function createTestApp(
+export function createTestApp<E extends TestEnv = TestEnv>(
   ctx: TestContext,
   mountPath: string,
-  route: Hono<TestEnv>
+  route: Hono<E>
+): Hono<E> {
+  const app = new Hono<E>();
+  app.use("*", async (c, next) => {
+    c.set("db", ctx.db);
+    c.set("rawDb", ctx.rawDb);
+    await next();
+  });
+  app.route(mountPath, route);
+  return app;
+}
+
+export function createMultiRouteApp(
+  ctx: TestContext,
+  mounts: Array<{ path: string; route: Hono<TestEnv> }>
 ): Hono<TestEnv> {
   const app = new Hono<TestEnv>();
   app.use("*", async (c, next) => {
@@ -86,7 +102,9 @@ export function createTestApp(
     c.set("rawDb", ctx.rawDb);
     await next();
   });
-  app.route(mountPath, route);
+  for (const { path, route } of mounts) {
+    app.route(path, route);
+  }
   return app;
 }
 
@@ -99,6 +117,28 @@ export function extractSessionCookie(setCookieHeader: string | null): string {
     throw new Error("extractSessionCookie: empty Set-Cookie header");
   }
   return first;
+}
+
+export type AuthedAppSetup = {
+  ctx: TestContext;
+  app: Hono<TestEnv>;
+  cookie: string;
+  user: SeededUser;
+};
+
+export async function setupAuthedApp(
+  mounts: Array<{ path: string; route: Hono<TestEnv> }>,
+  opts: { authPath?: string; email?: string; password?: string } = {}
+): Promise<AuthedAppSetup> {
+  const ctx = createTestDb();
+  const app = createMultiRouteApp(ctx, mounts);
+  const seedOpts: { email?: string; password?: string } = {};
+  if (opts.email !== undefined) seedOpts.email = opts.email;
+  if (opts.password !== undefined) seedOpts.password = opts.password;
+  const user = await seedUser(ctx.db, seedOpts);
+  const authPath = opts.authPath ?? "/auth";
+  const cookie = await loginAndGetCookie(app, authPath, user.email, user.password);
+  return { ctx, app, cookie, user };
 }
 
 export async function loginAndGetCookie(

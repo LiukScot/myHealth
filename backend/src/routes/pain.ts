@@ -7,6 +7,7 @@ import { toNullableInt } from "../db.ts";
 import type { SQLiteDB } from "../db.ts";
 import {
   parseJson,
+  parseIdParam,
   PAIN_MULTI_FIELDS,
   type PainMultiField,
   type PainTagMap,
@@ -132,10 +133,9 @@ pain.post("/", async (c) => {
 pain.put("/:id", async (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
-  const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id)) {
-    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
-  }
+  const parsed = parseIdParam(c);
+  if (parsed instanceof Response) return parsed;
+  const { id } = parsed;
   const body = await parseJson(c, painSchema);
   const updated = db
     .update(painEntries)
@@ -166,10 +166,9 @@ pain.put("/:id", async (c) => {
 pain.delete("/:id", (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
-  const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id)) {
-    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
-  }
+  const parsed = parseIdParam(c);
+  if (parsed instanceof Response) return parsed;
+  const { id } = parsed;
   const deleted = db.delete(painEntries).where(and(eq(painEntries.id, id), eq(painEntries.userId, userId)))
     .returning({ id: painEntries.id }).get();
   if (!deleted) {
