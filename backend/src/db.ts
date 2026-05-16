@@ -168,16 +168,6 @@ export function runMigrations(db: SQLiteDB): void {
   }
 }
 
-export function nowIso(): string {
-  return new Date().toISOString();
-}
-
-export function clampInt(val: unknown, fallback = 0): number {
-  const n = Number(val);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.trunc(n);
-}
-
 export function toNullableInt(val: unknown): number | null {
   if (val === null || val === undefined || val === "") return null;
   const n = Number(val);

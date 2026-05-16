@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { eq, desc } from "drizzle-orm";
 import ExcelJS from "exceljs";
 import type { DrizzleDB } from "../db/index.ts";
-import { diaryEntries, painEntries, userPreferences, painRemovedOptions, memorableDays } from "../db/index.ts";
+import { diaryEntries, painEntries, userPreferences, painRemovedOptions } from "../db/index.ts";
 import type { SQLiteDB } from "../db.ts";
 import { toNullableInt, toNullableNumber } from "../db.ts";
 import {
@@ -267,11 +267,15 @@ backup.post("/xlsx/import", async (c) => {
   const workbook = new ExcelJS.Workbook();
   const contentType = c.req.header("content-type") ?? "";
 
+  const MAX_XLSX_BYTES = 10 * 1024 * 1024; // 10 MB
   if (contentType.includes("multipart/form-data")) {
     const form = await c.req.formData();
     const file = form.get("file");
     if (!(file instanceof File)) {
       return c.json({ error: { code: "MISSING_FILE", message: "Missing uploaded file in 'file' field" } }, 400);
+    }
+    if (file.size > MAX_XLSX_BYTES) {
+      return c.json({ error: { code: "FILE_TOO_LARGE", message: "File exceeds 10 MB limit" } }, 400);
     }
     const arrayBuffer = await file.arrayBuffer();
     await workbook.xlsx.load(arrayBuffer);

@@ -86,6 +86,9 @@ cbt.put("/:id", async (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
+  if (!Number.isFinite(id) || id <= 0) {
+    return c.json({ error: { code: "NOT_FOUND", message: "CBT entry not found" } }, 404);
+  }
   const body = await parseJson(c, cbtSchema);
   const updated = db
     .update(cbtEntries)
@@ -117,6 +120,9 @@ cbt.delete("/:id", (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
+  if (!Number.isFinite(id) || id <= 0) {
+    return c.json({ error: { code: "NOT_FOUND", message: "CBT entry not found" } }, 404);
+  }
   const deleted = db.delete(cbtEntries).where(and(eq(cbtEntries.id, id), eq(cbtEntries.userId, userId)))
     .returning({ id: cbtEntries.id }).get();
   if (!deleted) {

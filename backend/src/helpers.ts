@@ -4,7 +4,6 @@ import { HTTPException } from "hono/http-exception";
 import cookie from "cookie";
 import { env } from "./env.ts";
 import { TAG_TYPES, type TagType, MOOD_TAG_FIELDS, type MoodTagField } from "./schema.ts";
-import type { SQLiteDB } from "./db.ts";
 
 export const PAIN_MULTI_FIELDS = TAG_TYPES;
 export type PainMultiField = TagType;
@@ -123,8 +122,6 @@ export function rowPainField(row: Record<string, unknown>, field: PainMultiField
   return "";
 }
 
-export const emptyPainOptions = emptyPainTags;
-
 export function mergeOptions(current: string[], incoming: string[]): string[] {
   const out: string[] = [...current];
   const seen = new Set(current.map((value) => value.toLowerCase()));
@@ -135,40 +132,6 @@ export function mergeOptions(current: string[], incoming: string[]): string[] {
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(normalized);
-  }
-  return out;
-}
-
-export function loadPainOptionsForUser(db: SQLiteDB, userId: number): PainTagMap {
-  const rows = db
-    .query<{ field: string; value: string }, [number]>(
-      `SELECT field, value FROM pain_options WHERE user_id = ? ORDER BY id ASC`
-    )
-    .all(userId);
-  const out = emptyPainOptions();
-  for (const row of rows) {
-    if (PAIN_MULTI_FIELDS.includes(row.field as PainMultiField)) {
-      out[row.field as PainMultiField].push(row.value);
-    }
-  }
-  return out;
-}
-
-export function emptyMoodOptions(): MoodTagMap {
-  return { positive_moods: [], negative_moods: [], general_moods: [] };
-}
-
-export function loadMoodOptionsForUser(db: SQLiteDB, userId: number): MoodTagMap {
-  const rows = db
-    .query<{ field: string; value: string }, [number]>(
-      `SELECT field, value FROM mood_options WHERE user_id = ? ORDER BY id ASC`
-    )
-    .all(userId);
-  const out = emptyMoodOptions();
-  for (const row of rows) {
-    if (MOOD_MULTI_FIELDS.includes(row.field as MoodMultiField)) {
-      out[row.field as MoodMultiField].push(row.value);
-    }
   }
   return out;
 }

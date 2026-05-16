@@ -42,7 +42,7 @@ export function periodCutoff(period: Period): string | null {
  * from an LLM-generated query would otherwise cause `fts5: syntax error`.
  */
 export function sanitizeFtsQuery(raw: string): string {
-  return raw.replace(/["()*:^]/g, " ").trim();
+  return raw.replace(/["()*:^[\]]/g, " ").trim();
 }
 
 /**
