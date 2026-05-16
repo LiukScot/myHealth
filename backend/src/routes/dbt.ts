@@ -80,8 +80,8 @@ dbt.put("/:id", async (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id) || id <= 0) {
-    return c.json({ error: { code: "NOT_FOUND", message: "DBT entry not found" } }, 404);
+  if (!Number.isFinite(id)) {
+    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
   }
   const body = await parseJson(c, dbtSchema);
   const updated = db
@@ -111,8 +111,8 @@ dbt.delete("/:id", (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id) || id <= 0) {
-    return c.json({ error: { code: "NOT_FOUND", message: "DBT entry not found" } }, 404);
+  if (!Number.isFinite(id)) {
+    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
   }
   const deleted = db.delete(dbtEntries).where(and(eq(dbtEntries.id, id), eq(dbtEntries.userId, userId)))
     .returning({ id: dbtEntries.id }).get();

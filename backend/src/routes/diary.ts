@@ -84,8 +84,8 @@ diary.put("/:id", async (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id) || id <= 0) {
-    return c.json({ error: { code: "NOT_FOUND", message: "Diary entry not found" } }, 404);
+  if (!Number.isFinite(id)) {
+    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
   }
   const body = await parseJson(c, diarySchema);
   const updated = db
@@ -117,8 +117,8 @@ diary.delete("/:id", (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id) || id <= 0) {
-    return c.json({ error: { code: "NOT_FOUND", message: "Diary entry not found" } }, 404);
+  if (!Number.isFinite(id)) {
+    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
   }
   const deleted = db.delete(diaryEntries).where(and(eq(diaryEntries.id, id), eq(diaryEntries.userId, userId)))
     .returning({ id: diaryEntries.id }).get();

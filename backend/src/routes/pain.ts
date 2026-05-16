@@ -133,8 +133,8 @@ pain.put("/:id", async (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id) || id <= 0) {
-    return c.json({ error: { code: "NOT_FOUND", message: "Pain entry not found" } }, 404);
+  if (!Number.isFinite(id)) {
+    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
   }
   const body = await parseJson(c, painSchema);
   const updated = db
@@ -167,8 +167,8 @@ pain.delete("/:id", (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id) || id <= 0) {
-    return c.json({ error: { code: "NOT_FOUND", message: "Pain entry not found" } }, 404);
+  if (!Number.isFinite(id)) {
+    return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
   }
   const deleted = db.delete(painEntries).where(and(eq(painEntries.id, id), eq(painEntries.userId, userId)))
     .returning({ id: painEntries.id }).get();
