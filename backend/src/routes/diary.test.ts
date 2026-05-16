@@ -1,23 +1,23 @@
-import { describe, expect, test, beforeEach } from "bun:test";
+import { describe, expect, test } from "bun:test";
+import { Hono } from "hono";
 import authRoute from "./auth.ts";
 import diaryRoute from "./diary.ts";
-import { Hono } from "hono";
 import {
-  createTestApp,
   createTestDb,
   extractSessionCookie,
   seedUser,
   type TestContext,
+  type TestEnv,
 } from "../test-helpers.ts";
 
 async function setup(): Promise<{
   ctx: TestContext;
-  app: Hono<any>;
+  app: Hono<TestEnv>;
   cookie: string;
   userId: number;
 }> {
   const ctx = createTestDb();
-  const app = new Hono();
+  const app = new Hono<TestEnv>();
   app.use("*", async (c, next) => {
     c.set("db", ctx.db);
     c.set("rawDb", ctx.rawDb);

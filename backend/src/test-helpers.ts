@@ -65,22 +65,22 @@ export async function seedSession(
   return sid;
 }
 
-type ContextEnv = {
+export type TestEnv = {
   Variables: {
     db: DrizzleDB;
     rawDb: SQLiteDB;
-    userId?: number;
-    userEmail?: string;
-    sessionSid?: string;
+    userId: number;
+    userEmail: string;
+    sessionSid: string;
   };
 };
 
 export function createTestApp(
   ctx: TestContext,
   mountPath: string,
-  route: Hono<ContextEnv>
-): Hono<ContextEnv> {
-  const app = new Hono<ContextEnv>();
+  route: Hono<TestEnv>
+): Hono<TestEnv> {
+  const app = new Hono<TestEnv>();
   app.use("*", async (c, next) => {
     c.set("db", ctx.db);
     c.set("rawDb", ctx.rawDb);
@@ -94,11 +94,15 @@ export function extractSessionCookie(setCookieHeader: string | null): string {
   if (!setCookieHeader) {
     throw new Error("extractSessionCookie: missing Set-Cookie header");
   }
-  return setCookieHeader.split(";")[0];
+  const first = setCookieHeader.split(";")[0];
+  if (!first) {
+    throw new Error("extractSessionCookie: empty Set-Cookie header");
+  }
+  return first;
 }
 
 export async function loginAndGetCookie(
-  app: Hono<ContextEnv>,
+  app: Hono<TestEnv>,
   authMountPath: string,
   email: string,
   password: string
