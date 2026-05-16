@@ -4,7 +4,7 @@ import type { DrizzleDB } from "../db/index.ts";
 import { diaryEntries } from "../db/index.ts";
 import { toNullableNumber } from "../db.ts";
 import type { SQLiteDB } from "../db.ts";
-import { parseJson } from "../helpers.ts";
+import { parseJson, parseIdParam } from "../helpers.ts";
 import { diarySchema } from "../schemas.ts";
 import { requireAuth } from "../middleware/auth.ts";
 
@@ -83,10 +83,9 @@ diary.post("/", async (c) => {
 diary.put("/:id", async (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
-  const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id) || id <= 0) {
-    return c.json({ error: { code: "NOT_FOUND", message: "Diary entry not found" } }, 404);
-  }
+  const parsed = parseIdParam(c);
+  if (parsed instanceof Response) return parsed;
+  const { id } = parsed;
   const body = await parseJson(c, diarySchema);
   const updated = db
     .update(diaryEntries)
@@ -116,10 +115,9 @@ diary.put("/:id", async (c) => {
 diary.delete("/:id", (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
-  const id = Number(c.req.param("id"));
-  if (!Number.isFinite(id) || id <= 0) {
-    return c.json({ error: { code: "NOT_FOUND", message: "Diary entry not found" } }, 404);
-  }
+  const parsed = parseIdParam(c);
+  if (parsed instanceof Response) return parsed;
+  const { id } = parsed;
   const deleted = db.delete(diaryEntries).where(and(eq(diaryEntries.id, id), eq(diaryEntries.userId, userId)))
     .returning({ id: diaryEntries.id }).get();
   if (!deleted) {
