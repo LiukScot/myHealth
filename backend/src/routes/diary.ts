@@ -2,19 +2,13 @@ import { Hono } from "hono";
 import { eq, and, between, gte, lte, desc, sql } from "drizzle-orm";
 import type { DrizzleDB } from "../db/index.ts";
 import { diaryEntries } from "../db/index.ts";
+import { toNullableNumber } from "../db.ts";
 import type { SQLiteDB } from "../db.ts";
 import { parseJson } from "../helpers.ts";
 import { diarySchema } from "../schemas.ts";
 import { requireAuth } from "../middleware/auth.ts";
 
 type Env = { Variables: { db: DrizzleDB; rawDb: SQLiteDB; userId: number; userEmail: string; sessionSid: string } };
-
-function toNullableNumber(val: unknown): number | null {
-  if (val === null || val === undefined || val === "") return null;
-  const n = Number(val);
-  if (!Number.isFinite(n)) return null;
-  return n;
-}
 
 const diary = new Hono<Env>();
 
@@ -71,9 +65,9 @@ diary.post("/", async (c) => {
       userId,
       entryDate: body.entryDate,
       entryTime: body.entryTime,
-      moodLevel: toNullableNumber(body.moodLevel) as number | null,
-      depressionLevel: toNullableNumber(body.depressionLevel) as number | null,
-      anxietyLevel: toNullableNumber(body.anxietyLevel) as number | null,
+      moodLevel: toNullableNumber(body.moodLevel),
+      depressionLevel: toNullableNumber(body.depressionLevel),
+      anxietyLevel: toNullableNumber(body.anxietyLevel),
       positiveMoods: body.positiveMoods ?? "",
       negativeMoods: body.negativeMoods ?? "",
       generalMoods: body.generalMoods ?? "",
@@ -90,15 +84,18 @@ diary.put("/:id", async (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
+  if (!Number.isFinite(id) || id <= 0) {
+    return c.json({ error: { code: "NOT_FOUND", message: "Diary entry not found" } }, 404);
+  }
   const body = await parseJson(c, diarySchema);
   const updated = db
     .update(diaryEntries)
     .set({
       entryDate: body.entryDate,
       entryTime: body.entryTime,
-      moodLevel: toNullableNumber(body.moodLevel) as number | null,
-      depressionLevel: toNullableNumber(body.depressionLevel) as number | null,
-      anxietyLevel: toNullableNumber(body.anxietyLevel) as number | null,
+      moodLevel: toNullableNumber(body.moodLevel),
+      depressionLevel: toNullableNumber(body.depressionLevel),
+      anxietyLevel: toNullableNumber(body.anxietyLevel),
       positiveMoods: body.positiveMoods ?? "",
       negativeMoods: body.negativeMoods ?? "",
       generalMoods: body.generalMoods ?? "",
@@ -120,6 +117,9 @@ diary.delete("/:id", (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
+  if (!Number.isFinite(id) || id <= 0) {
+    return c.json({ error: { code: "NOT_FOUND", message: "Diary entry not found" } }, 404);
+  }
   const deleted = db.delete(diaryEntries).where(and(eq(diaryEntries.id, id), eq(diaryEntries.userId, userId)))
     .returning({ id: diaryEntries.id }).get();
   if (!deleted) {

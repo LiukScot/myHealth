@@ -3,6 +3,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { DrizzleDB } from "../db/index.ts";
 import { painEntries, painOptions } from "../db/index.ts";
+import { toNullableInt } from "../db.ts";
 import type { SQLiteDB } from "../db.ts";
 import {
   parseJson,
@@ -17,13 +18,6 @@ import { painSchema, optionFieldSchema } from "../schemas.ts";
 import { requireAuth } from "../middleware/auth.ts";
 
 type Env = { Variables: { db: DrizzleDB; rawDb: SQLiteDB; userId: number; userEmail: string; sessionSid: string } };
-
-function toNullableInt(val: unknown): number | null {
-  if (val === null || val === undefined || val === "") return null;
-  const n = Number(val);
-  if (!Number.isFinite(n)) return null;
-  return Math.trunc(n);
-}
 
 function extractPainField(body: z.infer<typeof painSchema>, field: PainMultiField): string {
   const direct = body[field];
@@ -139,6 +133,9 @@ pain.put("/:id", async (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
+  if (!Number.isFinite(id) || id <= 0) {
+    return c.json({ error: { code: "NOT_FOUND", message: "Pain entry not found" } }, 404);
+  }
   const body = await parseJson(c, painSchema);
   const updated = db
     .update(painEntries)
@@ -170,6 +167,9 @@ pain.delete("/:id", (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
   const id = Number(c.req.param("id"));
+  if (!Number.isFinite(id) || id <= 0) {
+    return c.json({ error: { code: "NOT_FOUND", message: "Pain entry not found" } }, 404);
+  }
   const deleted = db.delete(painEntries).where(and(eq(painEntries.id, id), eq(painEntries.userId, userId)))
     .returning({ id: painEntries.id }).get();
   if (!deleted) {

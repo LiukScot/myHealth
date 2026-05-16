@@ -5,6 +5,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 
 import type { DrizzleDB } from "../db/index.ts";
 import type { SQLiteDB } from "../db.ts";
+import { allowedOrigins } from "../env.ts";
 import { requirePat, type McpAuthVars } from "./auth.ts";
 
 import { registerDiaryTools } from "./tools/diary.ts";
@@ -65,12 +66,14 @@ type McpAppEnv = {
 export function createMcpApp(db: DrizzleDB, rawDb: SQLiteDB): Hono<McpAppEnv> {
   const mcp = new Hono<McpAppEnv>();
 
-  // CORS for MCP clients. Permissive because access is gated by PAT and the
-  // server is reachable only over the user's VPN/Tailscale anyway.
   mcp.use(
     "*",
     cors({
-      origin: (origin) => origin ?? "*",
+      origin: (origin) => {
+        if (!origin) return origin;
+        if (allowedOrigins.has(origin)) return origin;
+        return null;
+      },
       allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
       allowHeaders: [
         "Content-Type",

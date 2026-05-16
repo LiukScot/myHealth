@@ -11,6 +11,7 @@ services:
       PORT: 5555
       DB_PATH: /app/data/health.sqlite
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5555,http://127.0.0.1:5555,http://localhost:5173,http://127.0.0.1:5173}
+      COOKIE_SECURE: "true"
     volumes:
       - ./data:/app/data
     restart: unless-stopped
