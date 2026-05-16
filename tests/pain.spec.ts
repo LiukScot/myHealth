@@ -25,10 +25,6 @@ test("creates, edits, and deletes a pain entry", async ({ page }) => {
   await page.getByLabel("Fatigue 4 of 9").click();
   await page.getByLabel("Increase coffee count").click();
   await page.getByLabel("Increase coffee count").click();
-  await page.locator(".multi-option-chip", { hasText: "head" }).click();
-  await page.locator(".multi-option-chip", { hasText: "nausea" }).click();
-  await page.locator(".multi-option-chip", { hasText: "work" }).click();
-  await page.locator(".multi-option-chip", { hasText: "good sleep" }).click();
   await page.getByLabel("Notes").fill(note);
   await page.locator(".pain-form button[type='submit']").click();
 

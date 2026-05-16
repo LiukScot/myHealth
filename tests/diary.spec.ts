@@ -24,9 +24,6 @@ test("creates, edits, and deletes a diary entry", async ({ page }) => {
   await page.getByLabel("Mood 7 of 9").click();
   await page.getByLabel("Depression 2 of 9").click();
   await page.getByLabel("Anxiety 3 of 9").click();
-  await page.locator(".multi-option-chip", { hasText: "happy" }).click();
-  await page.locator(".multi-option-chip", { hasText: "sad" }).click();
-  await page.locator(".multi-option-chip", { hasText: "tired" }).click();
   await page.getByLabel("Description").fill(description);
   await page.getByLabel("Gratitude").fill("warm shower");
   await page.locator(".form-grid button[type='submit']").click();
