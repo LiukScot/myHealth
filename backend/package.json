@@ -8,7 +8,9 @@
     "start": "../scripts/run-bun.sh src/server.ts",
     "typecheck": "tsc --noEmit",
     "migrate": "../scripts/run-bun.sh src/migrate.ts",
-    "test": "../scripts/run-bun.sh test --pass-with-no-tests"
+    "test": "../scripts/run-bun.sh test src/",
+    "test:watch": "../scripts/run-bun.sh test --watch src/",
+    "test:coverage": "../scripts/run-bun.sh test --coverage src/"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
