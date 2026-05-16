@@ -260,6 +260,8 @@ backup.get("/xlsx", async (c) => {
   });
 });
 
+const XLSX_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
+
 backup.post("/xlsx/import", async (c) => {
   const rawDb = c.get("rawDb");
   const userId = c.get("userId");
@@ -267,15 +269,17 @@ backup.post("/xlsx/import", async (c) => {
   const workbook = new ExcelJS.Workbook();
   const contentType = c.req.header("content-type") ?? "";
 
-  const MAX_XLSX_BYTES = 10 * 1024 * 1024; // 10 MB
   if (contentType.includes("multipart/form-data")) {
     const form = await c.req.formData();
     const file = form.get("file");
     if (!(file instanceof File)) {
       return c.json({ error: { code: "MISSING_FILE", message: "Missing uploaded file in 'file' field" } }, 400);
     }
-    if (file.size > MAX_XLSX_BYTES) {
-      return c.json({ error: { code: "FILE_TOO_LARGE", message: "File exceeds 10 MB limit" } }, 400);
+    if (file.size > XLSX_UPLOAD_MAX_BYTES) {
+      return c.json(
+        { error: { code: "FILE_TOO_LARGE", message: "XLSX upload exceeds 10 MB limit" } },
+        413
+      );
     }
     const arrayBuffer = await file.arrayBuffer();
     await workbook.xlsx.load(arrayBuffer);
@@ -285,6 +289,12 @@ backup.post("/xlsx/import", async (c) => {
       return c.json({ error: { code: "MISSING_FILE", message: "Expected multipart form upload or JSON {base64}" } }, 400);
     }
     const decoded = Buffer.from(payload.base64, "base64");
+    if (decoded.byteLength > XLSX_UPLOAD_MAX_BYTES) {
+      return c.json(
+        { error: { code: "FILE_TOO_LARGE", message: "XLSX upload exceeds 10 MB limit" } },
+        413
+      );
+    }
     await workbook.xlsx.load(decoded.buffer.slice(decoded.byteOffset, decoded.byteOffset + decoded.byteLength));
   }
 
