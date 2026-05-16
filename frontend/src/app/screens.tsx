@@ -1,9 +1,6 @@
-import { type CSSProperties, useState } from "react";
-import type { ChartData, ChartOptions } from "chart.js";
+import { type CSSProperties, lazy, Suspense, useState } from "react";
 import { type UseFormReturn } from "react-hook-form";
-import { Chart as ChartJS, TimeScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
-import "chartjs-adapter-date-fns";
-import { Line } from "react-chartjs-2";
+import type { WellbeingChartView } from "./WellbeingChart";
 import {
   csvToList,
   type CbtEntry,
@@ -38,7 +35,7 @@ import {
   getDeltaStyle,
 } from "./core";
 
-ChartJS.register(TimeScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
+const WellbeingChart = lazy(() => import("./WellbeingChart"));
 
 function formatEntrySummaryDate(entryDate: string, entryTime: string): string {
   const time = entryTime.length >= 5 ? entryTime : `${entryTime}:00`;
@@ -156,13 +153,6 @@ function CoffeeStepper({ value, onChange }: { value: number | null; onChange: (n
     </div>
   );
 }
-
-type WellbeingChartView = {
-  hasAnyData: boolean;
-  hasVisibleData: boolean;
-  data: ChartData<"line", { x: string; y: number }[], string>;
-  options: ChartOptions<"line">;
-};
 
 function EmptyState({
   title,
@@ -336,7 +326,9 @@ export function DashboardSection({
 
             {wellbeingChart.hasVisibleData ? (
               <div className="chart-canvas chart-canvas-wide">
-                <Line data={wellbeingChart.data} options={wellbeingChart.options} />
+                <Suspense fallback={<p className="hint">Loading chart…</p>}>
+                  <WellbeingChart data={wellbeingChart.data} options={wellbeingChart.options} />
+                </Suspense>
               </div>
             ) : (
               <p className="hint">
