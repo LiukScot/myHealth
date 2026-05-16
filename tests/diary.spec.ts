@@ -21,9 +21,9 @@ test("creates, edits, and deletes a diary entry", async ({ page }) => {
   const description = uniqueText("diary-description");
   const updatedDescription = uniqueText("diary-updated");
 
-  await page.getByLabel("Mood (1-9)").fill("7");
-  await page.getByLabel("Depression (1-9)").fill("2");
-  await page.getByLabel("Anxiety (1-9)").fill("3");
+  await page.getByLabel("Mood", { exact: true }).fill("7");
+  await page.getByLabel("Depression", { exact: true }).fill("2");
+  await page.getByLabel("Anxiety", { exact: true }).fill("3");
   await page.locator(".multi-option-chip", { hasText: "happy" }).click();
   await page.locator(".multi-option-chip", { hasText: "sad" }).click();
   await page.locator(".multi-option-chip", { hasText: "tired" }).click();
