@@ -21,9 +21,10 @@ test("creates, edits, and deletes a pain entry", async ({ page }) => {
   const note = uniqueText("pain-note");
   const updatedNote = uniqueText("pain-updated");
 
-  await page.getByLabel("Pain level", { exact: true }).fill("6");
-  await page.getByLabel("Fatigue", { exact: true }).fill("4");
-  await page.getByLabel("Coffee", { exact: true }).fill("2");
+  await page.getByLabel("Pain level 6 of 9").click();
+  await page.getByLabel("Fatigue 4 of 9").click();
+  await page.getByLabel("Increase coffee count").click();
+  await page.getByLabel("Increase coffee count").click();
   await page.locator(".multi-option-chip", { hasText: "head" }).click();
   await page.locator(".multi-option-chip", { hasText: "nausea" }).click();
   await page.locator(".multi-option-chip", { hasText: "work" }).click();
