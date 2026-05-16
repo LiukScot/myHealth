@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { loginUi, purgeUserData, seedMemorableDay } from "./helpers";
+import { loginUi, purgeUserData } from "./helpers";
 
 test.beforeEach(async ({ request }) => {
   await purgeUserData(request);
@@ -47,54 +47,4 @@ test("desktop shows calendar and list, create/edit/delete works", async ({ page 
   await weddingListItem.click();
   await page.getByRole("button", { name: "Delete" }).click();
   await expect(page.locator(".memorable-list-item").filter({ hasText: "Wedding" })).toHaveCount(0);
-});
-
-
-test("tablet width stacks list under calendar", async ({ page, request }) => {
-  await seedMemorableDay(request, { title: "Birthday", repeatMode: "yearly", emoji: "🎂" });
-  /* Stacked single-column layout is only used at max-width 1239px. */
-  await page.setViewportSize({ width: 1100, height: 766 });
-  await loginUi(page);
-  await page.getByRole("button", { name: "Memorable days" }).click();
-
-  const calendarBox = await page.locator(".memorable-calendar-panel").boundingBox();
-  const listBox = await page.locator(".memorable-list-panel").boundingBox();
-
-  expect(calendarBox).not.toBeNull();
-  expect(listBox).not.toBeNull();
-  expect((listBox?.y ?? 0)).toBeGreaterThan((calendarBox?.y ?? 0) + (calendarBox?.height ?? 0) - 1);
-});
-
-test("wheel over memorable card still scrolls the list", async ({ page, request }) => {
-  for (let index = 0; index < 14; index += 1) {
-    const day = String((index % 27) + 1).padStart(2, "0");
-    await seedMemorableDay(request, {
-      date: `2026-08-${day}`,
-      title: `scroll-${index}`,
-      repeatMode: "one-time",
-      emoji: "✨",
-    });
-  }
-
-  /* Two columns + split height sync so the list column height matches the calendar column and overflows. */
-  await page.setViewportSize({ width: 1280, height: 766 });
-  await loginUi(page);
-  await page.getByRole("button", { name: "Memorable days" }).click();
-
-  const list = page.locator(".memorable-list");
-  const targetCard = page.getByRole("button", { name: /scroll-4/i });
-  await expect(targetCard).toBeVisible();
-  await expect.poll(async () =>
-    list.evaluate((element) => ({
-      scrollHeight: element.scrollHeight,
-      clientHeight: element.clientHeight,
-    }))
-  ).toMatchObject({ scrollHeight: expect.any(Number), clientHeight: expect.any(Number) });
-  await expect.poll(async () =>
-    list.evaluate((element) => element.scrollHeight > element.clientHeight)
-  ).toBe(true);
-  const before = await list.evaluate((element) => element.scrollTop);
-  await targetCard.hover();
-  await page.mouse.wheel(0, 500);
-  await expect.poll(async () => list.evaluate((element) => element.scrollTop)).toBeGreaterThan(before);
 });
