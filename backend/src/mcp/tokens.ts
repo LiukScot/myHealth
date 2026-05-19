@@ -79,7 +79,7 @@ export function listTokens(db: DrizzleDB, userId: number): TokenSummary[] {
     .from(mcpTokens)
     .where(and(
       eq(mcpTokens.userId, userId),
-      or(isNull(mcpTokens.expiresAt), gt(mcpTokens.expiresAt, sql`datetime('now')`))
+      or(isNull(mcpTokens.expiresAt), gt(sql`datetime(${mcpTokens.expiresAt})`, sql`datetime('now')`))
     ))
     .all();
 }

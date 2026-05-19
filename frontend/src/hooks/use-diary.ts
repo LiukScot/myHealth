@@ -93,6 +93,10 @@ export function useDiary(enabled: boolean) {
         gratitude: "",
       });
       await queryClient.invalidateQueries({ queryKey: ["diary"] });
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
       resetTimerRef.current = setTimeout(() => diaryMutation.reset(), 3000);
     },
   });

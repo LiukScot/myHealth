@@ -72,6 +72,10 @@ export function useCbt(enabled: boolean) {
       setEditingCbt(null);
       cbtForm.reset(freshDefaults());
       await queryClient.invalidateQueries({ queryKey: ["cbt"] });
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
       resetTimerRef.current = setTimeout(() => cbtMutation.reset(), 3000);
     },
   });

@@ -66,6 +66,10 @@ export function useDbt(enabled: boolean) {
       setEditingDbt(null);
       dbtForm.reset(freshDefaults());
       await queryClient.invalidateQueries({ queryKey: ["dbt"] });
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
       resetTimerRef.current = setTimeout(() => dbtMutation.reset(), 3000);
     },
   });

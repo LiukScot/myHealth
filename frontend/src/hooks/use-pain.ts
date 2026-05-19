@@ -104,6 +104,10 @@ export function usePain(enabled: boolean) {
       setEditingPain(null);
       painForm.reset(createDefaultPainFormValues());
       await queryClient.invalidateQueries({ queryKey: ["pain"] });
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
       resetTimerRef.current = setTimeout(() => painMutation.reset(), 3000);
     },
   });
