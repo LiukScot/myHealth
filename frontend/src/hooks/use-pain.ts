@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -24,6 +24,8 @@ export function usePain(enabled: boolean) {
   const queryClient = useQueryClient();
   const [editingPain, setEditingPain] = useState<PainEntry | null>(null);
   const [confirmDeletePain, setConfirmDeletePain] = useState<number | null>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (resetTimerRef.current) clearTimeout(resetTimerRef.current); }, []);
 
   const painQuery = useQuery({
     queryKey: ["pain"],
@@ -102,7 +104,11 @@ export function usePain(enabled: boolean) {
       setEditingPain(null);
       painForm.reset(createDefaultPainFormValues());
       await queryClient.invalidateQueries({ queryKey: ["pain"] });
-      setTimeout(() => painMutation.reset(), 3000);
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
+      resetTimerRef.current = setTimeout(() => painMutation.reset(), 3000);
     },
   });
 

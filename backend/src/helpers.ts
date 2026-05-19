@@ -38,10 +38,29 @@ export async function parseJson<T>(c: Context, schema: z.ZodType<T>): Promise<T>
 
 export function parseIdParam(c: Context, paramName = "id"): { id: number } | Response {
   const id = Number(c.req.param(paramName));
-  if (!Number.isFinite(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
   }
   return { id };
+}
+
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function isValidIsoDate(s: string): boolean {
+  if (!ISO_DATE_RE.test(s)) return false;
+
+  const parts = s.split("-");
+  const year = Number.parseInt(parts[0]!, 10);
+  const month = Number.parseInt(parts[1]!, 10);
+  const day = Number.parseInt(parts[2]!, 10);
+
+  if (month < 1 || month > 12) return false;
+
+  const daysInMonth = new Date(year, month, 0).getDate();
+  if (day < 1 || day > daysInMonth) return false;
+
+  const parsed = new Date(year, month - 1, day);
+  return parsed.getFullYear() === year && parsed.getMonth() === month - 1 && parsed.getDate() === day;
 }
 
 export function readCookie(req: Request, name: string): string | null {

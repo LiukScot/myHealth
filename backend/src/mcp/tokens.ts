@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, or, isNull, gt, sql } from "drizzle-orm";
 import type { DrizzleDB } from "../db/index.ts";
 import { mcpTokens } from "../db/index.ts";
 
@@ -77,7 +77,10 @@ export function listTokens(db: DrizzleDB, userId: number): TokenSummary[] {
       lastUsedAt: mcpTokens.lastUsedAt,
     })
     .from(mcpTokens)
-    .where(eq(mcpTokens.userId, userId))
+    .where(and(
+      eq(mcpTokens.userId, userId),
+      or(isNull(mcpTokens.expiresAt), gt(sql`datetime(${mcpTokens.expiresAt})`, sql`datetime('now')`))
+    ))
     .all();
 }
 

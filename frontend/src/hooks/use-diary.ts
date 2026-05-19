@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +20,8 @@ export function useDiary(enabled: boolean) {
   const queryClient = useQueryClient();
   const [editingDiary, setEditingDiary] = useState<DiaryEntry | null>(null);
   const [confirmDeleteDiary, setConfirmDeleteDiary] = useState<number | null>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (resetTimerRef.current) clearTimeout(resetTimerRef.current); }, []);
 
   const diaryQuery = useQuery({
     queryKey: ["diary"],
@@ -91,7 +93,11 @@ export function useDiary(enabled: boolean) {
         gratitude: "",
       });
       await queryClient.invalidateQueries({ queryKey: ["diary"] });
-      setTimeout(() => diaryMutation.reset(), 3000);
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
+      resetTimerRef.current = setTimeout(() => diaryMutation.reset(), 3000);
     },
   });
 

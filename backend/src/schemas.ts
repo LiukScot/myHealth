@@ -16,12 +16,12 @@ export const diarySchema = z.object({
   moodLevel: z.number().min(1).max(9).nullable().optional(),
   depressionLevel: z.number().min(1).max(9).nullable().optional(),
   anxietyLevel: z.number().min(1).max(9).nullable().optional(),
-  positiveMoods: z.string().optional().default(""),
-  negativeMoods: z.string().optional().default(""),
-  generalMoods: z.string().optional().default(""),
-  description: z.string().optional().default(""),
-  gratitude: z.string().optional().default(""),
-  reflection: z.string().optional()
+  positiveMoods: z.string().max(5000).optional().default(""),
+  negativeMoods: z.string().max(5000).optional().default(""),
+  generalMoods: z.string().max(5000).optional().default(""),
+  description: z.string().max(50000).optional().default(""),
+  gratitude: z.string().max(50000).optional().default(""),
+  reflection: z.string().max(50000).optional()
 });
 
 export const painValueSchema = z.union([z.string(), z.array(z.string())]).optional();
@@ -55,28 +55,28 @@ export const painSchema = z.object({
 export const cbtSchema = z.object({
   entryDate: z.string().min(1),
   entryTime: z.string().min(1),
-  situation: z.string().optional().default(""),
-  thoughts: z.string().optional().default(""),
-  helpfulReasoning: z.string().optional().default(""),
-  mainUnhelpfulThought: z.string().optional().default(""),
-  effectOfBelieving: z.string().optional().default(""),
-  evidenceForAgainst: z.string().optional().default(""),
-  alternativeExplanation: z.string().optional().default(""),
-  worstBestScenario: z.string().optional().default(""),
-  friendAdvice: z.string().optional().default(""),
-  productiveResponse: z.string().optional().default(""),
+  situation: z.string().max(50000).optional().default(""),
+  thoughts: z.string().max(50000).optional().default(""),
+  helpfulReasoning: z.string().max(50000).optional().default(""),
+  mainUnhelpfulThought: z.string().max(50000).optional().default(""),
+  effectOfBelieving: z.string().max(50000).optional().default(""),
+  evidenceForAgainst: z.string().max(50000).optional().default(""),
+  alternativeExplanation: z.string().max(50000).optional().default(""),
+  worstBestScenario: z.string().max(50000).optional().default(""),
+  friendAdvice: z.string().max(50000).optional().default(""),
+  productiveResponse: z.string().max(50000).optional().default(""),
 });
 
 export const dbtSchema = z.object({
   entryDate: z.string().min(1),
   entryTime: z.string().min(1),
-  emotionName: z.string().optional().default(""),
-  allowAffirmation: z.string().optional().default(""),
-  watchEmotion: z.string().optional().default(""),
-  bodyLocation: z.string().optional().default(""),
-  bodyFeeling: z.string().optional().default(""),
-  presentMoment: z.string().optional().default(""),
-  emotionReturns: z.string().optional().default(""),
+  emotionName: z.string().max(5000).optional().default(""),
+  allowAffirmation: z.string().max(50000).optional().default(""),
+  watchEmotion: z.string().max(50000).optional().default(""),
+  bodyLocation: z.string().max(5000).optional().default(""),
+  bodyFeeling: z.string().max(50000).optional().default(""),
+  presentMoment: z.string().max(50000).optional().default(""),
+  emotionReturns: z.string().max(50000).optional().default(""),
 });
 
 export const prefsSchema = z.object({

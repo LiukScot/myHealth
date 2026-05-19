@@ -114,7 +114,7 @@ backup.get("/json", (c) => {
         model: prefs?.model ?? "mistral-small-latest",
         chatRange: prefs?.chatRange ?? "all",
         lastRange: prefs?.lastRange ?? "all",
-        graphSelection: prefs?.graphSelectionJson ? JSON.parse(prefs.graphSelectionJson) : {},
+        graphSelection: (() => { try { return prefs?.graphSelectionJson ? JSON.parse(prefs.graphSelectionJson) : {}; } catch { return {}; } })(),
         birthday: prefs?.birthday ?? null,
       }
     }
@@ -126,6 +126,12 @@ backup.post("/json/import", async (c) => {
   const rawDb = c.get("rawDb");
   const userId = c.get("userId");
   const body = await parseJson(c, backupImportSchema);
+
+  const parsedPrefs = body.prefs ? prefsSchema.safeParse(body.prefs) : null;
+  if (parsedPrefs && !parsedPrefs.success) {
+    return c.json({ error: { code: "INVALID_PREFS", message: "Invalid preferences in backup" } }, 400);
+  }
+  const pref = parsedPrefs?.data ?? null;
 
   const tx = rawDb.transaction(() => {
     rawDb.query(`DELETE FROM pain_entries WHERE user_id = ?`).run(userId);
@@ -187,7 +193,7 @@ backup.post("/json/import", async (c) => {
          ON CONFLICT(user_id, field, value) DO NOTHING`
       );
       for (const field of PAIN_MULTI_FIELDS) {
-        const values = (removed as any)[field];
+        const values = (removed as Record<string, unknown>)[field];
         if (!Array.isArray(values)) continue;
         for (const raw of values) {
           const normalized = String(raw).trim();
@@ -197,8 +203,7 @@ backup.post("/json/import", async (c) => {
       }
     }
 
-    if (body.prefs) {
-      const pref = prefsSchema.parse(body.prefs);
+    if (pref) {
       rawDb.query(
         `INSERT INTO user_preferences (user_id, model, chat_range, last_range, graph_selection_json, birthday, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
@@ -304,24 +309,29 @@ backup.post("/xlsx/import", async (c) => {
     const arrayBuffer = await file.arrayBuffer();
     await workbook.xlsx.load(arrayBuffer);
   } else {
-    const payload = (await c.req.json().catch(() => null)) as any;
-    if (!payload?.base64 || typeof payload.base64 !== "string") {
+    const payload = await c.req.json().catch(() => null);
+    if (!payload || typeof payload !== "object" || !("base64" in payload) || typeof (payload as Record<string, unknown>).base64 !== "string") {
       return c.json({ error: { code: "MISSING_FILE", message: "Expected multipart form upload or JSON {base64}" } }, 400);
     }
-    if (payload.base64.length > XLSX_UPLOAD_MAX_BASE64_CHARS) {
+    const base64 = (payload as Record<string, unknown>).base64 as string;
+    if (base64.length > XLSX_UPLOAD_MAX_BASE64_CHARS) {
       return c.json(
         { error: { code: "FILE_TOO_LARGE", message: "XLSX upload exceeds 10 MB limit" } },
         413
       );
     }
-    const decoded = Buffer.from(payload.base64, "base64");
+    const decoded = Buffer.from(base64, "base64");
     if (decoded.byteLength > XLSX_UPLOAD_MAX_BYTES) {
       return c.json(
         { error: { code: "FILE_TOO_LARGE", message: "XLSX upload exceeds 10 MB limit" } },
         413
       );
     }
-    await workbook.xlsx.load(decoded.buffer.slice(decoded.byteOffset, decoded.byteOffset + decoded.byteLength));
+    try {
+      await workbook.xlsx.load(decoded.buffer.slice(decoded.byteOffset, decoded.byteOffset + decoded.byteLength));
+    } catch {
+      return c.json({ error: { code: "INVALID_FILE", message: "Could not parse XLSX file" } }, 400);
+    }
   }
 
   const diaryRows = sheetToObjects(workbook.getWorksheet("diary"));
