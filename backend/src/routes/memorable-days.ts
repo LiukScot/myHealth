@@ -3,7 +3,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import type { DrizzleDB } from "../db/index.ts";
 import { memorableDays, userPreferences } from "../db/index.ts";
 import type { SQLiteDB } from "../db.ts";
-import { parseJson } from "../helpers.ts";
+import { parseJson, isValidIsoDate } from "../helpers.ts";
 import { deriveBirthdayMemorableDay, toMemorableDayView } from "../helpers/memorable-days.ts";
 import { memorableDaySchema } from "../schemas.ts";
 import { requireAuth } from "../middleware/auth.ts";
@@ -21,7 +21,11 @@ function todayIso() {
 memorableDaysRoute.get("/", (c) => {
   const db = c.get("db");
   const userId = c.get("userId");
-  const today = c.req.query("today") || todayIso();
+  const todayParam = c.req.query("today");
+  if (todayParam && !isValidIsoDate(todayParam)) {
+    return c.json({ error: { code: "INVALID_PARAM", message: "Invalid 'today' date format" } }, 400);
+  }
+  const today = todayParam || todayIso();
 
   const rows = db
     .select()

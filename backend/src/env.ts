@@ -11,7 +11,7 @@ export const envSchema = z.object({
   ALLOWED_ORIGINS: z.string().default("http://localhost:5173,http://127.0.0.1:5173,http://localhost:5555,http://127.0.0.1:5555"),
   PUBLIC_DIR: z.string().default(path.resolve(process.cwd(), "../frontend/dist")),
   DEV_FRONTEND_PROXY_URL: z.string().default(""),
-  COOKIE_SECURE: z.string().default("false")
+  COOKIE_SECURE: z.string().default("true")
 });
 
 export const env = envSchema.parse(process.env);

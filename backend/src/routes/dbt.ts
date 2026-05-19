@@ -3,7 +3,7 @@ import { eq, and, between, gte, lte, desc, sql } from "drizzle-orm";
 import type { DrizzleDB } from "../db/index.ts";
 import { dbtEntries } from "../db/index.ts";
 import type { SQLiteDB } from "../db.ts";
-import { parseJson, parseIdParam } from "../helpers.ts";
+import { parseJson, parseIdParam, isValidIsoDate } from "../helpers.ts";
 import { dbtSchema } from "../schemas.ts";
 import { requireAuth } from "../middleware/auth.ts";
 
@@ -18,6 +18,8 @@ dbt.get("/", (c) => {
   const userId = c.get("userId");
   const from = c.req.query("from");
   const to = c.req.query("to");
+  if (from && !isValidIsoDate(from)) return c.json({ error: { code: "INVALID_PARAM", message: "Invalid 'from' date format" } }, 400);
+  if (to && !isValidIsoDate(to)) return c.json({ error: { code: "INVALID_PARAM", message: "Invalid 'to' date format" } }, 400);
 
   const conditions = [eq(dbtEntries.userId, userId)];
   if (from && to) {

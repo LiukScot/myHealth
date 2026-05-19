@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,6 +28,8 @@ export function useCbt(enabled: boolean) {
   const queryClient = useQueryClient();
   const [editingCbt, setEditingCbt] = useState<CbtEntry | null>(null);
   const [confirmDeleteCbt, setConfirmDeleteCbt] = useState<number | null>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (resetTimerRef.current) clearTimeout(resetTimerRef.current); }, []);
 
   const cbtQuery = useQuery({
     queryKey: ["cbt"],
@@ -70,7 +72,7 @@ export function useCbt(enabled: boolean) {
       setEditingCbt(null);
       cbtForm.reset(freshDefaults());
       await queryClient.invalidateQueries({ queryKey: ["cbt"] });
-      setTimeout(() => cbtMutation.reset(), 3000);
+      resetTimerRef.current = setTimeout(() => cbtMutation.reset(), 3000);
     },
   });
 

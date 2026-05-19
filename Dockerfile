@@ -18,11 +18,12 @@ COPY backend/ ./backend/
 COPY scripts/ ./scripts/
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data && chown bun:bun /app/data
 
 ENV HOST=0.0.0.0 \
     PORT=5555 \
     DB_PATH=/app/data/health.sqlite
 
+USER bun
 EXPOSE 5555
 CMD ["bun", "--cwd", "backend", "src/server.ts"]

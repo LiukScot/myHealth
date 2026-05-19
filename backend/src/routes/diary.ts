@@ -4,7 +4,7 @@ import type { DrizzleDB } from "../db/index.ts";
 import { diaryEntries } from "../db/index.ts";
 import { toNullableNumber } from "../db.ts";
 import type { SQLiteDB } from "../db.ts";
-import { parseJson, parseIdParam } from "../helpers.ts";
+import { parseJson, parseIdParam, isValidIsoDate } from "../helpers.ts";
 import { diarySchema } from "../schemas.ts";
 import { requireAuth } from "../middleware/auth.ts";
 
@@ -19,6 +19,8 @@ diary.get("/", (c) => {
   const userId = c.get("userId");
   const from = c.req.query("from");
   const to = c.req.query("to");
+  if (from && !isValidIsoDate(from)) return c.json({ error: { code: "INVALID_PARAM", message: "Invalid 'from' date format" } }, 400);
+  if (to && !isValidIsoDate(to)) return c.json({ error: { code: "INVALID_PARAM", message: "Invalid 'to' date format" } }, 400);
 
   const conditions = [eq(diaryEntries.userId, userId)];
   if (from && to) {

@@ -1867,6 +1867,10 @@ export function DbtSection({
                 <span className="label">Present moment</span>
                 <span className="value">{entry.presentMoment || "—"}</span>
               </div>
+              <div className="detail-group">
+                <span className="label">Emotion returns</span>
+                <span className="value">{entry.emotionReturns || "—"}</span>
+              </div>
               <div className="detail-actions">
                 <button
                   type="button"

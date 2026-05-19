@@ -167,7 +167,7 @@ app.get("*", (c) => {
 
 // Global error handler
 app.onError((err, c) => {
-  console.error(err);
+  console.error({ name: err?.constructor?.name, message: err?.message });
   if (err instanceof Response) {
     return err;
   }

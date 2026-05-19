@@ -38,10 +38,16 @@ export async function parseJson<T>(c: Context, schema: z.ZodType<T>): Promise<T>
 
 export function parseIdParam(c: Context, paramName = "id"): { id: number } | Response {
   const id = Number(c.req.param(paramName));
-  if (!Number.isFinite(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     return c.json({ error: { code: "INVALID_ID", message: "Invalid id" } }, 400);
   }
   return { id };
+}
+
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function isValidIsoDate(s: string): boolean {
+  return ISO_DATE_RE.test(s);
 }
 
 export function readCookie(req: Request, name: string): string | null {
